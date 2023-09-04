@@ -1,0 +1,498 @@
+---
+title: "Econometría II: Tendencia"
+subtitle: "Departamento de Economía"
+author: "Carlos A. Yanes G."
+format: 
+  revealjs:
+    footer: "Universidad del Norte"
+    theme: [simple, ob.scss]
+    logo: micrologouni.png
+    embed-resources: true
+    code-fold: true
+from: markdown+emoji
+editor: visual
+date: last-modified
+bibliography: refs.bib
+---
+
+## Paquetes con que se trabaja la sesión
+
+::: callout-note
+## R libraries
+
+Los paquetes que vamos a utilizar y que se deben [instalar]{.bg style="--col: #FFC7A2"} para ser usados en clase son:
+
+``` r
+install.packages(c("pacman", "dynlm", "fpp2"))
+```
+:::
+
+::: callout-note
+## Ejecución
+
+No olvide que debe desde luego tener presente en su documento de *R Markdown* cargar estos paquetes.
+
+``` r
+library(pacman)
+p_load(dynlm, fpp2)
+```
+:::
+
+## Datos
+
+::: callout-tip
+## Cartera comercial de bancos
+
+-   Enero de 2016 hasta Abril 2023
+-   Web site de [Superintendencia Financiera](https://www.superfinanciera.gov.co/inicio/informes-y-cifras/cifras/establecimientos-de-credito/informacion-periodica/mensual/evolucion-cartera-de-creditos-60950)
+-   Frecuencia Mensual
+:::
+
+::: callout-caution
+## Paquete fpp2
+
+-   Cuando usted carga `library(fpp2)` de [@hyndman2018forecasting]. Este contiene elementos y/o funciones de otros paquetes como:
+    -   `forecast` Para pronostico simple
+    -   `ggplot2` Gráficos como si hiciera uso de
+    -   Ademas de `fma` y `expsmooth` para muchas series
+:::
+
+## Modelos de Tendencia central
+
+-   Estimamos a partir de la [tendencia]{.under} un pequeño pronostico de la serie de la **cartera** comercial.
+    -   Modelo de tendencia lineal $Y_t=f(T)$
+    -   Modelo de tendencia de polinomio superior
+    -   Modelo exponencial
+    -   Modelo Box Cox
+
+# Caso de estudio {background-color="#40666e"}
+
+## Caso 2
+
+[{{< fa triangle-exclamation >}}]{.bg style="--col: #f8e900"} Se [solicita]{.fg style="--col: #0098DB"} lo siguiente:
+
+1.  Caracterización general de la base de datos.
+2.  Trabajar con la **tendencia** y escoger la mejor especificación
+3.  Hacer una predicción.
+
+# Solución en {{< fa brands r-project >}} {background-color="#40666e"}
+
+## Caso 2
+
+::: panel-tabset
+### Activación
+
+```{r}
+#| echo: true
+# Cargar base de datos
+library(readxl)
+bsd2 <- read_excel("cartera.xlsx")
+head(bsd2)
+```
+
+### Objeto de serie
+
+```{r}
+#| echo: true
+# Cargar base de datos
+library(readxl)
+library(tidyverse)
+library(fpp2)
+datos <- read_excel("cartera.xlsx")
+datos <- datos$Cartera
+bsd2 <- ts(datos, start = c(2016, 1), frequency = 12)
+bsd2
+```
+
+### Gráfico
+
+```{r}
+#| echo: false
+autoplot(bsd2) + ylab("$ miles de Millones") + xlab("Year") +
+         ggtitle("Cartera Comercial de Bancos Colombianos 2016-2023")
+```
+
+### Leyenda
+
+-   El código para gráficar:
+
+``` r
+autoplot(bsd2) + ylab("$ miles de Millones") + xlab("Year") +
+         ggtitle("Cartera Comercial de Bancos Colombianos 2016-2023")
+```
+
+-   `autoplot` Es una *función* o comando del paquete [fpp2]{.bg style="--col: #FFFF00"}. Contiene elementos de `ggplot2` quien es el mas importante a la hora de hacer gráficos en todo el ecosistema de {{< fa brands r-project >}}
+
+-   Lo importante es mirar siempre la [tendencia]{.alert} de la serie.
+:::
+
+# Estacionalidad {background-color="#40666e"}
+
+## Estacionalidad
+
+::: panel-tabset
+### Análisis en sesión
+
+```{r}
+ggseasonplot(bsd2, year.labels=TRUE, year.labels.left=TRUE) +
+  ylab("$ Miles de millones") +
+  ggtitle("Gráfico Estacional: Cartera comercial")
+```
+
+### Código
+
+``` r
+ggseasonplot(bsd2, year.labels=TRUE, year.labels.left=TRUE) +
+  ylab("$ Miles de millones") +
+  ggtitle("Gráfico Estacional: Cartera comercial")
+```
+
+-   Si nota, automáticamente la parte de `ggseaasonplot` descompone la serie por periodo o fecha que lo tiene. Recuerde que para hacer eso el objeto que este trabajando debe necesariamente tener el `index` de `ts`.
+
+### Adicional
+
+Algunas funciones que trae consigo `autoplot` son:
+
+-   `seasonal()` Para extraer el componente estacional
+-   `trendcycle()` Para la parte de tendencia-ciclo
+-   `remainder()` Extrae la parte del componente irregular.
+-   `seasadj()` Ajusta la serie por sesión.
+:::
+
+# Estacionalidad {{< fa brands r-project >}} {background-color="#40666e"}
+
+## Estacionalidad
+
+::: panel-tabset
+### Ajuste estacional
+
+```{r}
+sea <- stl(bsd2, s.window="per")
+autoplot(bsd2, series="Data") +
+  autolayer(seasadj(sea), series="Ajuste Estacional")
+```
+
+### Código
+
+``` r
+sea <- stl(bsd2, s.window="per")
+autoplot(bsd2, series="Data") +
+  autolayer(seasadj(sea), series="Ajuste Estacional")
+```
+
+-   La opción de `s.windows` puede entenderse de forma muy especial si se sigue el documento de [@cleveland1990stl]. Las recomendaciones en ventanas periodicas como `s.window="per"` o como números como `s.window=7`.
+
+### Explicación
+
+-   Tenemos una serie que puede ser aditiva:
+
+$$y_t= S_t+T_t+e_t$$
+
+-   Si deseamos eliminar su estacionalidad es "fácil" decir que:
+
+$$y_t - S_t = T_t + e_t$$
+
+### Mult
+
+-   En caso tal la miraramos por el lado **multiplicativo**
+
+$$\frac{y_t}{S_t} = T_t \times e_t$$ Ya que:
+
+$$y_t= S_t\times T_t\times e_t$$
+:::
+
+## Ciclo y tendencia
+
+```{r}
+#| echo: true
+autoplot(bsd2, series="Data") +
+  autolayer(trendcycle(sea), series="Tendencia") +
+  autolayer(seasadj(sea), series="Ajuste Estacional") +
+  xlab("Fecha") + ylab("$ Miles de Millones") +
+  ggtitle("Cartera de Bancos comerciales") +
+  scale_colour_manual(values=c("gray","blue","red"),
+                     breaks=c("Data","Ajuste Estacional","Tendencia"))
+```
+
+# Tendencia {{< fa brands r-project >}} {background-color="#40666e"}
+
+## Tendencia
+
+::: panel-tabset
+### Explicación
+
+-   Vamos a correr varios modelos con las tendencias a ver que ajuste tenemos. Será nuestro intento de [primer pronostico]{.under}
+
+-   Podemos usar cualquier paquete de estimación. Sin embargo en esta parte para el [resumen]{.bg style="--col: #FFFF00"} haremos uso entonces del paquete `huxtable`.
+
+### Salida
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| include: false
+library(dynlm)
+library(huxtable)
+library(kableExtra)
+datos <- read_excel("cartera.xlsx")
+bsd2 <- ts(datos, start = c(2016, 1), frequency = 12)
+
+# Ajustar el modelo de regresión lineal solo con tendencia
+
+m1 <- dynlm(Cartera ~ trend(bsd2), data = bsd2)
+m2 <- dynlm(Cartera ~ trend(bsd2)+I(trend(bsd2)^2), data = bsd2)
+m3 <- dynlm(Cartera ~ trend(bsd2)+I(trend(bsd2)^2)+I(trend(bsd2)^3), data = bsd2)
+m4 <- dynlm(Cartera ~ log(trend(bsd2)), data = bsd2)
+m5 <- dynlm(Cartera ~ I(1/trend(bsd2)), data = bsd2)
+huxreg(m1,m2,m3,m4,m5, statistics=c("Observaciones" = "nobs", "R2" = "r.squared"))
+```
+
+```{r}
+dynlm(Cartera ~ trend(bsd2), data = bsd2)|>
+  tidy() |>
+  kable(
+    caption = "Modelo Tendencia lineal",
+    col.names = c("Variables", "Parámetro", "SE", "t", "P-value"),
+    digits = c(0, 3, 3, 2, 3)
+  )
+```
+
+### Salida
+
+```{r}
+dynlm(Cartera ~ trend(bsd2)+I(trend(bsd2)^2)+I(trend(bsd2)^3), data = bsd2)|>
+  tidy() |>
+  kable(
+    caption = "Modelo Tendencia Cúbica",
+    col.names = c("Variables", "Parámetro", "SE", "t", "P-value"),
+    digits = c(0, 3, 3, 2, 3)
+  )
+```
+
+### Código
+
+``` r
+library(dynlm)
+library(huxtable)
+datos <- read_excel("cartera.xlsx")
+bsd2 <- ts(datos, start = c(2016, 1), frequency = 12)
+# Ajustar el modelo de regresión lineal solo con tendencia
+m1 <- dynlm(Cartera ~ trend(bsd2), data = bsd2)
+m2 <- dynlm(Cartera ~ trend(bsd2)+I(trend(bsd2)^2), data = bsd2)
+m3 <- dynlm(Cartera ~ trend(bsd2)+I(trend(bsd2)^2)+I(trend(bsd2)^3), data = bsd2)
+m4 <- dynlm(Cartera ~ log(trend(bsd2)), data = bsd2)
+m5 <- dynlm(Cartera ~ I(1/trend(bsd2)), data = bsd2)
+huxreg(m1,m2,m3,m4,m5, statistics=c("Observaciones" = "nobs", "R2 Ajustado" = "adj.r.squared"))
+```
+:::
+
+# Primer pronostico :astonished: {background-color="#40666e"}
+
+## Primer pronostico
+
+### Con el mejor modelo de tendencia
+
+-   Se toma desde luego la ecuación y se [reemplaza]{.bg style="--col: #FFFF00"} en el último valor o periodo. P.e:
+
+$$\begin{aligned}
+Cartera_t=& \; \alpha_0+\alpha_1 T_t+\alpha_2 T_t^2+\alpha_3 T_t^3+u_t\\
+=& \; 362438+35004.301 T_t-6305.589 T_t^2+947.528 T_t^3\\
+=& \; 362438+35004.301 (88)-6305.589 (88)^2+947.528 (88)^3\\
+=& \; 600326136
+\end{aligned}$$ La [Cartera]{.fg style="--col: #FF0000"} de mayo de 2023 va ser de 600 mil millones.
+
+## Pronosticos con tendencia
+
+::: panel-tabset
+### Grafico con pronostico
+
+```{r}
+#| echo: false
+#| cache: true 
+datos <- read_excel("cartera.xlsx")
+datos <- datos$Cartera
+bsd2 <- ts(datos, start = c(2016, 1), frequency = 12)
+# Tendencia lineal
+m.lin <- tslm(bsd2 ~ trend)
+p.lin <- forecast(m.lin, h=10)
+
+# Tendencia Exponencial
+m.exp <- tslm(bsd2 ~ trend, lambda = 0)
+p.exp <- forecast(m.exp, h=10)
+
+# Tendencia Cúbica
+m.cub <- tslm(bsd2 ~ trend+trend^2+trend^3)
+p.cub <- forecast(m.cub, h=10)
+
+autoplot(bsd2) +
+  autolayer(fitted(m.lin), series = "Lineal") +
+  autolayer(fitted(m.exp), series="Exponencial") +
+  autolayer(fitted(m.cub), series = "Cúbico") +
+  autolayer(p.lin$mean, series = "Lineal") +
+  autolayer(p.exp$mean, series="Exponencial") +
+  autolayer(p.cub$mean, series="Cúbico") +
+  xlab("Año") +  ylab("$ Miles de Millones") +
+  ggtitle("Predicción simple") +
+  guides(colour=guide_legend(title=" "))
+```
+
+### Código modelo
+
+``` r
+datos <- read_excel("cartera.xlsx")
+datos <- datos$Cartera
+bsd2 <- ts(datos, start = c(2016, 1), frequency = 12)
+
+# Tendencia lineal
+m.lin <- tslm(bsd2 ~ trend)
+p.lin <- forecast(m.lin, h=10)
+
+# Tendencia Exponencial
+m.exp <- tslm(bsd2 ~ trend, lambda = 0)
+p.exp <- forecast(m.exp, h=10)
+
+# Tendencia Cúbica
+m.cub <- tslm(bsd2 ~ trend+trend^2+trend^3)
+p.cub <- forecast(m.cub, h=10)
+```
+
+### C Graph
+
+``` r
+autoplot(bsd2) +
+  autolayer(fitted(m.lin), series = "Lineal") +
+  autolayer(fitted(m.exp), series="Exponencial") +
+  autolayer(fitted(m.cub), series = "Cúbico") +
+  autolayer(p.lin$mean, series = "Lineal") +
+  autolayer(p.exp$mean, series="Exponencial") +
+  autolayer(p.cub$mean, series="Cúbico") +
+  xlab("Año") +  ylab("$ Miles de Millones") +
+  ggtitle("Predicción simple") +
+  guides(colour=guide_legend(title=" "))
+```
+:::
+
+## Otros pronosticos
+
+::: callout-note
+## Media simple
+
+Dado el comportamiento de la serie $y_t$, se extrae la media o esperanza matemática y con eso se tiene el pronostico.
+:::
+
+-   El [pronostico]{.alert} de todos los valores [futuros]{.bg style="--col: #00FFFF"} es igual a la media histórica de los datos $y_1,\dots,y_T$.
+
+-   La formula es: $\hat{y}_{T+h|T} = \bar{y} = \frac{ (y_1+\dots+y_T)}{T}$
+
+## Otros pronosticos
+
+::: callout-note
+## Ingenuo (Naive)
+
+El pronostico es igual al último valor de la serie.
+:::
+
+-   El [pronostico]{.alert} de todos los valores [futuros]{.bg style="--col: #00FFFF"} es igual al último dato $y_T$.
+
+-   La formula es: $\hat{y}_{T+h|T} =y_T$
+
+## Otros pronosticos
+
+::: callout-note
+## Método ingenuo estacional
+
+Si se mira el comportamiento de la serie $y_t$, El pronostico es similar al de la última season.
+:::
+
+-   El [pronostico]{.alert} de todos los valores [futuros]{.bg style="--col: #00FFFF"} es igual al dato final de la estación del periodo $y_{1s},\dots,y_{TS}$.
+
+-   La formula es: $\hat{y}_{T+h|T} =y_{T+h-m(k+1)}$, donde la parte de $m=$ es el periodo estacional y $k$ viene a ser un número producto de $k=\frac{(h-1)}{m}$.
+
+## Otros pronosticos
+
+```{r}
+#| echo: true
+# Grafico de pronósticos
+autoplot(bsd2) +
+  autolayer(meanf(bsd2, h=11), PI=FALSE, series="Promedio") +
+  autolayer(naive(bsd2, h=11), PI=FALSE, series="Naïve") +
+  autolayer(snaive(bsd2, h=11), PI=FALSE, series="Naïve Estacional") +
+  ggtitle("Pronosticos de Cartera ") +
+  xlab("Fecha") + ylab("$ en miles de millones") +
+  guides(colour=guide_legend(title="Pronostico por"))
+```
+
+# Box-cox :cowboy_hat_face:
+
+## Modelo Box-cox
+
+-   Es una manera de extraer una [Tendencia no lineal]{.fg style="--col: #e64173"}
+
+$$w_t = \left\{\begin{array}{ll}
+        \log(y_t),      & \quad \lambda = 0; \\
+        (y_t^\lambda-1)/\lambda ,         & \quad \lambda \ne 0.
+\end{array}\right.$$
+
+-   Se sabe que si $\lambda=1$: (No es necesario transformar)
+-   $\lambda=\frac12$: (Raíz cuadrada y adicional transformación lineal)
+-   $\lambda=0$: (Logaritmo neperiano)
+-   $\lambda=-1$: (Inversa)
+
+## Modelo Box-cox
+
+```{r}
+#| echo: true
+autoplot(BoxCox(bsd2,lambda=1/3))
+```
+
+## Modelo Box-cox
+
+### Adquiriendo el lambda correcto
+
+-   Cuando queremos encontrar el lambda $(\lambda)$ optimizando el **verdadero** valor de acuerdo a la serie pero el sistema lo hace por nosotros :smiley:
+
+```{r}
+#| echo: true
+(BoxCox.lambda(bsd2))
+```
+
+-   Valores [pequeños]{.bg style="--col: #FF0000"} del $\lambda$ manifiestan intervalos mas grandes del pronostico
+
+## Pronostico con Box Cox
+
+::: panel-tabset
+### Transformar el resultado
+
+-   Si queremos obtener en valores [reales]{.alert} el pronostivo, debemos reversar la transformación Box-Cox
+
+$$ y_t = \left\{\begin{array}{ll}
+        \exp(w_t),      & \quad \lambda = 0; \\
+        (\lambda W_t+1)^{1/\lambda} ,   & \quad \lambda \ne 0.
+\end{array}\right.$$
+
+### Rev en 1/3
+
+```{r pub1}
+#| echo: true
+#| fig-height: 3.6
+niv1 <- snaive(bsd2, lambda=1/3)
+autoplot(niv1)
+```
+
+### Rev 2
+
+```{r pub2}
+#| echo: true
+#| fig-height: 3.6
+niv2 <- snaive(bsd2, lambda=-0.999)
+autoplot(niv2)
+```
+:::
+
+# Gracias por su atención!! {background-color="#cc0000"}
+
+## Referencias
+
+::: {#refs}
+:::

@@ -1,0 +1,773 @@
+---
+title: "Econometría II"
+subtitle: "<br/> Introducción"
+author: "Carlos A. Yanes Guerra"
+institute: "Universidad del Norte"
+date: "2023-II"
+output:
+  xaringan::moon_reader:
+    css: 
+       - xaringan-themer.css
+       - new-css.css
+    lib_dir: libs
+    seal: false
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+---
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+style_mono_accent(
+  base_color = "#23395b",
+  header_font_google = google_font("Josefin Sans"),
+  text_font_google   = google_font("Montserrat", "300", "300i"),
+  code_font_google   = google_font("Fira Mono")
+)
+```
+
+```{r, setup, include = F}
+# devtools::install_github("dill/emoGG")
+library(pacman)
+p_load(readr, xts, astsa,
+  broom, tidyverse,
+  latex2exp, ggplot2, ggthemes, ggforce, viridis, extrafont, gridExtra,
+  kableExtra, snakecase, janitor,
+  data.table, dplyr, estimatr,
+  lubridate, knitr, parallel,
+  lfe, emoGG,
+  here, magrittr, fontawesome, shiny, babynames
+)
+# Define pink color
+red_pink <- "#e64173"
+turquoise <- "#20B2AA"
+orange <- "#FFA500"
+red <- "#fb6107"
+blue <- "#2b59c3"
+green <- "#8bb174"
+grey_light <- "grey70"
+grey_mid <- "grey50"
+grey_dark <- "grey20"
+purple <- "#6A5ACD"
+slate <- "#314f4f"
+met_slate <- "#272822"
+# Dark slate grey: #314f4f
+# Opciones
+opts_chunk$set(
+  comment = "#>",
+  fig.align = "center",
+  fig.height = 7,
+  fig.width = 10.5,
+  warning = F,
+  message = F
+)
+opts_chunk$set(dev = "svg")
+options(device = function(file, width, height) {
+  svg(tempfile(), width = width, height = height)
+})
+options(crayon.enabled = F)
+options(knitr.table.format = "html")
+# A blank theme para ggplot
+theme_empty <- theme_bw() + theme(
+  line = element_blank(),
+  rect = element_blank(),
+  strip.text = element_blank(),
+  axis.text = element_blank(),
+  plot.title = element_blank(),
+  axis.title = element_blank(),
+  plot.margin = structure(c(0, 0, -0.5, -1), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_simple <- theme_bw() + theme(
+  line = element_blank(),
+  panel.grid = element_blank(),
+  rect = element_blank(),
+  strip.text = element_blank(),
+  axis.text.x = element_text(size = 18, family = "STIXGeneral"),
+  axis.text.y = element_blank(),
+  axis.ticks = element_blank(),
+  plot.title = element_blank(),
+  axis.title = element_blank(),
+  # plot.margin = structure(c(0, 0, -1, -1), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes_math <- theme_void() + theme(
+  text = element_text(family = "MathJax_Math"),
+  axis.title = element_text(size = 22),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, 0.15, 0, 0, unit = "lines")),
+  axis.line = element_line(
+    color = "grey70",
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.15, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes_serif <- theme_void() + theme(
+  text = element_text(family = "MathJax_Main"),
+  axis.title = element_text(size = 22),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, 0.15, 0, 0, unit = "lines")),
+  axis.line = element_line(
+    color = "grey70",
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.15, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes <- theme_void() + theme(
+  text = element_text(family = "Fira Sans Book"),
+  axis.title = element_text(size = 18),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, 0.15, 0, 0, unit = "lines")),
+  axis.line = element_line(
+    color = grey_light,
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.15, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_set(theme_gray(base_size = 20))
+# Nombres de las columnas para la regresión
+reg_columns <- c("Term", "Est.", "S.E.", "t stat.", "p-Value")
+# Formato de p valores
+format_pvi <- function(pv) {
+  return(ifelse(
+    pv < 0.0001,
+    "<0.0001",
+    round(pv, 4) %>% format(scientific = F)
+  ))
+}
+format_pv <- function(pvs) lapply(X = pvs, FUN = format_pvi) %>% unlist()
+# Tidy regression results table
+tidy_table <- function(x, terms, highlight_row = 1, highlight_color = "black", highlight_bold = T, digits = c(NA, 3, 3, 2, 5), title = NULL) {
+  x %>%
+    tidy() %>%
+    select(1:5) %>%
+    mutate(
+      term = terms,
+      p.value = p.value %>% format_pv()
+    ) %>%
+    kable(
+      col.names = reg_columns,
+      escape = F,
+      digits = digits,
+      caption = title
+    ) %>%
+    kable_styling(font_size = 20) %>%
+    row_spec(1:nrow(tidy(x)), background = "white") %>%
+    row_spec(highlight_row, bold = highlight_bold, color = highlight_color)
+}
+# A few extras
+xaringanExtra::use_xaringan_extra(c("tile_view", "fit_screen"))
+xaringanExtra::use_clipboard()
+xaringanExtra::use_share_again()
+xaringanExtra::style_share_again(
+  share_buttons = c("twitter", "linkedin", "pocket")
+)
+```
+
+name: xaringan-title
+class: inverse, left, bottom
+background-image: url(pictures/picuniform.jpg)
+background-size: cover
+
+# **`r rmarkdown::metadata$title`**
+----
+
+## **`r rmarkdown::metadata$subtitle`**
+
+### `r rmarkdown::metadata$author`
+### `r rmarkdown::metadata$date`
+
+```{r xaringanExtra-share-again, echo=FALSE}
+xaringanExtra::use_share_again()
+```
+
+---
+name: admin
+# Recursos
+
+.hi-slate[Para la clase]
+
+- .note[Course website:] [Carlos Yanes](https://carlosyanes.netlify.app)
+- [Syllabus](https://carlosyanes.netlify.app/contenidoc/SyllabusEconometriaME.pdf) (on the website)
+- En Persona?
+.hi-slate[.mono[Departamento Economía Oficina D-215]]
+
+- .note[Hoy:] Introducción a series de tiempo
+- Lecturas:
+  - [Lect. 1: Cap 10 Wooldridge](https://www.amazon.com/Introductory-Econometrics-Modern-Approach-Economics/dp/1111531048)
+- .note[Tareas:] De acuerdo al capstone por desarrollar
+- .note[Ayudas:] [La biblia del programador](https://stackoverflow.com/)
+
+---
+# Recursos
+
+--
+
+### Notas
+
+| Requerimientos   | Fecha                                | Ponderador |
+| ---------------- | ------------------------------------ | ---------- |
+| Parcial 1        | Hasta la semana 5 de clases          | 20%        |
+| Parcial 2        | Hasta la semana 9 de clases          | 20%        |
+| Capstone Project | Todo el semestre                     | 20%        |
+| Participación    | Podcast final                        | 10%        |
+| Examen final     | Registro académico                   | 30%        |
+
+---
+# Recursos 
+
+--
+
+`r fa("sketch", fill="blue")` Aprendizaje experimental: 
++ Usted no entenderá algo hasta que lo codifica
++ Las herramientas estan a lo largo del Internet
+
+--
+
+`r fa("sketch", fill="blue")` Recuerde que debe:
+
+--
+
++ Interactuar con el *syllabus*, leer temas aparte de lo que se da en clases.
++ No puede solo quedarse con lo que se da en .hi[clases], debe interesarse por fuera.
++ Recuerde usar el **discord** de la clase para todo.
++ Las clases son o deben ser totalmente .hi[participativas]. Si en la semana no ha hecho alguna pregunta al profesor entonces se catalogará como posición insuficiente.
+
+---
+
+--
+
+### Informes (participación):
++ Tiene que hacerle seguimiento a una serie macroeconómica y con ella "casarse" y tratar de predecirla antes que salga el informe del DANE o del Banrep de acuerdo a las semanas que en esta se presentan, llámese .hi[informes de junta], .hi[Informe IPC], .hi[Informe de pobreza multidimensional], .hi[Tasa de interés FED], etc. 
+
++ Algunos estudiantes pueden tomar la **misma** serie. Pero la idea es que sean varios y con esto obtener distintos escenarios. 
+
++ Los trabajos a entregar son compensatorios por lo visto en clases. Pueden ser 3 o 4 en todo el .hi[semestre]
+
++ Lo del .hi[podcast] es totalmente obligatorio. Cada estudiante tiene un rol y de acuerdo a eso se le calificará. Los Grupos para este pueden ser conformados hasta por cuatro (4) estudiantes.
+
+    + Desde luego deben tener una propuesta
+    + Debe haber un guíon 
+    + Formato mp4 o Mpeg de buena calidad (no tiene que necesariamente ser HD)
+
+
+
+---
+class: inverse, middle
+
+# Y 🫢 ahora por qué estamos aquí?
+
+---
+layout: true
+# Predicción
+
+---
+
+--
+
+* Aunque no lo creemos muchas veces queremos .hi[adelantarnos] al futuro!!
+
+--
+
+* Nos gusta predecir la ocurrencia de algo de acuerdo a lo que esperamos. .ul[esto puede ser efectivo] o incluso desagradable 🤮
+
+--
+
+<cy-blockquote> Un **Pronostico** parte de un breve análisis de tendencias, patrones, "deja-vu" y por ende lanzamos una apreciación de una creencia a priori para determinar la ocurrencia de un suceso. </cy-blockquote>
+
+--
+
+En cambio cuando somos mas formales $x_t=f(x_{t-1})$, y entonces comenzamos a mirar que $x_t= C_t+S_t+T_t$ y por ende estimamos un modelo. Ya podemos entonces mirar un concepto mucho más técnico.
+
+--
+
+<ry-blockquote> La .hi-purple[predicción] se refiere a estimar o predecir eventos o valores futuros en función de la información disponible en el presente y en el pasado. Se usan modelos y algoritmos con datos históricos para hacer .ul[proyecciones] sobre el futuro.</ry-blockquote>
+
+---
+layout: false
+class: inverse, middle
+
+# Y 😮 anteriormente... como hacian?
+
+---
+layout: true
+# Un poco de historia
+
+---
+
+--
+
+## Predicción con gusanos 🪱
+
+--
+
+.pull-left[
+```{r, out.width="70%", fig.cap="Figura 1: Modelo Arcilla", echo=FALSE}
+knitr::include_graphics("pictures/sheepm1.jpeg")
+```
+
+]
+
+.pull-right[
+<cy-blockquote> .hi[Babilonia 600 A.C] Se usaba el modelo de arcilla en forma de oveja. Hoy en día esta en un museo en Inglaterra </cy-blockquote>
+]
+
+---
+
+--
+
+## Predicción con alucinaciones
+
+--
+
+.pull-left[
+![](https://media.giphy.com/media/PkR4bfOLKFbGyeUxd6/giphy-downsized.gif)
+]
+
+--
+
+.pull-right[
+```{r, out.width="85%", fig.cap="Figura 2: Templo Apolo", echo=FALSE}
+knitr::include_graphics("pictures/delpho.jpeg")
+```
+]
+
+---
+class: inverse
+
+--
+
+## Algunas frases
+
+--
+
+.col-left[
+*Quien consulte a un adivino por curiosidad sobre el futuro sufrirá la pena capital.* .attn[Código Teodosiano 9.16.4]<br/> <br/>
+*Si hay un partido ganable es este* .attn[Javier Hernandez, COL-ECU Mundial Brasil 2014]
+]
+
+.col-centered[
+*Creo que hay un mercado mundial para unos cinco computadores.* .attn[Chairman de IBM, 1943]
+<br/>
+<br/>
+*Vamos a abrir relativamente pronto ... El virus ... se irá en abril.* .attn[Donald Trump, febrero de 2020]
+]
+
+.col-right[
+*No hay ninguna razón para que alguien quiera un computador en su casa.* .attn[Presidente USA. Diciembre de 1977] <br/>
+<br/>
+*No hay ninguna posibilidad de que el iPhone consiga una cuota de mercado significativa. Ninguna posibilidad.* .attn[Steve Ballmer, CEO Microsoft, Abril 2007]
+]
+
+---
+layout: false
+class: inverse, middle
+
+# Qué podemos (y que no!!) predecir? 🤨
+
+---
+layout: true
+# Qué si/no podemos predecir
+
+---
+background-image: url("pictures/climacol.png")
+background-size: cover
+---
+background-image: url("pictures/picny.jpeg")
+background-size: cover
+---
+background-image: url("pictures/ener.jpg")
+background-size: cover
+---
+background-image: url("pictures/virus.jpg")
+background-size: cover
+---
+background-image: url("pictures/eclip.jpg")
+background-size: cover
+---
+
+--
+
+### ¿Que es más fácil de pronosticar?
+
+--
+
+`r fa("fighter-jet", fill="red")` Hora de salida del sol este día el año que viene.
+`r fa("fighter-jet", fill="red")` La hora de la próxima aparición del cometa Halley.
+`r fa("fighter-jet", fill="red")` La temperatura máxima mañana
+`r fa("fighter-jet", fill="red")` La demanda diaria de electricidad dentro de 3 días.
+`r fa("fighter-jet", fill="red")` Las ventas totales de medicamentos en las farmacias colombianas el mes que viene
+`r fa("fighter-jet", fill="red")` Precio de las acciones de Google mañana
+`r fa("fighter-jet", fill="red")` Tipo de cambio de $US/COP la próxima semana
+`r fa("fighter-jet", fill="red")` Precio de las acciones de Ecopetrol dentro de 6 meses
+
+---
+
+--
+
+### Hay que entender los factores para un pronostico
+
+--
+
+Es más fácil predecir algo si:
+
+--
+
+1. Conocemos bien los .hi[factores] que contribuyen a ello
+2. Disponemos de muchos .hi[datos]
+3. El .hi-orange[futuro] es similar al .hi[pasado]
+4. Las predicciones de .hi[otros] no pueden afectar lo que intentamos predecir.
+
+--
+
+Los métodos de .hi[predicción] de series de tiempo mas sencillos utilizan información sobre la **variable** a pronosticar y no intentan descubrir factores que afectan su comportamiento.
+
+--
+
+Por tanto se mira la extrapolación de **tendencias** y patrones estacionales y van a ignorar otro tipo de información como iniciativas de emprendimiento y marketing, como se mueve la competencia (otras firmas), cambio en regulaciones y condiciones económicas.
+
+---
+
+--
+
+### Pasos para el pronostico a conocer
+
+--
+
+1. Definir el objetivo
+2. Recopilar información
+3. Análisis gráfico
+4. Elección del modelo
+   - Regresión (?)
+   - Suavizado exponencial
+   - Modelos ARIMA
+   - Regresión Dinámica
+   - Pronostico Jerarquico
+   - Redes Neuronales
+   - Análisis espectral
+5. Uso y evaluación de un modelo de Pronóstico
+   
+
+---
+layout: false
+
+# Recordeis
+
+--
+
+♠ .hi[Sección Cruzada] <br/>
+Notación estándar de sección cruzada: $i=1,\dots, N$
+
+--
+        
+♠ .hi[Series de Tiempo] <br/>
+Notación estándar de series-tiempo: $t=1,\dots, T$
+        
+--
+
+.bigger["Siempre debemos elegir una notación"]
+
+--
+
+.pseudocode[
+Econometría:
+- Examinar como la teoría económica puede explicar el comportamiento histórico de los datos (hechos estilizados).
+- Validar las teorías e hipótesis económicas.
+- Predecir la evolución futura de la economía.
+]
+
+---
+# Recordeis
+
+--
+
+De la forma .hi[normal]:
+
+--
+
+$$Y_{i}=\beta_{0}+ \beta_{i}X_{i} + \mu_{i}$$
+
+--
+
+De forma .hi[matricial]:
+
+--
+
+$$Y= X'\beta + \epsilon$$
+
+--
+
+
+> Donde:
+
+$$\textrm{Estos elementos son:}\begin{cases}
+\beta & = \textrm{Parámetros }  \\ 
+X & = \text{Variables explicativas} \\ 
+\epsilon & = \text{Residuo del modelo matricial}  \\ 
+\mu & = \text{Residuo del modelo } \\ 
+\end{cases}$$
+
+---
+# Recordeis
+
+--
+
+### De los principales supuestos:
+
+--
+
+`r fa("skull-crossbones", fill="blue")` Linealidad en $\beta$ (B.L.U.E). Teorema de Gauss-Markov
+`r fa("skull-crossbones", fill="blue")` No multicolinealidad entre las $X's$.
+`r fa("skull-crossbones", fill="blue")` No heterocedasticidad $\sigma^{2}_{i}=\sigma^{2}_{j}=\cdots = \sigma^{2}_{l}$
+`r fa("skull-crossbones", fill="blue")` No Autocorrelación $Cov(\epsilon_{t}, \epsilon_{t-j}) = 0$
+
+---
+class: inverse, middle
+
+# Series de tiempo ⌚️
+----
+
+---
+layout: true
+# Series de tiempo
+
+---
+
+--
+
+<cy-blockquote>.hi[Una serie de tiempo]  es un conjunto de datos no vacio $(T\neq \varnothing)$ que contiene información en un tiempo determinado  de una variable en particular $(Y_t:t\in T)$ </cy-blockquote>
+
+--
+
+`r fa("exclamation-triangle", fill="red")` Los datos parten de un tiempo $t=1$ hasta un final como $t=T$.
+
+--
+
+`r fa("fighter-jet", fill="blue")` Podemos incluso llamarlo:
+$$Y_t=\{\underbrace{Y_{\color{#e64173}{t-n}},\dots,Y_{t-1}}_{\color{#e64173}{\text{Rezagos}}},Y_{t},\underbrace{Y_{\color{#6A5ACD}{t+1}},\dots,Y_{\color{#6A5ACD}{t+n}}}_{\color{#6A5ACD}{\text{Adelantos}}}\}$$
+
+--
+
+`r fa("angle-double-right", fill="blue")` Series .ul[estocásticas] poseen una parte conocida (*sistemática*) y puede ser predicha pero ademas posee una parte totalmente desconocida (*aleatoria*).
+
+`r fa("angle-double-right", fill="blue")` Series .ul[determinística] son muchísimo mas fácil de predecir ya que es una variable fija o determinada y no cambia de una muestra a otra
+
+---
+
+--
+
+```{r, echo=FALSE, out.width="70%"}
+library(astsa)  # Bases de datos
+par(mfrow=2:1)
+tsplot(jj,    ylab="Ganancias",    type="o",    col=4,    main="Ganancias trimestrales de Johnson & Johnson")
+tsplot(log(jj),    ylab="log(Gan.)",    type="o",    col=4)
+```
+
+
+---
+
+--
+
+A continuación vamos a mirar una serie .hi-purple[financiera] y su retorno. Para esto hay que entonces recordar como extraer un **retorno** de una acción.
+
+--
+.pad-left[
+$\text{r}_{t}=\frac{x_t-x_{t-1}}{x_{t-1}}$
+]
+
+--
+.pad-left[
+$\text{r}_{t}=\frac{x_t}{x_{t-1}}-1$
+]
+
+--
+.pad-left[
+$\text{r}_{t}+1=\frac{x_t}{x_{t-1}}$
+]
+
+--
+.pad-left[
+$Log(\text{r}_{t}+1)=Log\left(\frac{x_t}{x_{t-1}}\right)=Log(x_t)-log(x_{t-1})$
+]
+
+--
+.pad-left[
+$Log(\text{r}_{t}+1)=r-\frac{r^2}{2}+\frac{r^3}{3}- \cdots \quad -1\leq r \leq 1$
+]
+
+--
+.pad-left[
+$Log(\text{r}_{t}+1) \approx r_t$ .pink[✔]
+]
+
+
+---
+
+--
+
+```{r, echo=FALSE, out.width="70%"}
+colcap <- read_csv("colcap.csv")
+colser <- ts(colcap, start = c(2023, 1), frequency = 365)
+par(mfrow=2:1)
+tsplot(colser,    ylab="Indice Colcap",    type="o",    col=4,    main="Variación indice colcap")
+tsplot(diff(log(colser)),    ylab="diflog(Colcap)",    type="o",    col=4)
+```
+
+---
+
+--
+
+De lo anterior, hay que tener en cuenta primero la `frecuencia` o periodicidad de los datos. Estos valores deben ser situados en el tiempo como: _años_, _meses_, _semestres_, _trimestres_, que son los mas comunes. Es por ello que $Y_t$ puede hacer referencia a $\text{PIB}_{2021}$ que es el **Producto Interno Bruto** del año de 2021 de cierto país. Un orden mejor de las cosas, viene a ser cuando pueden ser establecidas como una tabla:
+
+| Periodo 	| PIB (en billones de $) 	|
+|---------	|------------------------	|
+| 2021    	| 54272                  	|
+| 2022    	| 56891                  	|
+| 2023    	| 57921                  	|
+
+---
+
+--
+
+| **Frecuencia** | **Tipo R**       | **Ejemplo**     |
+|:--------------:|:----------------:|:---------------:|
+| Años           | 1                | 2022            |
+| Meses          | 12               | c(2022,11)      |
+| Trimestre      | 4                | c(2022,3)       |
+| Semanal        | 52               | c(2022,42)      |
+| Diario         | 7 o 365          | 1 o c(2022,115) |
+| Hora           | 24 o 168 o 8760  | 1               |
+| Medio Tiempo   | 48 o 336 o 17520 | 1               |
+
+---
+
+--
+
+### En `r fa("r-project", fill = "steelblue")` es 
+
+--
+
+`y<- ts(c(54272,56891,57291), start=2021)`
+
+
+```{r, echo=FALSE}
+(y<- ts(c(54272,56891,57291), start=2021))
+```
+
+--
+
+Desde luego si se tiene la serie .hi[trimestral] puede hacerse como:</br>
+`y<- ts(datos, start=c(2021,1), frequency=4)`
+
+--
+
+Formato .hi[mensual] es:
+`Notas<- ts(datos, frequency=12, start=c(1993,1))`
+
+---
+
+--
+
+```{r, desempleo, echo=FALSE, out.width="70%", dev = "svg"}
+library(readxl)
+library(tidyverse)
+library(scales)
+desapr <- read_excel("desapr.xlsx")
+desapr$fecha<-as.Date(desapr$time)
+
+puntos<-data.frame(x1=as.Date(c("2001-09-30", "2003-11-30", "2009-10-31", "2020-03-31" ,"2020-11-30", "2021-11-30", "2022-09-30")),
+                   x2= as.Date(c("2002-01-31", "2004-02-28", "2010-01-31", "2020-05-31" ,"2021-01-31", "2022-01-31", "2023-01-31")),
+                   y1=rep(-Inf, 7),
+                   y2=rep(Inf, 7))
+  desapr %>% 
+  ggplot(aes(x=fecha, y=desem))+
+  geom_rect(data = puntos, aes(x = NULL, y = NULL,  #Acá los defino nulos
+                               xmin=x1, xmax=x2, 
+                               ymin=y1, ymax=y2), fill = "gray", alpha=0.5) +
+  geom_line(aes(y = desem, x= fecha), colour="blue")+
+  labs(x= "Meses", y= "Tasa de desempleo %")+
+  #annotate("text", x=as.Date("01-2019"), y=22, label="Si, Pandemia!!")
+  scale_x_date(labels = date_format("%m-%Y"))+
+  theme_classic()
+```
+
+---
+
+--
+
+.hi[De lo anterior] debemos tener presente que un gráfico nos permite:
+
+--
+
+Mirar la frecuencia
+--
+ la tendencia
+--
+ los valores extremos
+--
+ la dispersión de los datos
+--
+ los cambios estructurales
+--
+ e inclusive la estacionalidad
+ 
+--
+
+### Ojo 👁️
+
+--
+
+Una serie que ha sido .b[transformada] puede tener propiedades .hi-pink[estadísticas] distintas a la original. Por eso hay que tratar de tener mucho cuidado con los *logaritmos*, *tasas de crecimiento* (reales y nominales).
+
+---
+layout:false
+# Bibliografía
+
+`r fa('book')` Chatfield, C. (2000). *Time-series forecasting*. CRC press.
+
+`r fa('book')` Hyndman, R.J., & Athanasopoulos, G. (2021). *Forecasting: principles and practice*, 3rd edition, OTexts: Melbourne, Australia.
+
+`r fa('book')` Shumway, R., & Stoffer, D. (2019). *Time series: a data analysis approach using R*. CRC Press.
+
+---
+name: adios
+class: middle
+
+.pull-left[
+# **¡Gracias!**
+<br/>
+## Series de tiempo
+
+### Seguimos aprendiendo
+]
+
+.pull-right[
+.right[
+<img style="border-radius: 50%;"
+src="https://avatars.githubusercontent.com/u/39503983?v=4"
+width="150px" />
+
+`r fontawesome::fa("link")` [Syllabus/ Curso](https://pomelo.uninorte.edu.co/pls/prod/bwckctlg.p_disp_course_detail?cat_term_in=202210&subj_code_in=ECO&crse_numb_in=0010)<br/>
+`r fontawesome::fa("twitter")` [@keynes37](https://twitter.com/keynes37)<br/>
+`r fontawesome::fa("paper-plane")`[ cayanes@uninorte.edu.co](mailto:cayanes@uninorte.edu.co)
+]
+]
+
+
+
+
+
+
+
+
+
+
+
+

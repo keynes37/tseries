@@ -1,0 +1,606 @@
+---
+title: "Econometría II"
+subtitle: "<br/> Introducción II"
+author: "Carlos A. Yanes Guerra"
+institute: "Universidad del Norte"
+date: "2023-II"
+output:
+  xaringan::moon_reader:
+    css: 
+       - xaringan-themer.css
+       - new-css.css
+    lib_dir: libs
+    seal: false
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+---
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+style_mono_accent(
+  base_color = "#23395b",
+  header_font_google = google_font("Josefin Sans"),
+  text_font_google   = google_font("Montserrat", "300", "300i"),
+  code_font_google   = google_font("Fira Mono")
+)
+```
+
+```{r, setup, include = F}
+# devtools::install_github("dill/emoGG")
+library(pacman)
+p_load(readr, xts, astsa,
+  broom, tidyverse,
+  latex2exp, ggplot2, ggthemes, ggforce, viridis, extrafont, gridExtra,
+  kableExtra, snakecase, janitor,
+  data.table, dplyr, estimatr,
+  lubridate, knitr, parallel,
+  lfe, emoGG,
+  here, magrittr, fontawesome, shiny, babynames
+)
+# Define pink color
+red_pink <- "#e64173"
+turquoise <- "#20B2AA"
+orange <- "#FFA500"
+red <- "#fb6107"
+blue <- "#2b59c3"
+green <- "#8bb174"
+grey_light <- "grey70"
+grey_mid <- "grey50"
+grey_dark <- "grey20"
+purple <- "#6A5ACD"
+slate <- "#314f4f"
+met_slate <- "#272822"
+# Dark slate grey: #314f4f
+# Opciones
+opts_chunk$set(
+  comment = "#>",
+  fig.align = "center",
+  fig.height = 7,
+  fig.width = 10.5,
+  warning = F,
+  message = F
+)
+opts_chunk$set(dev = "svg")
+options(device = function(file, width, height) {
+  svg(tempfile(), width = width, height = height)
+})
+options(crayon.enabled = F)
+options(knitr.table.format = "html")
+# A blank theme para ggplot
+theme_empty <- theme_bw() + theme(
+  line = element_blank(),
+  rect = element_blank(),
+  strip.text = element_blank(),
+  axis.text = element_blank(),
+  plot.title = element_blank(),
+  axis.title = element_blank(),
+  plot.margin = structure(c(0, 0, -0.5, -1), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_simple <- theme_bw() + theme(
+  line = element_blank(),
+  panel.grid = element_blank(),
+  rect = element_blank(),
+  strip.text = element_blank(),
+  axis.text.x = element_text(size = 18, family = "STIXGeneral"),
+  axis.text.y = element_blank(),
+  axis.ticks = element_blank(),
+  plot.title = element_blank(),
+  axis.title = element_blank(),
+  # plot.margin = structure(c(0, 0, -1, -1), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes_math <- theme_void() + theme(
+  text = element_text(family = "MathJax_Math"),
+  axis.title = element_text(size = 22),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, 0.15, 0, 0, unit = "lines")),
+  axis.line = element_line(
+    color = "grey70",
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.15, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes_serif <- theme_void() + theme(
+  text = element_text(family = "MathJax_Main"),
+  axis.title = element_text(size = 22),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, 0.15, 0, 0, unit = "lines")),
+  axis.line = element_line(
+    color = "grey70",
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.15, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes <- theme_void() + theme(
+  text = element_text(family = "Fira Sans Book"),
+  axis.title = element_text(size = 18),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, 0.15, 0, 0, unit = "lines")),
+  axis.line = element_line(
+    color = grey_light,
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.15, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_set(theme_gray(base_size = 20))
+# Nombres de las columnas para la regresión
+reg_columns <- c("Term", "Est.", "S.E.", "t stat.", "p-Value")
+# Formato de p valores
+format_pvi <- function(pv) {
+  return(ifelse(
+    pv < 0.0001,
+    "<0.0001",
+    round(pv, 4) %>% format(scientific = F)
+  ))
+}
+format_pv <- function(pvs) lapply(X = pvs, FUN = format_pvi) %>% unlist()
+# Tidy regression results table
+tidy_table <- function(x, terms, highlight_row = 1, highlight_color = "black", highlight_bold = T, digits = c(NA, 3, 3, 2, 5), title = NULL) {
+  x %>%
+    tidy() %>%
+    select(1:5) %>%
+    mutate(
+      term = terms,
+      p.value = p.value %>% format_pv()
+    ) %>%
+    kable(
+      col.names = reg_columns,
+      escape = F,
+      digits = digits,
+      caption = title
+    ) %>%
+    kable_styling(font_size = 20) %>%
+    row_spec(1:nrow(tidy(x)), background = "white") %>%
+    row_spec(highlight_row, bold = highlight_bold, color = highlight_color)
+}
+# A few extras
+xaringanExtra::use_xaringan_extra(c("tile_view", "fit_screen"))
+xaringanExtra::use_clipboard()
+xaringanExtra::use_share_again()
+xaringanExtra::style_share_again(
+  share_buttons = c("twitter", "linkedin", "pocket")
+)
+```
+
+name: xaringan-title
+class: inverse, left, bottom
+background-image: url(pictures/picuniform.jpg)
+background-size: cover
+
+# **`r rmarkdown::metadata$title`**
+----
+
+## **`r rmarkdown::metadata$subtitle`**
+
+### `r rmarkdown::metadata$author`
+### `r rmarkdown::metadata$date`
+
+```{r xaringanExtra-share-again, echo=FALSE}
+xaringanExtra::use_share_again()
+```
+---
+layout: true
+# Series de tiempo
+
+---
+
+--
+
+### Características
+
+--
+
+`r fa("fighter-jet", fill="blue")` En **series** tenemos un "orden" temporal. No es como los datos de .ul[sección cruzada]
+
+--
+
+`r fa("fighter-jet", fill="blue")` Tenemos entonces que alterar un poco los .hi[supuestos] de MCO ya que no vamos a tener una **muestra aleatoria** de individuos.
+
+--
+
+`r fa("fighter-jet", fill="blue")` Vamos ahora a encontrarnos con unas realización de un *proceso estocástico* (lo que se conoce como aleatorio).
+
+--
+
+<cy-blockquote> Un modelo estático no es mas que aquel que se conforma con:
+$$Y_t=\beta_0+\beta_1 X_t+ \varepsilon_t$$</cy-blockquote>
+
+
+---
+
+--
+
+### Características
+
+--
+
+`r fa("fighter-jet", fill="blue")` Un modelo de .hi[rezagos distribuidos] (FDL), muestra una o mas variables que afectan a $(Y_t)$ con un .ul[rezago]:
+
+--
+
+$$Y_t=\phi_0+\phi_1 X_{t}+\phi_2 X_{t-1}+\phi_3 X_{t-2}+ \varepsilon_t$$
+--
+
+`r fa("fighter-jet", fill="blue")` De forma mas general, un modelo de **rezagos finitos** de orden *p* que incluye *p* rezagos de la variable $(X_t)$.
+
+--
+
++ Podemos decir que $\phi_0$ es la propensión de impacto que se refleja en un cambio inmediato de $(Y_t)$.
+
+--
+
++ Denotamos que $(\phi_0+\phi_1+\phi_2+\dots+\phi_p)$ refleja el cambio de .hi[largo plazo] de los cambios de $(Y_t)$
+
+---
+
+--
+
+### Supuestos del estimador para muestras finitas
+
+--
+
+`r fa("burn", fill="pink")` Nuestro modelo sigue siendo .ul[lineal] en parámetros.
+
+--
+
+$$Y_t=\beta_0 + \beta_1 X_{1t}+\cdots+\beta_k X_{tk}+ u_t$$
+--
+
+`r fa("burn", fill="pink")` El supuesto de .hi[media condicional] de los residuos también se mantiene *p.e*: $E(u_t|X_t)=0, \quad t=1,2,3,4,\dots,n$. Acá se hace mas fuerte porque no queremos que en distintos periodos exista relación entre el *error* y las variables explicativas del modelo.
+
+--
+
+Lo anterior se conoce como (X's) estrictamente exógenas (hasta en el tiempo).
+
+--
+
+`r fa("burn", fill="pink")` Nuestro/s control/es $(X_t)$ no son constantes y desde luego no hay perfecta .hi[colinealidad].
+
+--
+
+<center>.hi-turquoise[*Si los anteriores supuestos se cumplen, entonces estamos en condiciones de decir que nuestros parámetros son insesgados*]</center>
+
+---
+
+--
+
+### Otros supuestos
+
+--
+
+*Necesitamos otros mas* (repasando 😢)
+
+--
+
+`r fa("burn", fill="pink")` La varianza de los .ul[residuos] $Var(\varepsilon_t|X_t)=Var(\varepsilon_t)= 0$, debe ser constante en el tiempo y ademas *independiente* de los movimientos o cambios de $X_t$.
+
+--
+
+`r fa("burn", fill="pink")` Finalmente, la covarianza de los **residuos** es independiente en el tiempo, es decir, no existe .hi[correlación serial] $corr(\varepsilon_t, \varepsilon_{j}|X_t)=0, \quad \text{para}\; t\neq j$.
+
+--
+
+<center>.hi-turquoise[*Ahora bajo todos los 5 supuestos podemos argumentar que los estimadores de regresión de serie de tiempo son (BLUE)*]</center>
+
+---
+layout: false
+class: inverse, middle
+
+# Componentes de una serie de tiempo 📈
+
+---
+layout: true
+# Componentes
+
+---
+
+--
+
+# Tendencia
+
+--
+
+$$Y_t= \color{#e64173}{T_t}+C_t+S_t+Irr_{t}$$
+--
+
+La .black[tendencia] nos dice hacia donde va la serie de tiempo. Si esta es positiva, la serie diremos que tiene tendencia creciente.
+--
+ .hi[que tanto?]
+--
+ Dependerá de su forma funcional.
+ 
+--
+
++ Si tenemos dos series de tiempo $Y_t,X_t$ no podemos decir que ambas tengan una relación causal si la **dirección** es la misma. Existen múltiples factores no observables que van contenidos en la .hi[tendencia] y por ende tenemos que eliminarla/tratarla, para que la relación sea ajustada a lo que podemos observar.
+ 
+---
+
+--
+
+## Formas funcionales f(X)
+
+--
+
+```{r, echo = F}
+cont_interp <- tibble(
+  model = c("Lineal <br> \\(Y_t = \\delta_0 + \\delta_1 T_t + u_t\\)",
+             "Lineal - orden =2 <br> \\(Y_t = \\delta_0 + \\delta_1 T_t +\\delta_2 T_t^2+ u_t\\)",
+             "Lineal - orden \\(=\\rho\\) <br> \\(Y_t = \\delta_0 + \\delta_1 T_t +\\dots+\\delta_\\rho T_t^\\rho+ u_t\\)"),
+  interp = c("Modelo lineal de tendencia",
+             "Modelo lineal pero con polinomio de orden 2",
+             "Modelo Lineal pero con polinomio de orden \\(\\rho\\)")
+) %>% 
+  kable(
+  escape = F,
+  col.names = c("Modelo", "Significado"),
+  align = c("l", "l")
+) %>% 
+  column_spec(1, color = "black", bold = T, italic = T, extra_css = "vertical-align:top;") %>% 
+  column_spec(2, color = "black", italic = T)
+cont_interp
+```
+
+---
+
+--
+
+```{r, graptendens, echo=FALSE, out.width="70%", dev = "svg"}
+t = 1:100
+w= rnorm(100) #    Ruido
+y = 10+5*t+w # Señal
+y2= 10+5*t+2*t^2+w # Señal
+y3= 10+5*t+2*t^2-4*t^3+w # Señal
+
+par(mfrow=c(3,1))
+tsplot(y, col=4, main= "Tendencia Lineal")
+tsplot(y2, col=4, main= "Tendencia Cuadratica")
+tsplot(y3,col=4, main= "Tendencia Orden Superior")
+```
+
+
+
+---
+
+--
+
+## Otras formas (menos convencionales)
+
+```{r, echo = F}
+cont_interp <- tibble(
+  model = c("Logaritmico <br> \\(Y_t = \\delta_0 + \\delta_1 Log(T_t) + u_t\\)",
+             "Doble logaritmo <br> \\(Log(Y_t) = \\delta_0 + \\delta_1 Log(T_t)+ u_t\\)",
+            "Exponencial <br> \\(Y_t=e^{\\delta_0 + \\delta_1 LogT_t+ u_t}\\)",
+             "Reciproco en \\(T_t\\) <br> \\(Y_t = \\delta_0 + \\delta_1  \\frac{1}{T_t}+ u_t\\)",
+  "Box-Cox I <br> \\( Y_t^{\\theta} = \\delta_0 + \\delta_1 T_t^{\\lambda} + u_t  \\)",
+  "Box-Cox II"),
+  
+  interp = c("Modelo logaritmico en Tendencia",
+             "Modelo logaritmico en Tendencia y serie",
+             "Modelo Exponencial en T",
+             "Modelo reciproco (inverso) en tendencia",
+             "Modelo restringido I cuando \\(\\lambda=\\theta \\neq 0\\)",
+             "Modelo restringido II cuando \\(\\lambda \\neq \\theta \\neq 0\\)")
+) %>% 
+  kable(
+  escape = F,
+  col.names = c("Modelo", "Significado"),
+  align = c("l", "l")
+) %>% 
+  column_spec(1, color = "black", bold = T, italic = T, extra_css = "vertical-align:top;") %>% 
+  column_spec(2, color = "black", italic = T)
+cont_interp
+```
+
+---
+
+--
+
+## Modelo Box Cox
+
+--
+
+Hay que tener cuidado con él. Tiene algo espectacular y es que puede asumir las otras formas .hi[funcionales].
+--
+ Dependerá de los valores óptimos de $\lambda$ y $\theta$.
+
+--
+
+Note adicional que entonces hay que encontrar los valores específicos de esos .hi-orange[parámetros].
+
+--
+
+$$\begin{equation*}
+Y_{t}^{\theta}= C_{0}+ \delta_{t} T_{t}^{\lambda}+ u_{t}
+\end{equation*}$$
+
+Donde:
+
+$$\begin{equation*}
+Y_{t}^{\theta}= \dfrac{Y_{t}^{\theta}-1}{\theta} \qquad
+T_{t}^{\lambda}= \dfrac{T_{t}^{\lambda}-1}{\lambda}
+\end{equation*}$$
+
+---
+
+--
+
+```{r, graptendens23, echo=FALSE, out.width="70%", dev = "svg"}
+t = 1:100
+w= rnorm(100) #    Ruido
+yi=10+5*t+w # Señal
+y4 = 10+5*log(t)+w # Señal
+y5= yi^{0.1}-10+5*t^{0.1}+w # Señal
+y6= exp(10+5*t+w) # Señal
+
+par(mfrow=c(3,1))
+tsplot(y4, col=4, main= "Tendencia Logaritmo en T")
+tsplot(y5, col=4, main= "Tendencia Box-Cox")
+tsplot(y6 ,col=4, main= "Tendencia exponencial")
+```
+
+
+---
+
+--
+
+# Ciclo
+
+--
+
+$$Y_t= T_t+\color{#e64173}{C_t}+S_t+Irr_{t}$$
+--
+
+El .black[ciclo] nos dice la evolución de la serie. Recordemos que en economía ciclos positivos van en **auge** o negativos si estos son o van en **recesión**. Una de las tantas formas naturales de expresarlo es:
+
+--
+
+$$Y_t= 2\; \text{cos}\;\left(2\pi \frac{t+15}{50}\right)$$
+
+--
+
+$$Y_t= 2\; \text{cos}\;\left(2\pi \frac{t+15}{50}\right)+ \epsilon_t$$
+
+--
+
+La parte de $\epsilon_t$ que tiene que ver con el "ruido", puede impactar en la serie de acuerdo al nivel de varianza $var(\epsilon_t)$ que esta contenga. Involucramos a $(\pi)$ por el radio y a $(t)$ como referencia a la tendencia de la serie. *p.e:* $t\in \{1,\dots,n\}$.
+
+---
+
+
+```{r, grapciclo, echo=FALSE, out.width="70%", dev = "svg"}
+t = 1:500
+cs = 2*cos(2*pi*(t+15)/50) # Señal
+w= rnorm(500) #    Ruido
+par(mfrow=c(3,1))
+tsplot(cs, col=4, main=expression(2*cos(2*pi*(t+15)/50)))
+tsplot(cs+w, col=4, main=expression(2*cos(2*pi*(t+15)/50+N(0,1))))
+tsplot(cs+5*w,col=4,main=expression(2*cos(2*pi*(t+15)/50)+N(0,5^2)))
+```
+---
+
+--
+
+```{r, grapciclo2, echo=FALSE, out.width="70%", dev = "svg"}
+set.seed(900115) # original 902210
+x = 2*cos(2*pi*1:500/50 +.6*pi) + rnorm(500,0,5) 
+z1 = cos(2*pi*1:500/50)
+z2 = sin(2*pi*1:500/50)
+fit <-lm(x~0+z1+z2) # Sin intercepto
+par(mfrow=c(2,1))
+tsplot(x, col=4)
+tsplot(x, ylab=expression(hat(x)), col=rgb(0,0,1,.5)) 
+lines(fitted(fit), col=2, lwd=2)
+```
+
+
+---
+
+# Estacionalidad (Seasonality)
+
+--
+
+El componente **Estacional** corresponde a los .hi[movimientos] de una variable sucedidos reiteradamente durante una frecuencia *homogénea* de .b[**tiempo**]. Para las series de tiempo siempre se presenta cuando existe una periodicidad diaria, semanal, mensual, trimestral o semestral. Este .ul[elemento] se caracterizada por aparecer en un periodo y desvanecerse en el siguiente.
+
+--
+
+$$Y_t= T_t+C_t+\color{#e64173}{S_t}+Irr_{t}$$
+---
+
+--
+
+```{r, grapseasonal, echo=FALSE, out.width="70%", dev = "svg"}
+culer = c("cyan4", 4, 2, 6)
+par(mfrow = c(2,1), cex.main=1)
+x = window(hor, start=2002)
+out = stl(x, s.window=15)$time.series
+tsplot(x, main="Tasa de ocupación hotelera en Hawaii",    ylab="% de Habitaciones",    col=gray(.7)) 
+text(x, labels=1:4, col=culer, cex=1.25)
+tsplot(out[,1], main="Estacional (Seasonal)",    ylab="% de Habitaciones",col=gray(.7))
+text(out[,1], labels=1:4, col=culer, cex=1.25)
+```
+
+
+---
+
+--
+
+En `r fa("r-project", fill="lightblue")` Se puede hacer directamente con el comando de `decompose` del paquete .hi-blue[XTS].
+
+--
+
+```{r, grapseasonal2, echo=TRUE, out.width="50%", dev = "svg"}
+# library(xts) Es requerida!! 
+x = window(hor, start=2002)
+plot(decompose(x))
+```
+
+---
+
+--
+
+# Irregular
+
+--
+
+El componente irregular hace referencia a $(\varepsilon_t)$ conocido anteriormente como residuo de la regresión. Toda serie de tiempo lo tiene, ahonda todo lo que incide en el .hi[comportamiento] de ella, pero es inobservable.
+
+--
+
+<ry-blockquote> Es un componente .ul[impredecible], hace parte de factores de corto plazo (coyunturales), no recurrentes que de cierta manera afectan el comportamiento de la serie. </ry-blockquote>
+
+---
+
+--
+
+```{r, redsit, echo=FALSE, out.width="70%", dev = "svg"}
+par(mfrow = c(2,1))
+plot(x, xlab="Tiempo", ylab="Residuo de serie")
+hist(na.omit(x), main = "Distribución de residuos \n Habitaciones Hawaii ", xlab="", ylab="")
+```
+
+
+
+---
+layout:false
+# Bibliografía
+
+`r fa('book')` Chatfield, C. (2000). *Time-series forecasting*. CRC press.
+
+`r fa('book')` Hyndman, R.J., & Athanasopoulos, G. (2021). *Forecasting: principles and practice*, 3rd edition, OTexts: Melbourne, Australia.
+
+`r fa('book')` Righetti, N., (2022). *Time Series Analysis With R*. Bookdown.
+
+`r fa('book')` Shumway, R., & Stoffer, D. (2019). *Time series: a data analysis approach using R*. CRC Press.
+
+---
+name: adios
+class: middle
+
+.pull-left[
+# **¡Gracias!**
+<br/>
+## Componentes
+
+### Seguimos aprendiendo
+]
+
+.pull-right[
+.right[
+<img style="border-radius: 50%;"
+src="https://avatars.githubusercontent.com/u/39503983?v=4"
+width="150px" />
+
+`r fontawesome::fa("link")` [Syllabus/ Curso](https://pomelo.uninorte.edu.co/pls/prod/bwckctlg.p_disp_course_detail?cat_term_in=202210&subj_code_in=ECO&crse_numb_in=0010)<br/>
+`r fontawesome::fa("twitter")` [@keynes37](https://twitter.com/keynes37)<br/>
+`r fontawesome::fa("paper-plane")`[ cayanes@uninorte.edu.co](mailto:cayanes@uninorte.edu.co)
+]
+]

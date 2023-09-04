@@ -1,0 +1,708 @@
+---
+title: "Econometría II: Media Movil"
+subtitle: "Departamento de Economía"
+author: "Carlos A. Yanes G."
+format: 
+  revealjs:
+    footer: "Universidad del Norte"
+    theme: [simple, ob.scss]
+    logo: micrologouni.png
+    embed-resources: true
+    code-fold: true
+from: markdown+emoji
+editor: visual
+date: last-modified
+bibliography: refs.bib
+---
+
+## Paquetes con que se trabaja la sesión
+
+::: callout-note
+## R libraries
+
+Los paquetes que vamos a utilizar y que se deben [instalar]{.bg style="--col: #FFC7A2"} para ser usados en clase son:
+
+``` r
+install.packages(c("pacman","TSstudio", "urca", "forecast", "devtools"))
+
+# Si tiene problemas con TSstudio podemos mirar entonces en Github
+devtools::install_github("RamiKrispin/TSstudio")
+```
+:::
+
+::: callout-note
+## Ejecución
+
+No olvide que debe desde luego tener presente en su documento de *R Markdown* cargar estos paquetes.
+
+``` r
+library(pacman)
+p_load(dynlm, fpp2, tidyverse, TSstudio, urca, forecast)
+```
+:::
+
+# Preambulo {{< fa bug >}}
+
+## No paramétricos
+
+::: incremental
+-   Las Medias [Móviles]{.alert}, los modelos de Atenuación **Exponencial** (simples y dobles) y los [estacional]{.alert} (Holt Winters) son conocidos como modelos no paramétricos.
+-   Son fáciles de implementar, [sirven]{.alert} para el **pronóstico** de corto plazo (Máximo 4 periodos).
+-   Son útiles siempre y cuando las series no tengan demasiada [varianza]{.bg style="--col: #FFFF00"} y cuando el tamaño muestral es $n \leq 30$.
+:::
+
+## Media Movil simple
+
+Este [método]{.alert} usa el promedio aritmético de los $n$ valores de datos en la serie para pronosticar los valores [futuros]{.bg style="--col: #00FFFF"}. $$\textrm{Promedio Móvil}=\frac{\sum \limits_{i=1}^{n}\left ( X_{i} \right )}{k}$$ Donde:
+
+$$\left\{\begin{matrix}
+ k=&\textrm{móvil definido} \\ 
+ X_{i}=& \textrm{valores de la serie}
+\end{matrix}\right.$$
+
+## Media Movil
+
+| Semana | Ventas   |
+|--------|----------|
+| 1      | 150 mill |
+| 2      | 230 mill |
+| 3      | 345 mill |
+| 4      | 421 mill |
+| 5      | 434 mill |
+| ...    | ...      |
+
+## Media Movil
+
+| Semana | Ventas   | Movil K=2 |
+|--------|----------|-----------|
+| 1      | 150 mill |           |
+| 2      | 230 mill |           |
+| 3      | 345 mill | 190 mill  |
+| 4      | 421 mill | 287 mill  |
+| 5      | 434 mill | 383 mill  |
+| ...    | ...      | 427 mill  |
+| ...    | ...      | ...       |
+
+## La formula detras de los K Moviles
+
+::: fragment
+::: callout-tip
+## K movil 4
+
+Si tiene un k=4 periodos $\Rightarrow$
+
+$$y_{T|t+h}=\frac{y_{t-1}+y_{t}+y_{t+1}+y_{t+2}}{4}$$
+:::
+:::
+
+::: fragment
+::: callout-tip
+## K movil 6
+
+Si tiene un k=6 periodos $\Rightarrow$ $$y_{T|t+h}=\frac{y_{t-3}+y_{t-2}+y_{t-1}+y_{t}+y_{t+1}+y_{t+2}}{6}$$
+:::
+:::
+
+# Media Movil en R {background-color="#40666e"}
+
+## Media Movil en R
+
+::: panel-tabset
+## Media Movil
+
+```{r}
+#| echo: true
+prueba<-c(150,230,345,421,434)
+# Media móvil simple
+n <- 2
+stats::filter(prueba, rep(1 / n, n), sides = 1)
+```
+
+## ROLL (ZOO)
+
+```{r}
+#| echo: true
+library(pacman)
+p_load(fpp2, tidyverse, zoo)
+prueba<-as.data.frame(prueba)
+prueba|>
+mutate(pr_ma01 = rollmean(prueba, k = 1, fill = NA),
+       pr_ma02 = rollmean(prueba, k = 2, fill = NA),
+       pr_ma03 = rollmean(prueba, k = 3, fill = NA),
+       pr_ma04 = rollmean(prueba, k = 4, fill = NA))|>
+  head()
+```
+
+## Order (FPP2)
+
+```{r}
+#| echo: true
+library(pacman)
+p_load(fpp2, tidyverse, zoo)
+prueba<-as.data.frame(prueba)
+prueba|>
+mutate(prma01 = ma(prueba, order=1, centre=FALSE),
+       prma02 = ma(prueba, order=2, centre=FALSE),
+       prma03 = ma(prueba, order=3, centre=FALSE),
+       prma04 = ma(prueba, order=4, centre=FALSE))|>
+  head()
+```
+:::
+
+## Media Movil Doble
+
+| Semanas | Yt  |
+|---------|-----|
+| 1       | 150 |
+| 2       | 230 |
+| 3       | 345 |
+| 4       | 421 |
+| 5       | 434 |
+| 6       | 423 |
+| 7       | 425 |
+| 8       | 430 |
+
+## Media Movil Doble
+
+| Semanas | Yt  | Mt    |
+|---------|-----|-------|
+| 1       | 150 |       |
+| 2       | 230 |       |
+| 3       | 345 | 190   |
+| 4       | 421 | 287.5 |
+| 5       | 434 | 383   |
+| 6       | 423 | 427.5 |
+| 7       | 425 | 428.5 |
+| 8       | 430 | 424   |
+
+## Media Movil Doble
+
+| Semanas | Yt  | Mt    | M't    |
+|---------|-----|-------|--------|
+| 1       | 150 |       |        |
+| 2       | 230 |       |        |
+| 3       | 345 | 190   |        |
+| 4       | 421 | 287.5 | 238.75 |
+| 5       | 434 | 383   | 335.25 |
+| 6       | 423 | 427.5 | 405.25 |
+| 7       | 425 | 428.5 | 428    |
+| 8       | 430 | 424   | 426.25 |
+
+## Media Movil Doble
+
+| Semanas | Yt  | Mt    | M't    | at     |
+|---------|-----|-------|--------|--------|
+| 1       | 150 |       |        |        |
+| 2       | 230 |       |        |        |
+| 3       | 345 | 190   |        |        |
+| 4       | 421 | 287.5 | 238.75 | 336.25 |
+| 5       | 434 | 383   | 335.25 | 430.75 |
+| 6       | 423 | 427.5 | 405.25 | 449.75 |
+| 7       | 425 | 428.5 | 428    | 429    |
+| 8       | 430 | 424   | 426.25 | 421.75 |
+
+## Media Movil Doble
+
+| Semanas | Yt  | Mt    | M't    | at     | bt     |
+|---------|-----|-------|--------|--------|--------|
+| 1       | 150 |       |        |        |        |
+| 2       | 230 |       |        |        |        |
+| 3       | 345 | 190   |        |        |        |
+| 4       | 421 | 287.5 | 238.75 | 336.25 | 336.25 |
+| 5       | 434 | 383   | 335.25 | 430.75 | 430.75 |
+| 6       | 423 | 427.5 | 405.25 | 449.75 | 449.75 |
+| 7       | 425 | 428.5 | 428    | 429    | 429    |
+| 8       | 430 | 424   | 426.25 | 421.75 | 421.75 |
+
+## Media Movil Doble
+
+| Semanas | Yt  | Mt    | M't    | at     | bt     | Yt+p  |
+|---------|-----|-------|--------|--------|--------|-------|
+| 1       | 150 |       |        |        |        |       |
+| 2       | 230 |       |        |        |        |       |
+| 3       | 345 | 190   |        |        |        |       |
+| 4       | 421 | 287.5 | 238.75 | 336.25 | 336.25 |       |
+| 5       | 434 | 383   | 335.25 | 430.75 | 430.75 | 672.5 |
+| 6       | 423 | 427.5 | 405.25 | 449.75 | 449.75 | 861.5 |
+| 7       | 425 | 428.5 | 428    | 429    | 429    | 899.5 |
+| 8       | 430 | 424   | 426.25 | 421.75 | 421.75 | 858   |
+| 9       |     |       |        |        |        | 843.5 |
+
+## Media Movil Doble
+
+::: fragment
+Su formula se consolida como
+:::
+
+::: fragment
+::: {.callout-note icon="false"}
+## Media Movil Doble
+
+Utiliza ya las [medias móviles]{.bg style="--col: #FFFF00"} obtenidas y las promedia nuevamente.
+:::
+
+$$\begin{gather*}
+Y_{t+p} =a_{t} +b_{t} p\\
+Donde:\ \\
+a_{t} =2M_{t} -M'_{t}\\
+b_{t} =\frac{2}{k-1}( M_{t} -M'_{t})\\
+p=Periodos\ a\ pronosticar
+\end{gather*}$$
+:::
+
+## Media Movil Doble implicita
+
+::: panel-tabset
+## Consideración
+
+::: fragment
+Esta media viene a consolidarse como
+:::
+
+::: fragment
+::: {.callout-note icon="false"}
+## Media movil doble implicita
+
+El promedio del promedio de la media movil. **P.e:** $$y_t=\frac{1}{2}\left[\frac{y_{t-1}+y_{t}+y_{t+1}}{3}\right]+\frac{1}{2}\left[\frac{y_{t}+y_{t-1}+y_{t-2}}{3}\right]$$
+:::
+:::
+
+## Código
+
+```{r}
+#| echo: true
+prueba|>
+mutate(pr2ma01 = ma(prueba, order=1, centre=TRUE),
+       pr2ma02 = ma(prueba, order=2, centre=TRUE),
+       pr2ma03 = ma(prueba, order=3, centre=TRUE),
+       pr2ma04 = ma(prueba, order=4, centre=TRUE))|>
+  head()
+```
+:::
+
+## Media Movil Ponderada
+
+::: {.callout-note icon="false"}
+## Movil Ponderado
+
+Este **método** usa también el promedio aritmético de los $n$ valores de datos en la serie solo que [pondera]{.alert} cada una de las observaciones y le da un mayor peso al elemento mas reciente y menor al mas *antiguo*.
+:::
+
+$$\textrm{Móvil ponderado}=\sum \limits_{i=1}^{n} X_{i} \left ( P_{i} \right ) \quad
+\left\{\begin{matrix}
+ X_{i}= \textrm{valores de la serie}\\
+ P_{i}= \left \{ 0 \leq P_{i} \leq 1 \right \} 
+\end{matrix}\right.$$
+
+## Media Movil Ponderada
+
+```{r}
+#| echo: true
+prueba<-c(150,230,345,421,434)
+# Media móvil ponderada
+stats::filter(prueba, c(0.25, 0.5, 0.25), sides = 1)
+```
+
+# Suavizado Exponencial {{< fa disease >}} {background-color="#40666e"}
+
+## Suavizado Exponencial
+
+::: {.callout-note icon="false"}
+## Suavizado Exponencial
+
+Este [método]{.alert} también le llaman [suavización exponencial]{.bg style="--col: #FFFF00"}. Suele ser un caso especial de los no paramétricos y se le da un peso especifico $\alpha$ para la observación mas reciente.
+:::
+
+$$ F_{t+1}=\alpha Y_{t} +(1-\alpha)F_{t}$$ Donde:
+
+$F_{t+1}$ es el pronostico de la serie para el siguiente (t); $Y_{t}$ es el valor de la serie. $F_{t}$ es el pronostico para el periodo (t) y $\alpha$ el valor o constante de suavización que $\left ( 0 \leq \alpha \leq 1 \right)$
+
+## La intuición del modelo AS
+
+El modelo puede ser descrito como el pronostico para el periodo t=2:
+
+::: fragment
+$$\begin{align*} 
+F_{2} &= \alpha Y_{1}+ \left ( 1- \alpha \right)F_{1} \\ 
+      &=  \alpha Y_{1}+ \left ( 1- \alpha \right)Y_{1} \\
+      &= Y_{1}
+\end{align*}$$
+:::
+
+::: fragment
+Para un t=3 $\Rightarrow$:
+
+$$F_{3} = \alpha Y_{2}+ \left ( 1- \alpha \right)F_{2}\Rightarrow \alpha Y_{2}+ \left ( 1- \alpha \right)Y_{1}$$
+:::
+
+## La intuición del modelo AS
+
+Para el siguiente periodo o pronostico del periodo $t=4$, la ecuación queda: $$\begin{align*} 
+F_{4} &= \alpha Y_{3}+ \left ( 1- \alpha \right)F_{3} \\ 
+      &=  \alpha Y_{3}+ \left ( 1- \alpha \right) \left [ \alpha Y_{2} + \left ( 1-\alpha \right ) Y_{1} \right ] \\
+      &=  \alpha Y_{3} + \alpha \left ( 1-\alpha \right ) Y_{2}+\left ( 1-\alpha \right )^{2}Y_{1} 
+\end{align*}$$
+
+::: call-tip
+Los pronósticos tienen en cuenta los pesos de todas las observaciones **anteriores**: determinar el peso de $\alpha$ no debe ser tarea difícil.
+:::
+
+## Determinando un posible $\alpha$
+
+El parámetro de [suavizado]{.alert} $\alpha$ se puede mejorar si se establece la siguiente aproximación:
+
+$$\begin{align*} 
+F_{t+1} &= \alpha Y_{t}+ \left ( 1- \alpha \right)F_{t} \\ 
+      &=  \alpha Y_{t}+ F_{t}- \alpha F_{t} \\
+      &=  \underbrace{F_{t}}_{\textrm{Pronostico en t}} + \alpha \left ( \underbrace{Y_{t} - F_{t}}_{\textrm{Error }} \right )  
+\end{align*}$$
+
+# Holt-Winters {{< fa crow >}} {background-color="#40666e"}
+
+## Holt Winters
+
+::: fragment
+::: {.callout-note icon="false"}
+## Holt Winters (no estacional)
+
+Para esta parte se tiene que el [método]{.alert} anterior se le puede incorporar una parte lineal que adjuntan dos [componentes]{.blut}. El primero hace referencia al $\alpha$ tradicional de cada observación. Y aparece uno [nuevo]{.fg style="--col: #FF8000"} que será conocido como $\beta$, le da el mismo tratamiento pero a los efectos proporcionados por la [Tendencia]{.bg style="--col: #FFFF00"}.
+:::
+:::
+
+::: fragment
+$$\begin{align*}
+        F_{t}&= \alpha Y_{t}+ (1-\alpha)(F_{t-1}+ T_{t-1}) \\
+        T_{t}&= \beta (F_{t}-F_{t-1})+ (1-\beta) T_{t-1}\\
+        \widehat{Y}_{t+h}&= F_{t}+hT_{t}
+    \end{align*}$$
+:::
+
+## Holt Winters
+
+::: fragment
+::: {.callout-warning icon="false"}
+## Holt Winters (estacional)
+
+Muy similar al anterior, solo que se tiene en cuenta el [efecto]{.alert} estacional y es configurado de la forma de los estimadores $(\beta) \; \text{y} \; (\alpha)$. Se le [denomina]{.blut} **gamma** ($\gamma$) y se encuentra en el intervalo $\left [ 0 \leq \gamma \leq 1 \right]$.
+:::
+:::
+
+::: fragment
+$$\begin{aligned}
+F_{t} &= \alpha \frac{Y_{t}}{S_{t-L}}+ (1-\alpha)(F_{t-1}+ T_{t-1}) \\
+S_{t} &= \gamma \frac{Y_{t}}{F_{t}}+(1-\gamma)S_{t-L}\\
+\widehat{Y}_{t+h}&= F_{t}+hT_{t}+S_{t-L+h}
+\end{aligned}$$
+:::
+
+## Holt Winters
+
+::: fragment
+::: {.callout-warning icon="false"}
+## Holt Winters (estacional multiplicativo)
+
+En esencia es el mismo [método]{.alert}, solo que ahora los [componentes]{.blut} se toman todos por uno mismo y no separados como el anterior.
+:::
+:::
+
+::: fragment
+$$\begin{aligned}
+\widehat{Y}_{t+h}&= F_{t} \times hT_{t} \times S_{t-L+h}
+\end{aligned}$$
+:::
+
+## Holt Winters Tendencia ajustada
+
+::: fragment
+::: {.callout-warning icon="false"}
+## Holt Winters Damped
+
+Es una versión ampliada de HW y trata de darle un mejor tratamiento a la [Tendencia]{.bg style="--col: #FFFF00"}. Aparece un [parámetro]{.blut} llamado **phi** $(\phi)$ quien se encuentra entre $\left [ 0 \leq \phi \leq 1 \right]$ y es quien ayuda a que los pronósticos de largo plazo sean mas confiables. Amortigua los efectos tendenciales.
+:::
+:::
+
+::: fragment
+$$\begin{aligned}
+F_{t} &= \alpha Y_{t}+ (1-\alpha)(F_{t-1}+ \phi T_{t-1}) \\
+T_{t} &= \beta (F_t-F_{t-1})+(1-\beta)\phi T_{t-1}\\
+\widehat{Y}_{t+h}&= F_{t}+\left(\phi+\phi^2+\cdots+\phi^h\right)T_{t}
+\end{aligned}$$
+:::
+
+# Caso 3 {{< fa brands r-project >}} {background-color="#40666e"}
+
+## Datos
+
+::: callout-tip
+## Cartera comercial de bancos
+
+-   Enero de 2016 hasta Abril 2023
+-   Web site de [Superintendencia Financiera](https://www.superfinanciera.gov.co/inicio/informes-y-cifras/cifras/establecimientos-de-credito/informacion-periodica/mensual/evolucion-cartera-de-creditos-60950)
+-   Frecuencia Mensual
+:::
+
+::: callout-note
+## Agradecimientos
+
+Lo desarrollado en esta sesión fue construido por los profesores [@hyndman2018forecasting] y [@krispin2019hands] en los respectivos paquetes de `fpp2` y `TSstudio` respectivamente
+:::
+
+## Uso de TSstudio para la serie
+
+::: panel-tabset
+## Datos
+
+```{r}
+#| echo: true
+library(pacman)
+p_load(readxl, TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2)
+bd <- read_excel("cartera.xlsx")
+bd <- bd |> select(Cartera)
+cartera <- ts(bd, frequency=12, start=c(2016,1))
+head(cartera)
+```
+
+## Grafico
+
+```{r}
+#| echo: true
+# Para gráficar
+ts_plot(cartera, 
+        title = "Cartera comercial de bancos",
+        Ytitle = "En Miles de Millones de Pesos")
+```
+
+## Descomposición
+
+```{r}
+#| echo: true
+ts_decompose(cartera)
+```
+
+## Estacional
+
+```{r}
+#| echo: true
+ts_seasonal(cartera, type = "normal")
+```
+
+## 3D
+
+```{r}
+#| echo: true
+ts_surface(cartera)
+```
+:::
+
+## Mapa de calor estacional
+
+```{r}
+ts_heatmap(cartera, color = "Reds")
+```
+
+# Hora de pronosticos {{< fa chart-bar-column >}} {background-color="#40666e"}
+
+## Veamos con las medias moviles
+
+::: panel-tabset
+## Comparación MA
+
+```{r}
+#| echo: true
+# Básico
+b1<-ts_ma(cartera, n_left = 6, n = NULL) # ma 7 
+b1_ma2<-ts_ma(cartera, n_left = 3, n_right = 3, n=NULL) # ma 7
+
+# Listas
+ b1_ma7 <- b1$unbalanced_ma_7
+ b1_ma72 <- b1_ma2$unbalanced_ma_7
+# Objeto base
+ma <- cbind(cartera, b1_ma7, b1_ma72)
+ p <- ts_plot(ma,
+ Xgrid = TRUE,
+ Ygrid = TRUE,
+ type = "single",
+ title = "MA 7 (un lado) vs. MA 7 (dos lados)")
+
+# Grafico 
+library(plotly)
+ p <- p |> layout(legend = list(x = 0.05, y = 0.95),
+ yaxis = list(title = "Miles de Millones"),
+ xaxis = list(title = "Años"))
+p
+```
+
+## Pro: MA 7
+
+```{r}
+#| echo: false
+#| include: false
+#| eval: false
+# Entrenamos
+#cartera_s <- ts_split(ts.obj = cartera)
+#train <- cartera_s$train
+#test <- cartera_s$test
+
+#carma07 = ma(train, order=7, centre=FALSE)
+#carma12 = ma(train, order=12, centre=FALSE)
+#carma06 = ma(train, order=6, centre=FALSE)
+#carmad12 = ma(train, order=12, centre=TRUE)
+
+# Pronostico
+#library(forecast)
+#MA07 <- forecast(carma07, h = 12)
+# Original vs. Ajustada and Pronosticada
+#plot_forecast(MA07)
+```
+
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+library(forecast)
+carma07 = ma(cartera, order=7, centre=FALSE)
+carma12 = ma(cartera, order=12, centre=FALSE) # adicional
+carma06 = ma(cartera, order=6, centre=FALSE)
+carmad12 = ma(cartera, order=12, centre=TRUE)
+
+# Generar pronostico de 12 periodos
+MA07 <- forecast(carma07, h = 12)
+# Gráfico
+plot_forecast(MA07)
+```
+
+## Pro: MA12
+
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+# Generar pronostico de 12 periodos centrado
+MAd212 <- forecast(carmad12, h = 12)
+# Gráfico
+plot_forecast(MAd212)
+```
+:::
+
+## Números e intervalos
+
+::: panel-tabset
+## Para modelo Doble 12
+
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+MAd212
+```
+
+## Para modelo simple
+
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+MA07
+```
+:::
+
+## Exponencial simple
+
+::: panel-tabset
+## Sobre
+
+::: incremental
+-   El paquete `forecast` contiene la función de `ses`. Con esta podemos entonces trabajar el resto de modelos no paramétricos. Lo aprenderemos a usar a continuación.
+
+-   El paquete puede incluso usted cambiar los parámetros como el $\alpha$ a su comodidad. Pero recuerde que eso no es [recomendable]{.alert}
+:::
+
+## Pro
+
+```{r}
+#| echo: true
+expcar <- ses(cartera, h=12)
+# Plot 
+plot_forecast(expcar)
+```
+
+## Mod
+
+```{r}
+#| echo: true
+expcar$model
+```
+
+## Tabla
+
+```{r}
+#| echo: true
+expcar
+```
+
+## Invento
+
+```{r}
+#| echo: true
+expcar2 <- ses(cartera, alpha = 0.001, h=12)
+expcar2$model
+```
+:::
+
+## Holt Winters
+
+::: panel-tabset
+## Holt Winters
+
+```{r}
+#| echo: true
+HWa <- hw(cartera,seasonal="additive", h=12)
+HWm <- hw(cartera,seasonal="multiplicative", h=12)
+HWd <- holt(cartera, damped=TRUE, phi = 0.9, h=12)
+HWa$model
+```
+
+## P A
+
+```{r}
+#| echo: true
+plot_forecast(HWa)
+```
+
+## P M
+
+```{r}
+#| echo: true
+plot_forecast(HWm)
+```
+
+## DAMPED
+
+```{r}
+#| echo: true
+plot_forecast(HWd)
+```
+
+
+:::
+
+## Status
+
+```{r}
+#| echo: true
+# Modelo Multiplicativo
+print(round(accuracy(HWm),2))
+
+# Modelo Aditivo
+print(round(accuracy(HWa),2))
+
+# Modelo damped
+print(round(accuracy(HWd),2))
+```
+
+# Gracias por su atención!! {background-color="#cc0000"}
+
+## Referencias
+
+::: {#refs}
+:::

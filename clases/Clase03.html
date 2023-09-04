@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Econometría II</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Carlos A. Yanes Guerra" />
+    <script src="libs/header-attrs-2.22/header-attrs.js"></script>
+    <link href="libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
+    <script src="libs/tile-view-0.2.6/tile-view.js"></script>
+    <script src="libs/xaringanExtra_fit-screen-0.2.6/fit-screen.js"></script>
+    <script src="libs/clipboard-2.0.6/clipboard.min.js"></script>
+    <link href="libs/xaringanExtra-clipboard-0.2.6/xaringanExtra-clipboard.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-clipboard-0.2.6/xaringanExtra-clipboard.js"></script>
+    <script>window.xaringanExtraClipboard(null, {"button":"Copy Code","success":"Copied!","error":"Press Ctrl+C to Copy"})</script>
+    <link href="libs/shareon-1.4.1/shareon.min.css" rel="stylesheet" />
+    <script src="libs/shareon-1.4.1/shareon.min.js"></script>
+    <link href="libs/xaringanExtra-shareagain-0.2.6/shareagain.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-shareagain-0.2.6/shareagain.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="new-css.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+
+
+
+name: xaringan-title
+class: inverse, left, bottom
+background-image: url(pictures/picuniform.jpg)
+background-size: cover
+
+# **Econometría II**
+----
+
+## **&lt;br/&gt; Performance**
+
+### Carlos A. Yanes Guerra
+### 2023-II
+
+
+---
+layout: true
+# Performance de Pronosticos
+---
+
+--
+
+## Modelos de series y testeo
+
+--
+
+* Las .hi[series] de tiempo deben aparte de cumplir con una serie de supuestos (sobre todo de consistencia de estimadores). Sus .hi-orange[predicciones] también deben ser sometidas a ciertas reglas y **test** con el objeto de ser muy técnicos con esto.
+
+### La parte residual
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 640 512" style="height:1em;width:1.25em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:blue;overflow:visible;position:relative;"><path d="M160 24c0-13.3 10.7-24 24-24H296c13.3 0 24 10.7 24 24s-10.7 24-24 24H280L384 192H500.4c7.7 0 15.3 1.4 22.5 4.1L625 234.4c9 3.4 15 12 15 21.6s-6 18.2-15 21.6L522.9 315.9c-7.2 2.7-14.8 4.1-22.5 4.1H384L280 464h16c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24h8V320H160l-54.6 54.6c-6 6-14.1 9.4-22.6 9.4H64c-17.7 0-32-14.3-32-32V288c-17.7 0-32-14.3-32-32s14.3-32 32-32V160c0-17.7 14.3-32 32-32H82.7c8.5 0 16.6 3.4 22.6 9.4L160 192h32V48h-8c-13.3 0-24-10.7-24-24zM80 240c-8.8 0-16 7.2-16 16s7.2 16 16 16h64c8.8 0 16-7.2 16-16s-7.2-16-16-16H80z"/></svg> Los errores son contemplados como:
+
+--
+
+`$$\epsilon_t= y_{t}- \hat{y}_{t+1}$$`
+---
+
+--
+
+## Mean Absolute Error (MAE)
+
+--
+
+&gt; La media del valor absoluto del error se contempla como:
+
+`$$\text{MAE}=\left|\frac{\sum \epsilon_t}{n}\right|$$`
+--
+
+Cuando se comparan métodos de .hi[pronósticos] aplicados a una sola serie temporal, o a varias series temporales con las mismas unidades, el indicador de MAE es popular porque es fácil de entender y de calcular. Un método de .hi[pronósticos] que minimice el MAE conducirá a previsiones de la mediana de la serie.
+
+---
+
+--
+
+## Root Mean Square Error (RMSE)
+
+--
+
+&gt; La raíz del error cuadratico medio se establece como:
+
+`$$\text{RMSE}=\sqrt{\frac{\sum \epsilon_t^2}{n}}$$`
+--
+
+Tiende a ser un poco mas complejo la interpretación. Sin embargo cuando se tienen varios niveles de pronostico lo mejor es tener el menor de todos ellos. El .hi-purple[principio] de minimización del error sigue permanente en estas estimaciones.
+
+---
+
+--
+
+## Mean Absolute Percentage Error
+
+--
+
+&gt; Esta dado por el error porcentual esto es `\(p_t= 100 \times \frac{\epsilon_t}{y_t}\)` y su medida singular se da por:
+
+`$$\text{MAPE}=\frac{\sum|p_t|}{n}$$`
+
+--
+
+Tiene algunas desventajas sobre todo cuando `\(y_t=0\)`, o inclusive en un caso particular va a ser infinito o tener valores de la serie muy cerca de cero. Por eso se hace una corrección propuesta por Armstrong (1978) y se establece 
+
+--
+
+`$$sMAPE= \text{promedio} \left[\frac{200\times|y_t-\hat{y}_t|}{(y_t+\hat{y}_t)}\right]$$`
+
+--
+
+Aunque tambien tiene sus desventajas. Se vuelve útil en algunas ocasiones.
+
+---
+
+--
+
+## Scaled Errors
+
+--
+
+&gt; Es alternativo al test de sMAPE fue propuesto por Hyndman y Koehler (2006). Intenta comparar la precisión del pronostico incluso en series que tienen distintas unidades. Para series no estacionales se propone:
+
+`$$q_j=\frac{\epsilon_j}{\frac{1}{T-1}\sum|y_t-y_{t-1}|}$$`
+
+--
+
+De tal manera que si desea mirar la parte estacional es simplemente:
+
+--
+
+`$$q_j=\frac{\epsilon_j}{\frac{1}{T-m}\sum_{t=m+1}|y_t-y_{t-m}|}$$`
+
+--
+
+Finalmente, el test queda como:
+
+--
+
+`$$MASE= \text{Promedio} \left(|q_j|\right)$$`
+---
+
+--
+
+&lt;img src="Clase03_files/figure-html/unnamed-chunk-1-1.svg" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+--
+
+## Performance de modelos
+
+--
+
+
+```
+#&gt;                   ME     RMSE      MAE        MPE     MAPE     MASE        ACF1
+#&gt; Training set   0.000 43.62858 35.23438 -0.9365102 7.886776 2.463942 -0.10915105
+#&gt; Test set     -13.775 38.44724 34.82500 -3.9698659 8.283390 2.435315 -0.06905715
+#&gt;              Theil's U
+#&gt; Training set        NA
+#&gt; Test set      0.801254
+```
+
+```
+#&gt;                       ME     RMSE      MAE         MPE     MAPE     MASE
+#&gt; Training set   0.4761905 65.31511 54.73016  -0.9162496 12.16415 3.827284
+#&gt; Test set     -51.4000000 62.69290 57.40000 -12.9549160 14.18442 4.013986
+#&gt;                     ACF1 Theil's U
+#&gt; Training set -0.24098292        NA
+#&gt; Test set     -0.06905715  1.254009
+```
+
+```
+#&gt;                     ME     RMSE  MAE        MPE     MAPE      MASE       ACF1
+#&gt; Training set -2.133333 16.78193 14.3 -0.5537713 3.313685 1.0000000 -0.2876333
+#&gt; Test set      5.200000 14.31084 13.4  1.1475536 3.168503 0.9370629  0.1318407
+#&gt;              Theil's U
+#&gt; Training set        NA
+#&gt; Test set      0.298728
+```
+
+---
+
+--
+
+## Coeficiente de Theil
+
+--
+
+&gt; Así como es funcional para desigualdad, tambien lo es para métodos de pronosticos. Queremos que si la serie original se comporta de cierta manera, la serie predicha tambien haga lo mismo. Su estipulacion va con raices de medias.
+
+`$$\text{Coeficiente Theil}=\frac{\sqrt{promedio\;\epsilon_t^2}}{\sqrt{promedio\;y_t}+\sqrt{promedio\;\hat{y}_t}}$$`
+
+--
+
+Como en desigualdad, si Theil se hace (1) es lo peor en distribución. Queremos que nuesto modelo de estimación sea cercano a (0) para tener un muy buen .hi[ajuste].
+
+---
+layout: false
+class: middle, center, inverse
+
+# Modelos univariados autoregresivos
+
+---
+layout: true
+# Modelos univariados
+
+---
+
+--
+
+Redefiniendo lo del operador .hi[Rezago] o "Lag"" es representado por la letra (L).
+        
+`$$\begin{aligned}
+Ly_{t}=y_{t-1}&amp; &amp;Lc=c\\
+L^{n}y_{t}=y_{t-n}&amp; &amp;L^{0}y_{t}=y_{t}\\
+L^{2}y_{t}=y_{t-2}&amp; &amp;L^{k}L^{j}=L^{k+j}\\
+                  &amp;L^{-1}(Ly_{t})=Ly_{t-1}=y_{t}&amp;
+\end{aligned}$$`
+
+
+--
+
+¿Cómo sería un modelo de `\(y_{t}=\phi y_{t-1} + \epsilon_{t}\)`, expresado en términos de rezago?
+
+--
+
+**R./** `$$y_{t}=\phi L y_{t} + \epsilon_{t}$$`
+
+--
+
+Ahora uno como `\(y_{t}=\phi y_{t-1} + \phi y_{t-7}+ \epsilon_{t}\)`
+
+---
+
+--
+
+## Operador rezago en AR(1)
+
+--
+
+`$$\begin{aligned}
+y_t=\phi y_{t-1}+&amp; \epsilon_t\\
+y_t-\phi y_{t-1}=&amp; \epsilon_t\\
+y_t-\phi Ly_{t}=&amp; \epsilon_t
+\end{aligned}$$`
+
+--
+
+esto nos da que:
+
+--
+
+`$$\boxed{y_t-\phi Ly_{t}= \epsilon_t}$$`
+
+--
+
+***Recuerde por un momento la formula de Taylor***
+
+--
+
+`$$1+\color{red}{\rho}+\color{purple}{\rho}^2+\color{red}{\rho}^3+\cdots= \sum\limits_{i=1}^{\infty}\rho^i=\frac{1}{1-\rho}$$`
+---
+
+--
+
+Regresando al caso
+
+--
+
+`$$\begin{aligned}
+y_t-\phi Ly_{t}=&amp; \epsilon_t\\
+y_t= \frac{1}{1-\phi L}&amp; \epsilon_t
+\end{aligned}$$`
+
+--
+
+Acá tenemos un par de condiciones y son:
+
+--
+
+Si `\(|\phi|&lt;1\)`, entonces `\((1-\phi L)^{-1}\)` existe por eso de:
+
+--
+
+`$$(1-\phi L)^{-1}= \frac{1}{(1-\phi L)}=1+\phi L+\phi^2 L+\phi^3 L^3=\sum\limits_{i=1}^{\infty}\phi^i L^i$$`
+
+--
+
+`$$\begin{aligned}
+y_t-\phi Ly_{t}=&amp; \epsilon_t\\
+y_t(1-\phi L)=&amp; \epsilon_t\\
+y_t=(1-\phi L)^{-1}&amp;\epsilon_t\\
+y_t=(1+\phi L+\phi^2 L+&amp;\phi^3 L^3+\cdots)\epsilon_t\\
+y_t=\epsilon_t+\phi \epsilon_{t-1}+\phi^2 \epsilon_{t-2}+&amp;\phi^3 \epsilon_{t-3}+\cdots
+\end{aligned}$$`
+
+---
+
+--
+
+## Ruido blanco
+
+--
+
+&lt;cy-blockquote&gt;
+Un proceso **estocástico** (lo mas independiente) se considera aleatorio, posee una característica o estructura no discernible, su proceso cambia a través del tiempo. Ejemplo: El Baloto electrónico.&lt;/cy-blockquote&gt;
+
+
+--
+
+&lt;img src="Clase03_files/figure-html/unnamed-chunk-3-1.svg" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+--
+
+## Ruido blanco
+
+--
+
+`\(Y_{t}= \epsilon_{t}, t=1,2,3 \dots T\)`, es ruido blanco si y solo si:
+
+- Media cero: `\(E(Y_{t})= 0 \; \forall t\)`.
+- Varianza constante: `\(Var(Y_{t})=\sigma^{2}\)` y este es `\(&lt; \infty\)`. 
+- Covarianza cero: `\(Cov(Y_{i}, Y_{j})=0\)` `\(\forall \; i\neq j\)`. 
+
+--
+
+Cuando hace lanzamientos con un dado. La media es de 3.5 (21/6), La probabilidad de que salga un valor es de 1/6 y el evento (i) que ocurre al lanzarlo es independiente de (j), es decir, el nuevo lanzamiento no depende del anterior ni tampoco de su futuro.
+
+---
+layout: false
+class: middle, center, inverse
+
+# Con respecto a Máxima verosimilitud
+
+---
+layout: true
+# Máxima verosimilitud
+
+---
+
+--
+
+&lt;cy-blockquote&gt;El método de máxima verosimilitud (Maximum Likelihood Estimation) es un enfoque estadístico utilizado para estimar los **parámetros** de un modelo probabilístico a partir de un conjunto de observaciones o datos. El objetivo del método es encontrar los valores de los parámetros que maximizan la probabilidad de observar los datos que tenemos, asumiendo que los datos siguen una cierta distribución de probabilidad.&lt;/cy-blockquote&gt;
+
+--
+
+&lt;img src="Clase03_files/figure-html/unnamed-chunk-4-1.svg" width="40%" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+Se debe empezar desde la composición de un vector de característica aleatoria y con una distribución que depende de un parámetro desconocido como `\((\Theta)\)`, por tanto se tiene que `\(X \in \left \{ x_{1},x_{2},x_{3}, \cdots, x_{n}\right \}\)`. Por tanto la función de verosimilitud de este vector vendrá a ser dada como:
+
+--
+
+`$$L(\Theta)= (fx_{1},fx_{2},fx_{3}, \cdots, fx_{n}) ( x_{1},x_{2},x_{3}, \cdots, x_{n}|\Theta)$$`
+--
+
+Cuando las variables sean independientes (explicativas) entonces se procede a establecer la función de verosimilitud como:
+
+--
+
+`$$L(\Theta)= fx_{1}(x_{1};\Theta),fx_{2}(x_{2};\Theta), fx_{3}(x_{3};\Theta) \cdots, fx_{n}(x_{n};\Theta)$$`
+
+--
+
+Si dado el caso, estas variables resultan ser idénticamentes distribuidas, entonces se tendrá:
+
+--
+
+
+`$$L(\Theta)= f(x_{1};\Theta),f(x_{2};\Theta), f(x_{3};\Theta) \cdots, f(x_{n};\Theta)$$`
+Que sería el caso de una **muestra aleatoria**.
+
+---
+
+--
+
+Entonces, para obtener el valor de `\((\Theta)\)` que maximiza a la función de verosimilitud se debe establecer la estimación de `\(L(\Theta)\)` o estimador verosímil. La razón principal de calculo, debe ser encontrar un valor numérico observable `\((x_{1},x_{2},x_{3},\cdots,x_{n})\)`, de la muestra aleatoria tenga probabilidad máxima.
+
+--
+
+Sea una muestra aleatoria (m.a), con valores `\(X_{1},\dots,X_{n} \sim f(X | \theta)\)`, se debe encontrar el estimador `\(\theta=?\)` que **maximiza** la función.
+
+--
+
+- .hi-purple[Primer paso]: es plantear la función de máxima verosimilitud:
+
+.pad-left[
+`\(L \left( \theta | x \right)= \prod_{i=1}^{n} f \left ( x_{i} | \theta  \right )\)` 
+]
+
+--
+    
+- .hi-purple[Segundo paso]: es tratar de encontrar la referencia del estimador que es:
+
+`$$L \left ( \theta_{1} | x \right ) &gt; L \left ( \theta_{2} | x \right )$$`
+
+Si lo anterior ocurre `\(\Rightarrow \theta_{1} = \theta\)` y será mas **verosímil** que  `\(\theta_{2} = \theta\)`
+
+--
+
+- .hi-purple[Tercer paso]: es escoger ese mejor estimador (mas creíble), es decir, 
+`\(\widehat{\theta } \in \Theta\)`.
+---
+
+--
+
+Entender lo anterior no es tan trivial, se hace necesario conocer que la estimación máxima verosimilitud (E.M.V) este en función de los valores provistos:
+
+--
+
+`$$\widehat{\theta}=E.M.V \left ( \theta |  X_{1}, \dots, X_{n} \right ) = f  \left ( X_{1}, \dots, X_{n} \right)$$`
+--
+
+Lo que en mejores términos vendría a ser: 
+
+`$$L= \left ( \widehat{\theta} |  X_{1}, \dots, X_{n} \right ) = \underset{\left \{ \theta \ \in \ \Theta \right \}}{max} L \left ( \theta | X_{1}, \dots, X_{n} \right )$$`
+---
+layout: false
+class: middle, center
+
+# Veamos un ejemplo 🤓
+----
+
+---
+layout: true
+# Ejemplo: Máxima Verosimilitud
+---
+
+--
+
+Sea la siguiente función definida como:
+
+--
+
+`$$f(x,\theta)= \frac{1}{\theta} e^{\frac{-x}{\theta}} \ ; \ x &gt;0 \ ; \ \theta&gt;0$$`
+--
+
+Halle el estimador `\(\theta\)`
+
+--
+
+Debemos plantear la .hi[función de densidad] de cada una de las variables de una m.a y esto es: Tenemos que las variables son `\((x_{1},\dots, x_{n})\)` y la función de cada una de ellas vendrá a ser:
+
+
+--
+
+`$$f(x_{1},\theta)= \frac{1}{\theta} e^{\frac{-x_{1}}{\theta}} \ ; \ f(x_{2},\theta)= \frac{1}{\theta} e^{\frac{-x_{2}}{\theta}} \ ; \ f(x_{n},\theta)= \frac{1}{\theta} e^{\frac{-x_{n}}{\theta}}$$`
+
+--
+
+La idea es resolver el .hi[producto] o multiplicación de las funciones usando la formula del **logaritmo de verosimililtud** y esto resulta:
+
+--
+
+`$$L \left ( \widehat{\theta} \ | \ X_{1}, \dots, X_{n} \right ) = \frac{1}{\theta} e^{\frac{-x_{1}}{\theta}} * \frac{1}{\theta} e^{\frac{-x_{2}}{\theta}} *\cdots * \frac{1}{\theta} e^{\frac{-x_{n}}{\theta}}$$`
+
+---
+
+--
+
+Para lo cual, simplificamos la expresión (lo mas que se pueda\footnote{Acá es útil utilizar todas las herramientas de calculo básico y álgebra.})
+
+--
+
+`$$L\left(\widehat{\theta} \ | \  X_{1}, \dots, X_{n} \right ) = \frac{1}{\theta^{n}} e^{\left \{\frac{-x_{1}}{\theta}+\frac{-x_{2}}{\theta}+\cdots+\frac{-x_{n}}{\theta} \right\}}$$`
+--
+
+Obteniendo de forma mas simple:
+`\begin{equation*}
+    L \left ( \widehat{\theta} \ | \  X_{1}, \dots, X_{n} \right ) = \frac{1}{\theta^{n}} e^{- \frac{1}{\theta} \left \{ x_{1}+x_{2}+\cdots+ x_{n} \right \} } 
+\end{equation*}`
+
+--
+
+Que haciendo mas simple la ecuación puede ser reemplazada usando el termino de la sumatoria:
+
+--
+
+`\begin{equation*}
+    L \left ( \widehat{\theta} \ | \  X_{1}, \dots, X_{n} \right ) = \frac{1}{\theta^{n}} e^{ - \frac{1}{\theta} \sum x_{i} } 
+\end{equation*}`
+
+El siguiente proceso será derivar.
+---
+
+--
+
+Toda la expresión que ha quedado simplificada y de ahí aplicar el despeje como tal, resultando:
+
+--
+
+Estableciendo la condición de primer orden:
+
+--
+
+`\begin{equation*}
+\frac{\partial L (x_{1},\dots, x_{n}, \theta) }{\partial \theta}=0
+\end{equation*}`
+
+--
+
+Tomar la expresión tal cual se encuentra situada seria algo complejo. Una forma de linearizar es aplicando logaritmos a la expresión de M.V y de ahí si derivar.
+
+--
+
+`\begin{equation*}
+lnL= ln \left ( \frac{1}{\theta^{n}} \right) + Ln e^{-\frac{1}{\theta}\sum x_{i}}
+\end{equation*}`
+
+--
+
+Se aplican todas las propiedades de Logaritmo.
+
+`\begin{equation*}
+lnL= ln (1) - n \ ln \theta - \frac{1}{\theta} \sum x_{i} Ln (e)
+\end{equation*}`
+
+---
+
+--
+
+Conocemos que el logaritmo de (1) es cero y que el Ln de (e) es 1, por ende ahora nos encontramos con:
+
+--
+
+`\begin{equation*}
+lnL=  - n \ ln \theta - \frac{1}{\theta} \sum x_{i}
+\end{equation*}`
+
+--
+
+Derivando la expresión con respecto a `\(\theta \Rightarrow\)`
+
+--
+
+`\begin{equation*}
+\frac{\partial Ln L}{\partial \theta}= - \frac{n}{\theta}+\frac{\sum x_{i}}{\theta^{2}}=0
+\end{equation*}`
+
+--
+
+Despejando `\(\theta\)`:
+
+--
+
+`\begin{equation*}
+\frac{\sum x_{i}}{\theta^{2}}=\frac{n}{\theta}
+\end{equation*}`
+
+--
+
+Dando como resultado:
+
+--
+
+`\begin{equation*}
+\theta = \frac{\sum x_{i}}{n}
+\end{equation*}`
+
+--
+
+Para este caso el estimador `\(\theta= \overline{X}\)`. 
+
+
+---
+layout:false
+# Bibliografía
+
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></svg> Chatfield, C. (2000). *Time-series forecasting*. CRC press.
+
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></svg> Hyndman, R.J., &amp; Athanasopoulos, G. (2021). *Forecasting: principles and practice*, 3rd edition, OTexts: Melbourne, Australia.
+
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></svg> Righetti, N., (2022). *Time Series Analysis With R*. Bookdown.
+
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></svg> Shumway, R., &amp; Stoffer, D. (2019). *Time series: a data analysis approach using R*. CRC Press.
+
+---
+name: adios
+class: middle
+
+.pull-left[
+# **¡Gracias!**
+&lt;br/&gt;
+## Del contorno de series
+
+### Seguimos aprendiendo
+]
+
+.pull-right[
+.right[
+&lt;img style="border-radius: 50%;"
+src="https://avatars.githubusercontent.com/u/39503983?v=4"
+width="150px" /&gt;
+
+<svg aria-hidden="true" role="img" viewBox="0 0 640 512" style="height:1em;width:1.25em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M579.8 267.7c56.5-56.5 56.5-148 0-204.5c-50-50-128.8-56.5-186.3-15.4l-1.6 1.1c-14.4 10.3-17.7 30.3-7.4 44.6s30.3 17.7 44.6 7.4l1.6-1.1c32.1-22.9 76-19.3 103.8 8.6c31.5 31.5 31.5 82.5 0 114L422.3 334.8c-31.5 31.5-82.5 31.5-114 0c-27.9-27.9-31.5-71.8-8.6-103.8l1.1-1.6c10.3-14.4 6.9-34.4-7.4-44.6s-34.4-6.9-44.6 7.4l-1.1 1.6C206.5 251.2 213 330 263 380c56.5 56.5 148 56.5 204.5 0L579.8 267.7zM60.2 244.3c-56.5 56.5-56.5 148 0 204.5c50 50 128.8 56.5 186.3 15.4l1.6-1.1c14.4-10.3 17.7-30.3 7.4-44.6s-30.3-17.7-44.6-7.4l-1.6 1.1c-32.1 22.9-76 19.3-103.8-8.6C74 372 74 321 105.5 289.5L217.7 177.2c31.5-31.5 82.5-31.5 114 0c27.9 27.9 31.5 71.8 8.6 103.9l-1.1 1.6c-10.3 14.4-6.9 34.4 7.4 44.6s34.4 6.9 44.6-7.4l1.1-1.6C433.5 260.8 427 182 377 132c-56.5-56.5-148-56.5-204.5 0L60.2 244.3z"/></svg> [Syllabus/ Curso](https://pomelo.uninorte.edu.co/pls/prod/bwckctlg.p_disp_course_detail?cat_term_in=202210&amp;subj_code_in=ECO&amp;crse_numb_in=0010)&lt;br/&gt;
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg> [@keynes37](https://twitter.com/keynes37)&lt;br/&gt;
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M16.1 260.2c-22.6 12.9-20.5 47.3 3.6 57.3L160 376V479.3c0 18.1 14.6 32.7 32.7 32.7c9.7 0 18.9-4.3 25.1-11.8l62-74.3 123.9 51.6c18.9 7.9 40.8-4.5 43.9-24.7l64-416c1.9-12.1-3.4-24.3-13.5-31.2s-23.3-7.5-34-1.4l-448 256zm52.1 25.5L409.7 90.6 190.1 336l1.2 1L68.2 285.7zM403.3 425.4L236.7 355.9 450.8 116.6 403.3 425.4z"/></svg>[ cayanes@uninorte.edu.co](mailto:cayanes@uninorte.edu.co)
+]
+]
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

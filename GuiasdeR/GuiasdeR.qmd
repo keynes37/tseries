@@ -1,0 +1,661 @@
+---
+title: Econometría II
+subtitle: Series de tiempo
+format:
+  clean-revealjs:
+    slide-number: false
+    logo: micrologouni.png
+    self-contained: true
+author:
+  - name: Carlos Andrés Yanes
+    orcid: 0000-0003-0683-3727
+    email: cayanes@uninorte.edu.co
+    affiliations: Universidad del Norte
+from: markdown+emoji
+editor: visual
+date: last-modified
+bibliography: refs.bib
+---
+
+## Entorno de trabajo {{< fa brands r-project >}}
+
+. . .
+
+### Nuestro Lenguaje por "Default"
+
+Vamos a seguir trabajando con *R* y [Rstudio]{.fg style="--col: #0098DB"}
+
+::: incremental
+-   Es un programa excelente para los economistas
+-   Requerimos ser mas [pulcros]{.fg style="--col: #e64173"} en esto
+-   Nos diferencia de los demás que se dedican a la ciencia de datos
+:::
+
+## Antes de continuar...
+
+Vamos a instalar o cargar un par de [Paquetes]{.fg style="--col: #0098DB"} de {{< fa brands r-project >}}
+
+::: callout-note
+## R libraries
+
+Los paquetes para el análisis de [Tendencia]{.bg style="--col: #FFC7A2"} son los siguientes
+
+``` r
+install.packages(c("pacman", "modelsummary", "tseries", "tidyverse", "KableExtra"))
+```
+:::
+
+::: callout-note
+## Ejecución
+
+No olvide que debe desde luego tener presente en su documento de *R Markdown* cargar estos paquetes.
+
+``` r
+library(pacman)
+p_load(modelsummary, tseries, readxl, rstatix, tidyverse, KableExtra)
+```
+:::
+
+# Caso de estudio {background-color="#40666e"}
+
+## Caso 1
+
+### Recordeis y estructura de serie de tiempo
+
+::: {.fragment .fade-up}
+-   Recuerde que un modelo de regresión estático/dinámico de series tiempo viene a ser:
+-   $y_t= \delta_0+\delta_1 T_t+u_t$ o $y_t= \delta_0+\delta_1 T_t+\delta_2 y_{t-1}+u_t$
+-   Este modelo solo nos muestra la relación de la variable objetivo con su **Tendencia**
+-   Anteriormente se usaba mucho para intentar predecir el siguiente movimiento de la serie
+:::
+
+## Caso 1
+
+::: fragment
+-   Vamos a tomar la base de datos suministrada en [Discord]{.alert} que se denomina `bsd1.xls`. Corresponde a la encuesta de Consumo de los EEUU (Census Bureau de 1959-1994) de algo de 45 items. El libro de econometría de referencia es el de [@dougherty2011introduction].
+-   Las variables de referencia para este caso son: [HOUSE]{.bg style="--col: #e1e8e3"}, que es el gasto en consumo agregado con referencia a los servicios de los hogares americanos; [DPI]{.bg style="--col: #e1e8e3"} el ingreso personal disponible, ambas medidas a precios constantes en billones de dolares de US.
+:::
+
+## Caso 1
+
+::: fragment
+-   Dentro del análisis también vamos a tener una variable por construcción que es el indice relativo de precios conocido como [PRELHOUSE]{.bg style="--col: #e1e8e3"}, cuya formula es:
+    -   $PRELHOUSE=100\times \frac{Phouse}{PTPE}$
+-   Las variables para este estimativo son [PHOUSE]{.bg style="--col: #03FFEA"} que hace referencia a los precios relativos de los servicios del hogar, divididos por [PTPE]{.bg style="--col: #03FFEA"} que es indice de precios para los gastos personales. En Colombia es ampliamente conocido como IPC de servicios.
+:::
+
+## Caso 1
+
+[{{< fa triangle-exclamation >}}]{.bg style="--col: #f8e900"} Se [solicita]{.fg style="--col: #0098DB"} lo siguiente:
+
+1.  Un vistazo general a la base para familiarizarse con las variables.
+2.  Trabajar con la **tendencia** y escoger la mejor especificación
+3.  Hacer una lectura general con rezagos e intentar construir un modelo de *rezagos distribuidos*.
+
+# Solución en {{< fa brands r-project >}} {background-color="#40666e"}
+
+## Vistazo {auto-animate="true"}
+
+``` r
+# Cargar la base de datos
+library(readxl)
+bsd1 <- read_excel("GuiasdeR/bsd1.xls")
+```
+
+## Vistazo {auto-animate="true"}
+
+``` r
+# Cargar la base de datos
+library(readxl)
+bsd1 <- read_excel("GuiasdeR/bsd1.xls")
+names(bsd1) # Nombres
+```
+
+```{r}
+#| echo=FALSE
+
+# Cargar la base de datos
+library(readxl)
+bsd1 <- read_excel("bsd1.xls")
+names(bsd1) # Nombres
+```
+
+## Resumen de estadísticas
+
+::: incremental
+-   Tenemos un conjunto de 46 variables y una muestra $(n=45)$ datos como tal.
+
+-   Los datos del consumo en servicios del hogar ha venido incrementando en el tiempo. Los [hogares]{.bg style="--col: #FFE603"} han mostrado una tendencia creciente de consumo.
+:::
+
+## Dinámica
+
+::: panel-tabset
+### Gráfico
+
+```{r}
+library(astsa)  # Paquete de series
+tsplot(bsd1$HOUS, ylab="Consumo", type="o",  col=4,    main="Dinámica de consumo")
+```
+
+### Código
+
+``` r
+library(astsa)  # Paquete de series
+tsplot(bsd1$HOUS, ylab="Consumo", type="o", col=4, main="Dinámica de consumo")
+```
+
+-   La parte de `type` puede se cambiado a "l" para linea, lo concerniente a `col` es el color que quiera usar para la serie de tiempo. Hay mas opciones como *p.e* (`xlab`) pero pueden ser consultadas mas adelante en el momento de darle mas del "*toque personal*" para el resultado gráfico que desea el/la [investigador/a]{.alert}.
+:::
+
+## Dinámica
+
+::: panel-tabset
+### Resultado
+
+```{r}
+#| echo: false
+library(tidyverse)
+library(rstatix)
+bsd1 |>
+  mutate(PRELHOUS= 100*(PHOUS/PTPE)) |>
+  get_summary_stats(
+    HOUS, DPI, PRELHOUS,
+    type = "common"
+  )
+```
+
+### Código
+
+``` r
+library(tidyverse)
+library(rstatix)
+bsd1 |>
+  mutate(PRELHOUS= 100*(PHOUS/PTPE)) |>
+  get_summary_stats(
+    HOUS, DPI, PRELHOUS,
+    type = "common"
+  )
+```
+
+### Leyenda
+
+-   Recordemos que las [estadísticas]{.alert} son claves para ver desde el interior de las [variables]{.bg style="--col: #FFE603"}.
+-   No podemos decir nada si no conocemos las [características]{.alert} de las series
+
+### Kable
+
+```{r}
+#| echo: false
+library(tidyverse)
+library(rstatix)
+library(flextable)
+p1<- bsd1 |>
+  mutate(PRELHOUS= 100*(PHOUS/PTPE)) |>
+  get_summary_stats(
+    HOUS, DPI, PRELHOUS,
+    type = "common"
+  )
+knitr::kable(p1, caption = "Resultados de forma mas ordenada")
+```
+
+### Código de Kable
+
+``` {.r code-line-numbers="|4|10"}
+library(tidyverse)
+library(rstatix)
+library(flextable)
+p1<-bsd1 |>
+  mutate(PRELHOUS= 100*(PHOUS/PTPE)) |>
+  get_summary_stats(
+    HOUS, DPI, PRELHOUS,
+    type = "common"
+  )
+knitr::kable(p1, caption = "Resultados de forma mas ordenada")
+```
+:::
+
+## Modelo estático
+
+::: callout-note
+## Especificación de la regresión
+
+Nuestro modelo principal es:
+
+$$House_{t} = \delta_0 + \delta_1 DPI_{t}  + \delta_2 PRELHOUSE_{t} + \varepsilon_{t}$$
+:::
+
+-   Todo opera de la misma manera que un MCO(OLS) para la estimación
+-   Recuerde que existen paquetes como `knitr`, `flextable` y `huxreg` para hacer el resumen de modelos
+
+## Estimación {auto-animate="true"}
+
+``` {.r code-line-numbers="|3|4|5"}
+library(tidyverse)
+library(kableExtra)
+dt1<-bsd1 |>
+  mutate(PRELHOUS= 100*(PHOUS/PTPE))
+lm(HOUS~DPI+PRELHOUS, data=dt1)|>
+  tidy() |>
+  kable(
+    caption = "Modelo Estático de Regresión",
+    col.names = c("Variables", "Parámetro", "SE", "t", "P-value"),
+    digits = c(0, 3, 3, 2, 3)
+  )
+```
+
+## Estimación {auto-animate="true"}
+
+```{r}
+#| echo: false
+library(tidyverse)
+library(kableExtra)
+dt1<-bsd1 |>
+  mutate(PRELHOUS= 100*(PHOUS/PTPE))
+lm(HOUS~DPI+PRELHOUS, data=dt1)|>
+  tidy() |>
+  kable(
+    caption = "Modelo Estático de Regresión",
+    col.names = c("Variables", "Parámetro", "SE", "t", "P-value"),
+    digits = c(0, 3, 3, 2, 3)
+  )
+```
+
+# Múltiples modelos {background-color="#40666e"}
+
+## Caso 1
+
+### Estimación
+
+::: incremental
+-   Para la lectura del modelo lo haremos de forma **tradicional**. Esto indica que leemos de tal manera las variables *explicativas*.
+-   Nuestra primera variable [DPI]{.fg style="--col: #e64173"} nos dice que si el ingreso agregado aumenta en 1 billon de dolares, entonces el gasto de los hogares en servicios de la casa se incrementa es 151 millones de dolares. *Desde luego marginalmente dice que por cada dolar que aumente el ingreso el gasto aumenta en una proporción de 50 centavos de dolar.*
+:::
+
+## Caso 1
+
+### Estimación
+
+::: incremental
+-   Para la variable [PRELHOUS]{.fg style="--col: #e64173"} si este indice aumenta en un punto el gasto de los hogares cae en promedio en 3.84 billones de dolares.
+-   Vamos hacer una estimación adicional
+-   Suponga que le han pedido estimar $HOUS=\delta_0DPI^{\delta_1}PRELHOUS^{\delta_2}\varepsilon_t$
+-   Vamos entonces a tener que **linearizar**
+-   Nuestro modelo viene a ser: $Log(Hous)=Log\;\delta_0+ \delta_1 Log\;DPI+\delta_2 Log\;PRELHOUS+log\;\varepsilon_t$
+:::
+
+## Comparaciones
+
+```{r}
+#| echo: false
+#| include: false
+#| output-location: slide
+library(fixest)
+library(modelsummary)
+options(modelsummary_factory_default = "gt")
+
+dict = c("DPI" = "Ingreso o renta a precios constantes",
+         "PRELHOUS" = "Indice de precios de los servicios",
+         "log(DPI)" = "Logaritmo de DPI",
+         "log(PRELHOUS)" = "Logaritmo de Indice de precios")
+
+mdf1<-feols(HOUS~DPI+PRELHOUS, data=dt1)
+mdf2<-feols(log(HOUS)~log(DPI)+log(PRELHOUS), data=dt1)
+```
+
+```{r}
+#| output: asis
+library(fixest)
+setFixest_etable(markdown = TRUE, drop = "Constant")
+setFixest_dict(dict)
+
+etable(mdf1, mdf2)
+```
+
+## Caso 1
+
+### Interpretación en elasticidad
+
+::: incremental
+-   Cuando tenemos `Logaritmos` en nuestras [variables]{.bg style="--col: #FFE603"}, la cosa ya pinta "distinta".
+-   Ahora nuestra primera variable [LOGDPI]{.fg style="--col: #e64173"} nos indica que la elasticidad es de 1.03.
+-   Es esto plausible?
+-   Desde luego que si. Es como si la [propensión]{.alert} del **gasto** subiera al mismo nivel de (%) para el ingreso.
+:::
+
+## Caso 1
+
+### Interpretación en elasticidad
+
+::: incremental
+-   Les cuento ademas que uno espera que esa elasticidad sea menor a (1). Sabe por qué?
+-   Porque *muchas* **personas** y hogares piensan que gastar en la casa es un [lujo]{.bg style="--col: #FFE603"}, por ello no lo hacen todo el tiempo.
+-   Las **personas** u hogares con el tiempo su ingreso adicional lo terminan gastando en mas cosas de su entorno de vida, compra una mejor cama, adorna con mas elementos su casa, etc. Se da un [fenómeno]{.bg style="--col: #FFE603"} de auto-satisfacción
+-   Por el lado de la variable [LOGPRELHOUS]{.fg style="--col: #e64173"}, la elasticidad es menor a (1) y nos dice que un mayor costo (precio) reduce un poco el gasto en ella y es lógico.
+:::
+
+# Lo dinámico {background-color="#40666e"}
+
+## Modelo Dinámico
+
+### Miremos la parte de rezagos
+
+::: columns
+::: {.column width="50%"}
+#### Rezagos en t
+
+El [primer rezago]{.fg style="--col: #FF0000"} de una serie $(Y_t)$ es lo que se conoce como [LAG]{.bg style="--col: #e64173"}, puede igual verlo como una (L) o como notación tal que:
+
+$$Y_t=L(Y_t)=Y_{t-1}$$
+:::
+
+::: {.column width="50%"}
+#### Diferencias
+
+La [primera diferencia]{.fg style="--col: #FF0000"} de una **serie** lo que se conoce como [DIF]{.bg style="--col: #e64173"}, su sigla se representa mediante un triangulo o $(\Delta)$, Se escribe como:
+
+$$\Delta Y_t= Y_t-Y_{t-1}$$
+:::
+:::
+
+## Operadores
+
+### Rezagos
+
+::: incremental
+-   Las **series de tiempo** pueden ser transformadas por *logaritmos*, *tasas de crecimiento*, *rezagos* y *diferencias*.
+-   Dentro de los cuales sirven muchas veces para [retirar]{.fg style="--col: #e64173"} o descomponer los componentes que afectan su dinámica o propiedades para desde luego tener una serie mas "parqueada" o **estable**.
+-   Adicionalmente en la composición de los logaritmos podríamos tener: $$\Delta Log(Y_t)=Log(Y_{t})-Log(Y_{t-1})$$
+:::
+
+## Rezago {auto-animate="true"}
+
+``` r
+# Tomamos la base de datos
+bsd1|>
+  mutate(LAGHOUS=lag(HOUS))
+```
+
+## Rezago {auto-animate="true"}
+
+``` r
+# Tomamos la base de datos
+bsd1|>
+  mutate(LAGHOUS=lag(HOUS))|>
+  select(HOUS,LAGHOUS)
+```
+
+```{r}
+# Tomamos la base de datos
+bsd1|>
+  mutate(LAGHOUS=lag(HOUS))|>
+  select(HOUS,LAGHOUS)
+```
+
+# Si deseo un orden superior de (L)? :grimacing:
+
+## Orden P de rezago {auto-animate="true"}
+
+``` r
+# Tomamos la base de datos
+bsd1|>
+  mutate(LAGHOUS=lag(HOUS),
+  LAGHOUS_2=lag(HOUS, 2))
+```
+
+## Orden P de rezago {auto-animate="true"}
+
+``` r
+# Tomamos la base de datos
+bsd1|>
+  mutate(LAGHOUS=lag(HOUS),
+  LAGHOUS_2=lag(HOUS, 2))|>
+  select(HOUS,LAGHOUS, LAGHOUS_2)
+```
+
+```{r}
+# Tomamos la base de datos
+bsd1|>
+  mutate(LAGHOUS=lag(HOUS),
+  LAGHOUS_2=lag(HOUS, 2))|>
+  select(HOUS,LAGHOUS, LAGHOUS_2)
+```
+
+# Modelos Dinámicos {background-color="#40666e"}
+
+## Modelos Dinámicos
+
+```{r}
+#| echo: false
+#| include: false
+#| output-location: slide
+
+dt2=dt1|>
+  mutate(logDPI=log(DPI),
+    LlogDPI=lag(log(DPI)),
+         LlogPRELHOUS=lag(log(PRELHOUS)),
+  LlogDPI2=lag(log(DPI),2),
+  LlogPRELHOUS2=lag(log(PRELHOUS),2)
+  )
+mdf1<-feols(log(HOUS)~log(DPI)+log(PRELHOUS), data=dt2)
+mdfl1<-feols(log(HOUS)~LlogDPI+LlogPRELHOUS, data=dt2)
+mdfl2<-feols(log(HOUS)~LlogDPI2+LlogPRELHOUS2, data=dt2)
+mdfl3<-feols(log(HOUS)~log(DPI)+LlogDPI+log(PRELHOUS)+LlogPRELHOUS, data=dt2)
+mdfl4<-feols(log(HOUS)~log(DPI)+LlogDPI+LlogDPI2+log(PRELHOUS)+LlogPRELHOUS+LlogPRELHOUS2, data=dt2)
+```
+
+```{r}
+#| output: asis
+dict2 = c("log(DPI)" = "Logaritmo del Ingreso Disponible",
+         "log(PRELHOUS)" = "Logaritmo de Indice de precios",
+         "LlogDPI"="Rezago orden (1) del ingreso",
+         "LlogDPI2"="Rezago orden (2) del ingreso",
+         "LlogPRELHOUS"="Rezago orden (1) de Indice de precios",
+         "LlogPRELHOUS2"="Rezago orden (2) de Indice de precios")
+setFixest_etable(markdown = TRUE, drop = "Constant")
+setFixest_dict(dict2)
+etable(mdf1, mdfl1, mdfl2, mdfl3, mdfl4, arraystretch = 1.5,
+       highlight = .("rowcol, yellow" = "log(DPI)@1",
+                     "rowcol, yellow" = "log(PRELHOUS)@1"))
+```
+
+## Modelos Dinámicos
+
+```{r}
+#| output: asis
+etable(mdf1, mdfl1, mdfl2, mdfl3, mdfl4, arraystretch = 1.5,
+       highlight = .("rowcol, yellow" = "LlogDPI@2",
+                     "rowcol, yellow" = "LlogPRELHOUS@2"))
+```
+
+## Modelos Dinámicos
+
+```{r}
+#| output: asis
+etable(mdf1, mdfl1, mdfl2, mdfl3, mdfl4, arraystretch = 1.5,
+       highlight = .("rowcol, yellow" = "LlogDPI2@3",
+                     "rowcol, yellow" = "LlogPRELHOUS2@3"))
+```
+
+## Modelos Dinámicos
+
+```{r}
+#| output: asis
+etable(mdf1, mdfl1, mdfl2, mdfl3, mdfl4, arraystretch = 1.5,
+       highlight = .("rowcol, yellow" = "log(DPI)@4",
+                     "rowcol, yellow" = "log(PRELHOUS)@4",
+                     "rowcol, yellow" = "LlogPRELHOUS@4",
+                     "rowcol, yellow" = "LlogDPI@4"))
+```
+
+## Modelos Dinámicos
+
+```{r}
+#| output: asis
+etable(mdf1, mdfl1, mdfl2, mdfl3, mdfl4, arraystretch = 1.5,
+       highlight = .("rowcol, yellow" = "log(DPI)@5",
+                     "rowcol, yellow" = "LlogDPI@5",
+                     "rowcol, yellow" = "LlogDPI2@5",
+                     "rowcol, yellow" = "log(PRELHOUS)@5",
+                     "rowcol, yellow" = "LlogPRELHOUS@5",
+                     "rowcol, yellow" = "LlogPRELHOUS2@5"))
+```
+
+# Y entonces :scream: ... estimo y estimo y no es?
+
+## De los modelos Dinámicos
+
+### Algunos comentarios
+
+::: incremental
+-   Los resultados de todos los modelos tienen problema de multicolinealidad sobre todo en sus rezagos.
+-   Los errores estandar de los **parámetros** tambien se hicieron mucho mas [grandes]{.alert}
+-   En conclusión estamos especificando [incorrectamente]{.fg style="--col: #FF0000"} el modelo
+:::
+
+## Matriz de relación rezago {auto-animate="true"}
+
+``` r
+dt2|>
+  select(logDPI, LlogDPI)
+```
+
+## Matriz de relación rezago {auto-animate="true"}
+
+``` r
+dt2|>
+  select(logDPI, LlogDPI)|>
+  cor(method = "pearson", use = "complete.obs")
+```
+
+```{r}
+dt2|>
+  select(logDPI, LlogDPI)|>
+  cor(method = "pearson", use = "complete.obs")
+```
+
+## Elasticidades del Modelo
+
+```{r}
+#| echo: false
+
+library(kableExtra)
+tablita <- tibble(
+  elastici = c("Elasticidad del Ingreso",
+             "Elasticidad Precio"),
+  res1 = c("1.03","-0.48"),
+  res2 = c("1.01","-0.43"),
+  res3 = c("0.98","-0.38"),
+  res4 = c("1.01","-0.45"),
+  res5 = c("1.00","-0.43"),
+) %>% 
+  kable(
+  escape = F,
+  col.names = c("Elasticidades", "(1)", "(2)", "(3)", "(4)", "(5)"),
+  align = c("l", "c", "c", "c", "c", "c")
+) %>% 
+  column_spec(1, color = "black", bold = T, italic = T)
+  #column_spec(2, color = "black", italic = T)
+tablita
+```
+
+-   Recuerde que la suma de parámetros es catalogado como el [efecto total]{.bg style="--col: #e64173"}
+
+-   Requerimos de un modelo que aislé el fenómeno y podamos estimar mejor nuestro modelo
+
+# Especificación del modelo {background-color="#40666e"}
+
+## Especificación
+
+::: incremental
+-   El modelo es: $$Y_t=\beta_0+\beta_1X_t+\beta_2X_{t-1}+\beta_3X_{t-2}+\varepsilon_t$$
+-   Para el efecto total $$Y_t=\beta_0+\beta_1\tilde{X}+\beta_2\tilde{X}+\beta_3\tilde{X}+\varepsilon_t=\quad \beta_0+\tilde{X}\left(\beta_1+\beta_2+\beta_3\right)$$
+-   Lo que hay que corregir es usando entonces las **diferencias de rezagos** $$\beta_0+X_t\left(\beta_1+\beta_2+\beta_3\right)-\beta_2\left(\color{#A020F0}{X_t-X_{t-1}}\right)-\beta_3\left(\color{#FF0000}{X_t-X_{t-2}}\right)+\varepsilon_t$$
+:::
+
+## Estimación dinámica {auto-animate="true"}
+
+``` {.r code-line-numbers="|2|3|4|5|6|8|9|10|11|14"}
+# Crear las variables del modelo transformado
+mfinal<-dt1|>
+  mutate(logDPI=log(DPI),
+    LlogDPI=lag(log(DPI)),
+         LlogPRELHOUS=lag(log(PRELHOUS)),
+         LlogDPI2=lag(log(DPI),2),
+         LlogPRELHOUS2=lag(log(PRELHOUS),2),
+         FDPI1=logDPI-LlogDPI,
+         FDPI2=logDPI-LlogDPI2,
+    FPRELHOUS1=log(PRELHOUS)-LlogPRELHOUS,
+    FPRELHOUS2=log(PRELHOUS)-LlogPRELHOUS2)
+
+# Modelo transformado
+lm(log(HOUS)~log(DPI)+FDPI1+FDPI2+log(PRELHOUS)+FPRELHOUS1+FPRELHOUS2, data=mfinal)|>
+  tidy() |>
+  kable(
+    caption = "Modelo Dinámico de Regresión",
+    col.names = c("Variables", "Parámetro", "SE", "t", "P-value"),
+    digits = c(0, 3, 3, 2, 3)
+  )
+```
+
+## Estimación dinámica {auto-animate="true"}
+
+```{r}
+#| echo: false
+# Crear las variables del modelo transformado
+mfinal<-dt1|>
+  mutate(logDPI=log(DPI),
+    LlogDPI=lag(log(DPI)),
+         LlogPRELHOUS=lag(log(PRELHOUS)),
+         LlogDPI2=lag(log(DPI),2),
+         LlogPRELHOUS2=lag(log(PRELHOUS),2),
+         FDPI1=logDPI-LlogDPI,
+         FDPI2=logDPI-LlogDPI2,
+    FPRELHOUS1=log(PRELHOUS)-LlogPRELHOUS,
+    FPRELHOUS2=log(PRELHOUS)-LlogPRELHOUS2)
+
+# Modelo transformado
+lm(log(HOUS)~log(DPI)+FDPI1+FDPI2+log(PRELHOUS)+FPRELHOUS1+FPRELHOUS2, data=mfinal)|>
+  tidy() |>
+  kable(
+    caption = "Modelo Dinámico de Regresión",
+    col.names = c("Variables", "Parámetro", "SE", "t", "P-value"),
+    digits = c(0, 3, 3, 2, 3)
+  )
+```
+
+# Modelo de Tendencia :ghost: {background-color="#40666e"}
+
+## Tendencia
+
+### De acuerdo a sus formas funcionales
+
+```{r}
+#| echo: true
+#| label: fig-pares
+#| fig-cap: "Tendencia lineal" 
+#| fig-asp: 1
+#| output-location: column
+
+# Graficar serie de tiempo con tendencia
+ggplot(bsd1, aes(x = DATE, y = HOUS)) +
+  geom_line() +  # Serie
+  geom_smooth(method = "lm", 
+              se = FALSE, color = "red") +
+  labs(x = "Fecha", y = "Gasto en Hogar", 
+       title = "Serie de Tiempo con Tendencia") +
+  theme_minimal()
+```
+
+## Tendencia
+
+### De acuerdo a sus formas funcionales
+
+Vamos a tener distintas de acuerdo al "ajuste de datos"
+
+# Gracias por su atención!! {background-color="#cc0000"}
+
+## Referencias
+
+::: {#refs}
+:::

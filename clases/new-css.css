@@ -1,0 +1,394 @@
+@import url(https://fonts.googleapis.com/css?family=Zilla+Slab:300,300i,400,400i,500,500i,700,700i);
+/* Create a highlighted class called 'hi'  */
+.hi {
+  font-weight: 600;
+  color: #e64173 !important;
+}
+.hi-pink {
+  font-weight: 600;
+  color: #e64173 !important;
+}
+.hi-slate {
+  font-weight: 600;
+  color: #314f4f !important;
+}
+.hi-turquoise {
+  font-weight: 600;
+  color: #44C1C4 !important;
+}
+.hi-purple {
+  font-weight: 600;
+  color: #6A5ACD !important;
+}
+.hi-orange {
+  font-weight: 600;
+  color: #FFA500 !important;
+}
+.hi-yellow{
+  font-weight: 600;
+  color: #D8BD44 !important;
+}
+.hi-green {
+  font-weight: 600;
+  color: #12823d !important;
+}
+.hi-grey {
+  font-weight: 600;
+  color: #8AA19E !important;
+}
+.hi-blue {
+  font-weight: 600;
+  color: #54778B !important;
+}
+.hi-red {
+  font-weight: 600;
+  color: #fb6107 !important;
+}
+/* Pink text */
+.pink {
+  color: #e64173 !important;
+}
+/* Slate ("darkslategrey") text */
+.slate {
+  color: #314f4f !important;
+}
+/* Turquoise ("lightseagreen") text */
+.turquoise {
+  color: #44C1C4 !important;
+}
+/* Purple-ish ("slateblue") text */
+.purple {
+  color: #6A5ACD !important;
+}
+/* Orange ("orange") text */
+.orange {
+  color: #FFA500 !important;
+}
+.yellow{
+  color: #D8BD44 !important;
+}
+.green {
+  color: #7CAE96 !important;
+}
+.grey {
+  color: #8AA19E !important;
+}
+.blue {
+  color: #54778B !important;
+}
+.red {
+  color: #fb6107 !important;
+}
+
+/* Grey text */
+.grey-mid {
+  color: #7f7f7f !important;
+}
+/* Grey text */
+.grey-vlight {
+  color: #e5e5e5 !important;
+}
+/* White text */
+.white {
+  color: #ffffff !important;
+}
+.black {
+  color: #000000 !important;
+}
+
+/* Mono-spaced font */
+.mono {
+  font-family: monospace;
+}
+/* Underline */
+.ul {
+  text-decoration: underline;
+}
+/* Overline */
+.ol {
+  text-decoration: overline;
+}
+.st {
+  text-decoration: line-through;
+}
+/* Fraction */
+.top{
+  display:inline-block;
+}
+.bottom{
+  border-top:solid black 1px;
+  display:inline-block;
+  clear:left;
+}
+
+.remark-code-line-highlighted {
+  background-color: rgba(249, 39, 114, 0.5);
+}
+
+.bigger {
+  font-size: 125%;
+}
+
+.smaller {
+  font-size: 95%;
+}
+
+.smallest {
+  font-size: 85%;
+}
+
+.mjx-chtml{
+  font-size: 103% !important;
+}
+
+/* Mono-spaced font, smaller */
+.mono-small {
+  font-family: monospace;
+  font-size: 20px;
+}
+.mono-small .mjx-chtml {
+  font-size: 103% !important;
+}
+
+.pseudocode, .pseudocode-small {
+  font-family: monospace;
+  background: #f8f8f8;
+  border-radius: 3px;
+  padding: 10px;
+}
+.pseudocode-small {
+  font-size: 20px;
+}
+
+.super{
+  vertical-align: super;
+  font-size: 70%;
+}
+.sub{
+  vertical-align: sub;
+  font-size: 70%;
+}
+
+.remark-code {
+  font-size: 70%;
+}
+
+
+
+blockquote {
+  border-left: solid 5px lightgray;
+  padding-left: 1em;
+}
+
+
+/* Bloque de referencia */
+cy-blockquote {
+  display: block;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  margin-left: 40px;
+  margin-right: 40px;
+  border-left: solid 10px #0D395F;
+  background-color: #AAA59F;
+  padding: 1em;
+  color: #fff;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+}
+
+ry-blockquote {
+  display: block;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  margin-left: 40px;
+  margin-right: 40px;
+  border-left: solid 10px #fc0b03;
+  background-color:#AAA59F;
+  padding: 1em;
+  color: #0D395F;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+}
+
+/* Attention */
+.attn {
+  font-weight: 500;
+  color: #e64173 !important;
+  font-family: 'Zilla Slab' !important;
+}
+
+/* Note */
+.note {
+  font-weight: 300;
+  font-style: italic;
+  color: #314f4f !important;
+  /* color: #cccccc !important; */
+  font-family: 'Zilla Slab' !important;
+}
+
+/* 9/10 left; 1/10 right */
+.left90 {
+  padding-top: 0.7em;
+  float: left;
+  width: 85%;
+}
+.right10 {
+  padding-top: 0.7em;
+  float: right;
+  width: 9%;
+}
+
+/* 95% left; 5% right */
+.left95 {
+  padding-top: 0.7em;
+  float: left;
+  width: 91%;
+}
+.right05 {
+  padding-top: 0.7em;
+  float: right;
+  width: 5%;
+}
+
+.left5 {
+  padding-top: 0.7em;
+  margin-left: 0em;
+  margin-right: -0.4em;
+  float: left;
+  width: 7%;
+}
+.left10 {
+  padding-top: 0.7em;
+  margin-left: -0.2em;
+  margin-right: -0.5em;
+  float: left;
+  width: 10%;
+}
+.left30 {
+  padding-top: 0.7em;
+  float: left;
+  width: 30%;
+}
+.right30 {
+  padding-top: 0.7em;
+  float: right;
+  width: 30%;
+}
+
+.left-third {
+  padding-right: 0.3em;
+  padding-bottom: 0.7em;
+  float: left;
+  width: 32%;
+}
+.left-wide {
+  padding-right: 0.3em;
+  padding-bottom: 0.7em;
+  float: left;
+  width: 40%;
+}
+
+.left-thin {
+  padding-right: 0.3em;
+  padding-bottom: 0.7em;
+  float: left;
+  width: 10%;
+}
+
+.right-full {
+  padding-top: 0.3em;
+  float: right;
+  width: 100%;
+}
+.left-full {
+  padding-top: 0.3em;
+  float: left;
+  width: 100%;
+}
+
+.thin-left {
+  padding-top: 0.7em;
+  margin-left: -1em;
+  margin-right: -0.5em;
+  float: left;
+  width: 27.5%;
+}
+
+/* Format tables */
+table {
+  color: #000000;
+  font-size: 14pt;
+  line-height: 100%;
+  border-top: 1px solid #ffffff !important;
+  border-bottom: 1px solid #ffffff !important;
+}
+th, td {
+  background-color: #ffffff;
+}
+table th {
+  font-weight: 400;
+}
+
+
+/* Extra left padding */
+.pad-left {
+  margin-left: 5%;
+}
+
+/* Extra left padding */
+.big-left {
+  margin-left: 15%;
+  margin-bottom: -0.4em;
+}
+
+/* Example */
+.ex {
+  font-weight: 300;
+  color: #cccccc !important;
+  font-style: italic;
+}
+
+.col-centered {
+  float: left;
+  width: 48%;
+  margin-top: -1em;
+  text-align: center;
+}
+
+.col-left {
+  float: left;
+  width: 47%;
+  margin-top: -1em;
+}
+.col-right {
+  float: right;
+  width: 47%;
+  margin-top: -1em;
+}
+
+.clear-up {
+  clear: both;
+  margin-top: -1em;
+}
+
+/* Bold */
+.b {
+  font-weight: bold;
+}
+/* Italic */
+.it {
+  font-style: italic;
+}
+
+
+/* Mas de diapos */
+
+.clear-slide {
+  background-color: #ffffff;
+  border-top: 0px solid #ffffff;
+}
+
+/* Extra left padding */
+.pad-left {
+  margin-left: 5%;
+}

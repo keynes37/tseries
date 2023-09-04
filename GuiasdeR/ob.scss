@@ -1,0 +1,42 @@
+/*-- scss:defaults --*/
+
+// Custom colours and variables
+$nit: #131516;
+$cup: #107895;
+$cup2: #9a2515;
+$pink: #e64173;
+$blue: #4285F4;
+
+.alert {
+  color: $pink;
+}
+
+.blut {
+  color: $blue;
+}
+
+.fg {
+  color: var(--col, $nit);
+}
+
+.bg {
+  background-color: var(--col, #fff);
+  padding: 0.1em;
+  border-radius: 5px;
+  display: inline-block;
+}
+
+.under {
+  text-decoration: underline red;
+}
+
+.line {
+  text-decoration: line-through;
+}
+
+.small {
+  font-size: 14px; /* Tamaño de fuente más pequeño */
+  font-family: Arial, sans-serif; /* Fuente personalizada */
+}
+
+

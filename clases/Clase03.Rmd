@@ -1,0 +1,769 @@
+---
+title: "Econometría II"
+subtitle: "<br/> Performance"
+author: "Carlos A. Yanes Guerra"
+institute: "Universidad del Norte"
+date: "2023-II"
+output:
+  xaringan::moon_reader:
+    css: 
+       - xaringan-themer.css
+       - new-css.css
+    lib_dir: libs
+    seal: false
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+---
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+style_mono_accent(
+  base_color = "#23395b",
+  header_font_google = google_font("Josefin Sans"),
+  text_font_google   = google_font("Montserrat", "300", "300i"),
+  code_font_google   = google_font("Fira Mono")
+)
+```
+
+```{r, setup, include = F}
+# devtools::install_github("dill/emoGG")
+library(pacman)
+p_load(readr, xts, astsa, fpp2,
+  broom, tidyverse,
+  latex2exp, ggplot2, ggthemes, ggforce, viridis, extrafont, gridExtra,
+  kableExtra, snakecase, janitor,
+  data.table, dplyr, estimatr,
+  lubridate, knitr, parallel,
+  lfe, emoGG,
+  here, magrittr, fontawesome, shiny, babynames
+)
+# Define pink color
+red_pink <- "#e64173"
+turquoise <- "#20B2AA"
+orange <- "#FFA500"
+red <- "#fb6107"
+blue <- "#2b59c3"
+green <- "#8bb174"
+grey_light <- "grey70"
+grey_mid <- "grey50"
+grey_dark <- "grey20"
+purple <- "#6A5ACD"
+slate <- "#314f4f"
+met_slate <- "#272822"
+# Dark slate grey: #314f4f
+# Opciones
+opts_chunk$set(
+  comment = "#>",
+  fig.align = "center",
+  fig.height = 7,
+  fig.width = 10.5,
+  warning = F,
+  message = F
+)
+opts_chunk$set(dev = "svg")
+options(device = function(file, width, height) {
+  svg(tempfile(), width = width, height = height)
+})
+options(crayon.enabled = F)
+options(knitr.table.format = "html")
+# A blank theme para ggplot
+theme_empty <- theme_bw() + theme(
+  line = element_blank(),
+  rect = element_blank(),
+  strip.text = element_blank(),
+  axis.text = element_blank(),
+  plot.title = element_blank(),
+  axis.title = element_blank(),
+  plot.margin = structure(c(0, 0, -0.5, -1), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_simple <- theme_bw() + theme(
+  line = element_blank(),
+  panel.grid = element_blank(),
+  rect = element_blank(),
+  strip.text = element_blank(),
+  axis.text.x = element_text(size = 18, family = "STIXGeneral"),
+  axis.text.y = element_blank(),
+  axis.ticks = element_blank(),
+  plot.title = element_blank(),
+  axis.title = element_blank(),
+  # plot.margin = structure(c(0, 0, -1, -1), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes_math <- theme_void() + theme(
+  text = element_text(family = "MathJax_Math"),
+  axis.title = element_text(size = 22),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, 0.15, 0, 0, unit = "lines")),
+  axis.line = element_line(
+    color = "grey70",
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.15, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes_serif <- theme_void() + theme(
+  text = element_text(family = "MathJax_Main"),
+  axis.title = element_text(size = 22),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, 0.15, 0, 0, unit = "lines")),
+  axis.line = element_line(
+    color = "grey70",
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.15, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes <- theme_void() + theme(
+  text = element_text(family = "Fira Sans Book"),
+  axis.title = element_text(size = 18),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, 0.15, 0, 0, unit = "lines")),
+  axis.line = element_line(
+    color = grey_light,
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.15, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_set(theme_gray(base_size = 20))
+# Nombres de las columnas para la regresión
+reg_columns <- c("Term", "Est.", "S.E.", "t stat.", "p-Value")
+# Formato de p valores
+format_pvi <- function(pv) {
+  return(ifelse(
+    pv < 0.0001,
+    "<0.0001",
+    round(pv, 4) %>% format(scientific = F)
+  ))
+}
+format_pv <- function(pvs) lapply(X = pvs, FUN = format_pvi) %>% unlist()
+# Tidy regression results table
+tidy_table <- function(x, terms, highlight_row = 1, highlight_color = "black", highlight_bold = T, digits = c(NA, 3, 3, 2, 5), title = NULL) {
+  x %>%
+    tidy() %>%
+    select(1:5) %>%
+    mutate(
+      term = terms,
+      p.value = p.value %>% format_pv()
+    ) %>%
+    kable(
+      col.names = reg_columns,
+      escape = F,
+      digits = digits,
+      caption = title
+    ) %>%
+    kable_styling(font_size = 20) %>%
+    row_spec(1:nrow(tidy(x)), background = "white") %>%
+    row_spec(highlight_row, bold = highlight_bold, color = highlight_color)
+}
+# A few extras
+xaringanExtra::use_xaringan_extra(c("tile_view", "fit_screen"))
+xaringanExtra::use_clipboard()
+xaringanExtra::use_share_again()
+xaringanExtra::style_share_again(
+  share_buttons = c("twitter", "linkedin", "pocket")
+)
+```
+
+name: xaringan-title
+class: inverse, left, bottom
+background-image: url(pictures/picuniform.jpg)
+background-size: cover
+
+# **`r rmarkdown::metadata$title`**
+----
+
+## **`r rmarkdown::metadata$subtitle`**
+
+### `r rmarkdown::metadata$author`
+### `r rmarkdown::metadata$date`
+
+```{r xaringanExtra-share-again, echo=FALSE}
+xaringanExtra::use_share_again()
+```
+---
+layout: true
+# Performance de Pronosticos
+---
+
+--
+
+## Modelos de series y testeo
+
+--
+
+* Las .hi[series] de tiempo deben aparte de cumplir con una serie de supuestos (sobre todo de consistencia de estimadores). Sus .hi-orange[predicciones] también deben ser sometidas a ciertas reglas y **test** con el objeto de ser muy técnicos con esto.
+
+### La parte residual
+
+--
+
+`r fa("fighter-jet", fill="blue")` Los errores son contemplados como:
+
+--
+
+$$\epsilon_t= y_{t}- \hat{y}_{t+1}$$
+---
+
+--
+
+## Mean Absolute Error (MAE)
+
+--
+
+> La media del valor absoluto del error se contempla como:
+
+$$\text{MAE}=\left|\frac{\sum \epsilon_t}{n}\right|$$
+--
+
+Cuando se comparan métodos de .hi[pronósticos] aplicados a una sola serie temporal, o a varias series temporales con las mismas unidades, el indicador de MAE es popular porque es fácil de entender y de calcular. Un método de .hi[pronósticos] que minimice el MAE conducirá a previsiones de la mediana de la serie.
+
+---
+
+--
+
+## Root Mean Square Error (RMSE)
+
+--
+
+> La raíz del error cuadratico medio se establece como:
+
+$$\text{RMSE}=\sqrt{\frac{\sum \epsilon_t^2}{n}}$$
+--
+
+Tiende a ser un poco mas complejo la interpretación. Sin embargo cuando se tienen varios niveles de pronostico lo mejor es tener el menor de todos ellos. El .hi-purple[principio] de minimización del error sigue permanente en estas estimaciones.
+
+---
+
+--
+
+## Mean Absolute Percentage Error
+
+--
+
+> Esta dado por el error porcentual esto es $p_t= 100 \times \frac{\epsilon_t}{y_t}$ y su medida singular se da por:
+
+$$\text{MAPE}=\frac{\sum|p_t|}{n}$$
+
+--
+
+Tiene algunas desventajas sobre todo cuando $y_t=0$, o inclusive en un caso particular va a ser infinito o tener valores de la serie muy cerca de cero. Por eso se hace una corrección propuesta por Armstrong (1978) y se establece 
+
+--
+
+$$sMAPE= \text{promedio} \left[\frac{200\times|y_t-\hat{y}_t|}{(y_t+\hat{y}_t)}\right]$$
+
+--
+
+Aunque tambien tiene sus desventajas. Se vuelve útil en algunas ocasiones.
+
+---
+
+--
+
+## Scaled Errors
+
+--
+
+> Es alternativo al test de sMAPE fue propuesto por Hyndman y Koehler (2006). Intenta comparar la precisión del pronostico incluso en series que tienen distintas unidades. Para series no estacionales se propone:
+
+$$q_j=\frac{\epsilon_j}{\frac{1}{T-1}\sum|y_t-y_{t-1}|}$$
+
+--
+
+De tal manera que si desea mirar la parte estacional es simplemente:
+
+--
+
+$$q_j=\frac{\epsilon_j}{\frac{1}{T-m}\sum_{t=m+1}|y_t-y_{t-m}|}$$
+
+--
+
+Finalmente, el test queda como:
+
+--
+
+$$MASE= \text{Promedio} \left(|q_j|\right)$$
+---
+
+--
+
+```{r, echo=FALSE, out.width="70%", dev = "svg"}
+beer2 <- window(ausbeer,start=1992,end=c(2007,4))
+beerfit1 <- meanf(beer2,h=10)
+beerfit2 <- rwf(beer2,h=10)
+beerfit3 <- snaive(beer2,h=10)
+autoplot(window(ausbeer, start=1992)) +
+  autolayer(beerfit1, series="Promedio", PI=FALSE) +
+  autolayer(beerfit2, series="Naïve", PI=FALSE) +
+  autolayer(beerfit3, series="Naïve Estacional", PI=FALSE) +
+  xlab("Años") + ylab("Megalitros") +
+  ggtitle("Producción trimestral de cervezas en Australia") +
+  guides(colour=guide_legend(title="Pronostico"))
+```
+
+---
+
+--
+
+## Performance de modelos
+
+--
+
+```{r, echo=FALSE}
+beer3 <- window(ausbeer, start=2008)
+accuracy(beerfit1, beer3)
+accuracy(beerfit2, beer3)
+accuracy(beerfit3, beer3)
+```
+
+---
+
+--
+
+## Coeficiente de Theil
+
+--
+
+> Así como es funcional para desigualdad, tambien lo es para métodos de pronosticos. Queremos que si la serie original se comporta de cierta manera, la serie predicha tambien haga lo mismo. Su estipulacion va con raices de medias.
+
+$$\text{Coeficiente Theil}=\frac{\sqrt{promedio\;\epsilon_t^2}}{\sqrt{promedio\;y_t}+\sqrt{promedio\;\hat{y}_t}}$$
+
+--
+
+Como en desigualdad, si Theil se hace (1) es lo peor en distribución. Queremos que nuesto modelo de estimación sea cercano a (0) para tener un muy buen .hi[ajuste].
+
+---
+layout: false
+class: middle, center, inverse
+
+# Modelos univariados autoregresivos
+
+---
+layout: true
+# Modelos univariados
+
+---
+
+--
+
+Redefiniendo lo del operador .hi[Rezago] o "Lag"" es representado por la letra (L).
+        
+$$\begin{aligned}
+Ly_{t}=y_{t-1}& &Lc=c\\
+L^{n}y_{t}=y_{t-n}& &L^{0}y_{t}=y_{t}\\
+L^{2}y_{t}=y_{t-2}& &L^{k}L^{j}=L^{k+j}\\
+                  &L^{-1}(Ly_{t})=Ly_{t-1}=y_{t}&
+\end{aligned}$$
+
+
+--
+
+¿Cómo sería un modelo de $y_{t}=\phi y_{t-1} + \epsilon_{t}$, expresado en términos de rezago?
+
+--
+
+**R./** $$y_{t}=\phi L y_{t} + \epsilon_{t}$$
+
+--
+
+Ahora uno como $y_{t}=\phi y_{t-1} + \phi y_{t-7}+ \epsilon_{t}$
+
+---
+
+--
+
+## Operador rezago en AR(1)
+
+--
+
+$$\begin{aligned}
+y_t=\phi y_{t-1}+& \epsilon_t\\
+y_t-\phi y_{t-1}=& \epsilon_t\\
+y_t-\phi Ly_{t}=& \epsilon_t
+\end{aligned}$$
+
+--
+
+esto nos da que:
+
+--
+
+$$\boxed{y_t-\phi Ly_{t}= \epsilon_t}$$
+
+--
+
+***Recuerde por un momento la formula de Taylor***
+
+--
+
+$$1+\color{red}{\rho}+\color{purple}{\rho}^2+\color{red}{\rho}^3+\cdots= \sum\limits_{i=1}^{\infty}\rho^i=\frac{1}{1-\rho}$$
+---
+
+--
+
+Regresando al caso
+
+--
+
+$$\begin{aligned}
+y_t-\phi Ly_{t}=& \epsilon_t\\
+y_t= \frac{1}{1-\phi L}& \epsilon_t
+\end{aligned}$$
+
+--
+
+Acá tenemos un par de condiciones y son:
+
+--
+
+Si $|\phi|<1$, entonces $(1-\phi L)^{-1}$ existe por eso de:
+
+--
+
+$$(1-\phi L)^{-1}= \frac{1}{(1-\phi L)}=1+\phi L+\phi^2 L+\phi^3 L^3=\sum\limits_{i=1}^{\infty}\phi^i L^i$$
+
+--
+
+$$\begin{aligned}
+y_t-\phi Ly_{t}=& \epsilon_t\\
+y_t(1-\phi L)=& \epsilon_t\\
+y_t=(1-\phi L)^{-1}&\epsilon_t\\
+y_t=(1+\phi L+\phi^2 L+&\phi^3 L^3+\cdots)\epsilon_t\\
+y_t=\epsilon_t+\phi \epsilon_{t-1}+\phi^2 \epsilon_{t-2}+&\phi^3 \epsilon_{t-3}+\cdots
+\end{aligned}$$
+
+---
+
+--
+
+## Ruido blanco
+
+--
+
+<cy-blockquote>
+Un proceso **estocástico** (lo mas independiente) se considera aleatorio, posee una característica o estructura no discernible, su proceso cambia a través del tiempo. Ejemplo: El Baloto electrónico.</cy-blockquote>
+
+
+--
+
+```{r, echo=FALSE, out.width="70%"}
+w=rnorm(500,0,1) # 500 N(0,1)
+plot.ts(w, main="Ruido Blanco")
+```
+
+---
+
+--
+
+## Ruido blanco
+
+--
+
+$Y_{t}= \epsilon_{t}, t=1,2,3 \dots T$, es ruido blanco si y solo si:
+
+- Media cero: $E(Y_{t})= 0 \; \forall t$.
+- Varianza constante: $Var(Y_{t})=\sigma^{2}$ y este es $< \infty$. 
+- Covarianza cero: $Cov(Y_{i}, Y_{j})=0$ $\forall \; i\neq j$. 
+
+--
+
+Cuando hace lanzamientos con un dado. La media es de 3.5 (21/6), La probabilidad de que salga un valor es de 1/6 y el evento (i) que ocurre al lanzarlo es independiente de (j), es decir, el nuevo lanzamiento no depende del anterior ni tampoco de su futuro.
+
+---
+layout: false
+class: middle, center, inverse
+
+# Con respecto a Máxima verosimilitud
+
+---
+layout: true
+# Máxima verosimilitud
+
+---
+
+--
+
+<cy-blockquote>El método de máxima verosimilitud (Maximum Likelihood Estimation) es un enfoque estadístico utilizado para estimar los **parámetros** de un modelo probabilístico a partir de un conjunto de observaciones o datos. El objetivo del método es encontrar los valores de los parámetros que maximizan la probabilidad de observar los datos que tenemos, asumiendo que los datos siguen una cierta distribución de probabilidad.</cy-blockquote>
+
+--
+
+```{r, echo=FALSE, out.width="40%", dev = "svg"}
+# Datos de ejemplo
+theta <- seq(5, 15, length.out = 100)
+likelihood <- dnorm(theta, mean = 10, sd = 1)  # Distribución normal con media 10 y desviación estándar 1
+
+# Crear el dataframe
+df <- data.frame(theta, likelihood)
+
+# Crear el gráfico con ggplot2
+ggplot(df, aes(x = theta, y = likelihood)) +
+  geom_line() +
+  labs(x = TeX("$\\hat{\\theta}$"), y = TeX("$L(\\theta | x)$")) +
+  theme_axes_math
+  #theme_axes_serif
+  #theme_minimal() +
+  #theme(axis.title = element_text(size = 15),
+        #axis.text = element_text(size = 12),
+        #legend.position = "none")
+```
+
+
+---
+
+Se debe empezar desde la composición de un vector de característica aleatoria y con una distribución que depende de un parámetro desconocido como $(\Theta)$, por tanto se tiene que $X \in \left \{ x_{1},x_{2},x_{3}, \cdots, x_{n}\right \}$. Por tanto la función de verosimilitud de este vector vendrá a ser dada como:
+
+--
+
+$$L(\Theta)= (fx_{1},fx_{2},fx_{3}, \cdots, fx_{n}) ( x_{1},x_{2},x_{3}, \cdots, x_{n}|\Theta)$$
+--
+
+Cuando las variables sean independientes (explicativas) entonces se procede a establecer la función de verosimilitud como:
+
+--
+
+$$L(\Theta)= fx_{1}(x_{1};\Theta),fx_{2}(x_{2};\Theta), fx_{3}(x_{3};\Theta) \cdots, fx_{n}(x_{n};\Theta)$$
+
+--
+
+Si dado el caso, estas variables resultan ser idénticamentes distribuidas, entonces se tendrá:
+
+--
+
+
+$$L(\Theta)= f(x_{1};\Theta),f(x_{2};\Theta), f(x_{3};\Theta) \cdots, f(x_{n};\Theta)$$
+Que sería el caso de una **muestra aleatoria**.
+
+---
+
+--
+
+Entonces, para obtener el valor de $(\Theta)$ que maximiza a la función de verosimilitud se debe establecer la estimación de $L(\Theta)$ o estimador verosímil. La razón principal de calculo, debe ser encontrar un valor numérico observable $(x_{1},x_{2},x_{3},\cdots,x_{n})$, de la muestra aleatoria tenga probabilidad máxima.
+
+--
+
+Sea una muestra aleatoria (m.a), con valores $X_{1},\dots,X_{n} \sim f(X | \theta)$, se debe encontrar el estimador $\theta=?$ que **maximiza** la función.
+
+--
+
+- .hi-purple[Primer paso]: es plantear la función de máxima verosimilitud:
+
+.pad-left[
+$L \left( \theta | x \right)= \prod_{i=1}^{n} f \left ( x_{i} | \theta  \right )$ 
+]
+
+--
+    
+- .hi-purple[Segundo paso]: es tratar de encontrar la referencia del estimador que es:
+
+$$L \left ( \theta_{1} | x \right ) > L \left ( \theta_{2} | x \right )$$
+
+Si lo anterior ocurre $\Rightarrow \theta_{1} = \theta$ y será mas **verosímil** que  $\theta_{2} = \theta$
+
+--
+
+- .hi-purple[Tercer paso]: es escoger ese mejor estimador (mas creíble), es decir, 
+$\widehat{\theta } \in \Theta$.
+---
+
+--
+
+Entender lo anterior no es tan trivial, se hace necesario conocer que la estimación máxima verosimilitud (E.M.V) este en función de los valores provistos:
+
+--
+
+$$\widehat{\theta}=E.M.V \left ( \theta |  X_{1}, \dots, X_{n} \right ) = f  \left ( X_{1}, \dots, X_{n} \right)$$
+--
+
+Lo que en mejores términos vendría a ser: 
+
+$$L= \left ( \widehat{\theta} |  X_{1}, \dots, X_{n} \right ) = \underset{\left \{ \theta \ \in \ \Theta \right \}}{max} L \left ( \theta | X_{1}, \dots, X_{n} \right )$$
+---
+layout: false
+class: middle, center
+
+# Veamos un ejemplo 🤓
+----
+
+---
+layout: true
+# Ejemplo: Máxima Verosimilitud
+---
+
+--
+
+Sea la siguiente función definida como:
+
+--
+
+$$f(x,\theta)= \frac{1}{\theta} e^{\frac{-x}{\theta}} \ ; \ x >0 \ ; \ \theta>0$$
+--
+
+Halle el estimador $\theta$
+
+--
+
+Debemos plantear la .hi[función de densidad] de cada una de las variables de una m.a y esto es: Tenemos que las variables son $(x_{1},\dots, x_{n})$ y la función de cada una de ellas vendrá a ser:
+
+
+--
+
+$$f(x_{1},\theta)= \frac{1}{\theta} e^{\frac{-x_{1}}{\theta}} \ ; \ f(x_{2},\theta)= \frac{1}{\theta} e^{\frac{-x_{2}}{\theta}} \ ; \ f(x_{n},\theta)= \frac{1}{\theta} e^{\frac{-x_{n}}{\theta}}$$
+
+--
+
+La idea es resolver el .hi[producto] o multiplicación de las funciones usando la formula del **logaritmo de verosimililtud** y esto resulta:
+
+--
+
+$$L \left ( \widehat{\theta} \ | \ X_{1}, \dots, X_{n} \right ) = \frac{1}{\theta} e^{\frac{-x_{1}}{\theta}} * \frac{1}{\theta} e^{\frac{-x_{2}}{\theta}} *\cdots * \frac{1}{\theta} e^{\frac{-x_{n}}{\theta}}$$
+
+---
+
+--
+
+Para lo cual, simplificamos la expresión (lo mas que se pueda\footnote{Acá es útil utilizar todas las herramientas de calculo básico y álgebra.})
+
+--
+
+$$L\left(\widehat{\theta} \ | \  X_{1}, \dots, X_{n} \right ) = \frac{1}{\theta^{n}} e^{\left \{\frac{-x_{1}}{\theta}+\frac{-x_{2}}{\theta}+\cdots+\frac{-x_{n}}{\theta} \right\}}$$
+--
+
+Obteniendo de forma mas simple:
+\begin{equation*}
+    L \left ( \widehat{\theta} \ | \  X_{1}, \dots, X_{n} \right ) = \frac{1}{\theta^{n}} e^{- \frac{1}{\theta} \left \{ x_{1}+x_{2}+\cdots+ x_{n} \right \} } 
+\end{equation*}
+
+--
+
+Que haciendo mas simple la ecuación puede ser reemplazada usando el termino de la sumatoria:
+
+--
+
+\begin{equation*}
+    L \left ( \widehat{\theta} \ | \  X_{1}, \dots, X_{n} \right ) = \frac{1}{\theta^{n}} e^{ - \frac{1}{\theta} \sum x_{i} } 
+\end{equation*}
+
+El siguiente proceso será derivar.
+---
+
+--
+
+Toda la expresión que ha quedado simplificada y de ahí aplicar el despeje como tal, resultando:
+
+--
+
+Estableciendo la condición de primer orden:
+
+--
+
+\begin{equation*}
+\frac{\partial L (x_{1},\dots, x_{n}, \theta) }{\partial \theta}=0
+\end{equation*}
+
+--
+
+Tomar la expresión tal cual se encuentra situada seria algo complejo. Una forma de linearizar es aplicando logaritmos a la expresión de M.V y de ahí si derivar.
+
+--
+
+\begin{equation*}
+lnL= ln \left ( \frac{1}{\theta^{n}} \right) + Ln e^{-\frac{1}{\theta}\sum x_{i}}
+\end{equation*}
+
+--
+
+Se aplican todas las propiedades de Logaritmo.
+
+\begin{equation*}
+lnL= ln (1) - n \ ln \theta - \frac{1}{\theta} \sum x_{i} Ln (e)
+\end{equation*}
+
+---
+
+--
+
+Conocemos que el logaritmo de (1) es cero y que el Ln de (e) es 1, por ende ahora nos encontramos con:
+
+--
+
+\begin{equation*}
+lnL=  - n \ ln \theta - \frac{1}{\theta} \sum x_{i}
+\end{equation*}
+
+--
+
+Derivando la expresión con respecto a $\theta \Rightarrow$
+
+--
+
+\begin{equation*}
+\frac{\partial Ln L}{\partial \theta}= - \frac{n}{\theta}+\frac{\sum x_{i}}{\theta^{2}}=0
+\end{equation*}
+
+--
+
+Despejando $\theta$:
+
+--
+
+\begin{equation*}
+\frac{\sum x_{i}}{\theta^{2}}=\frac{n}{\theta}
+\end{equation*}
+
+--
+
+Dando como resultado:
+
+--
+
+\begin{equation*}
+\theta = \frac{\sum x_{i}}{n}
+\end{equation*}
+
+--
+
+Para este caso el estimador $\theta= \overline{X}$. 
+
+
+---
+layout:false
+# Bibliografía
+
+`r fa('book')` Chatfield, C. (2000). *Time-series forecasting*. CRC press.
+
+`r fa('book')` Hyndman, R.J., & Athanasopoulos, G. (2021). *Forecasting: principles and practice*, 3rd edition, OTexts: Melbourne, Australia.
+
+`r fa('book')` Righetti, N., (2022). *Time Series Analysis With R*. Bookdown.
+
+`r fa('book')` Shumway, R., & Stoffer, D. (2019). *Time series: a data analysis approach using R*. CRC Press.
+
+---
+name: adios
+class: middle
+
+.pull-left[
+# **¡Gracias!**
+<br/>
+## Del contorno de series
+
+### Seguimos aprendiendo
+]
+
+.pull-right[
+.right[
+<img style="border-radius: 50%;"
+src="https://avatars.githubusercontent.com/u/39503983?v=4"
+width="150px" />
+
+`r fontawesome::fa("link")` [Syllabus/ Curso](https://pomelo.uninorte.edu.co/pls/prod/bwckctlg.p_disp_course_detail?cat_term_in=202210&subj_code_in=ECO&crse_numb_in=0010)<br/>
+`r fontawesome::fa("twitter")` [@keynes37](https://twitter.com/keynes37)<br/>
+`r fontawesome::fa("paper-plane")`[ cayanes@uninorte.edu.co](mailto:cayanes@uninorte.edu.co)
+]
+]
