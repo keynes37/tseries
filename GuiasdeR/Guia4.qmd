@@ -1,0 +1,288 @@
+---
+title: "Econometría II: ARIMA"
+subtitle: "Departamento de Economía"
+author: "Carlos A. Yanes G."
+format: 
+  revealjs:
+    footer: "Universidad del Norte"
+    theme: [simple, ob.scss]
+    logo: micrologouni.png
+    embed-resources: true
+    code-fold: true
+from: markdown+emoji
+editor: visual
+date: last-modified
+bibliography: refs.bib
+---
+
+## Paquetes con que se trabaja la sesión
+
+::: callout-note
+## R libraries
+
+Los paquetes que vamos a utilizar y que se deben [instalar]{.bg style="--col: #FFC7A2"} para ser usados en clase son:
+
+``` r
+install.packages(c("pacman","TSstudio", "urca", "forecast", "devtools"))
+
+# Si tiene problemas con TSstudio podemos mirar entonces en Github
+devtools::install_github("RamiKrispin/TSstudio")
+```
+:::
+
+::: callout-note
+## Ejecución
+
+No olvide que debe desde luego tener presente en su documento de *R Markdown* cargar estos paquetes.
+
+``` r
+library(pacman)
+p_load(tidyverse, TSstudio, tseries, urca, forecast)
+```
+:::
+
+# Preambulo {{< fa bug >}}
+
+## Modelar ARIMA
+
+:::{.incremental}
+- Debemos primero mirar la [estacionariedad]{.alert}.
+- Si no es estacionaria la serie hay que [diferenciar]{.blut}.
+- Despues de testear procedemos a leer sus funciones de autocovarianzas denominadas [correlogramas]{.bg style="--col: #FFFF00"}
+- Constatar el [RUIDO BLANCO]{.alert}
+- Predecir
+:::
+
+## Datos
+
+::: callout-tip
+## Cartera comercial de bancos
+
+-   Enero de 2016 hasta Abril 2023
+-   Web site de [Superintendencia Financiera](https://www.superfinanciera.gov.co/inicio/informes-y-cifras/cifras/establecimientos-de-credito/informacion-periodica/mensual/evolucion-cartera-de-creditos-60950)
+-   Frecuencia Mensual
+:::
+
+::: callout-note
+## Agradecimientos
+
+Esta sesión se construye a partir de los elementos de los paquetes de `tseries` y [@krispin2019hands], quien desarrolló el paquete `TSstudio` respectivamente
+:::
+
+```{r, set}
+#| include: false
+#| warning: false
+ 
+library(pacman)
+p_load(readxl, TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, tseries)
+bd <- read_excel("cartera.xlsx")
+bd <- bd |> select(Cartera)
+cartera <- ts(bd, frequency=12, start=c(2016,1))
+```
+
+
+# A lo que vinimos
+
+## Graficar normal
+
+```{r}
+#| echo: true
+ts.plot(cartera,
+        title = "Cartera comercial de Bancos", 
+        Ytitle = "En Miles de Millones de $",
+        Xtitle = "Años")
+```
+
+
+## Prueba de estacionariedad (1)
+
+::: panel-tabset
+## DF
+```{r}
+#| echo: true
+prim <- ur.df(y=cartera, lags=0, type='none')
+summary(prim)
+```
+
+## DF C
+
+```{r}
+#| echo: true
+prim2 <- ur.df(y=cartera, lags=0, type='drift')
+summary(prim2)
+```
+
+## DF C+T
+
+```{r}
+#| echo: true
+prim3 <- ur.df(y=cartera, lags=0, type='trend')
+summary(prim3)
+```
+
+## DF+
+```{r}
+#| echo: true
+# adf.test(cartera,k=0)
+adf.test(cartera) # automático
+```
+:::
+
+## Analisis de funciones de autocorrelación
+
+::: panel-tabset
+## Anotaciones
+- Permiten mirar o -sospechar- si la serie es estacionaria
+- La serie de cartera por ninguna parte parece ser [estacionaria]{.bg style="--col: #00FFFF"}
+
+## ACF
+```{r}
+#| echo: true
+acf(cartera, lag.max = 20)
+```
+
+## PAC
+```{r}
+#| echo: true
+pacf(cartera, lag.max = 20)
+```
+:::
+
+## Comportamiento Lags
+
+```{r}
+#| echo: true
+ts_lags(cartera)
+```
+
+## Comportamiento Lags
+
+```{r}
+#| echo: true
+ts_lags(cartera, lags=c(1,4,6,11))
+```
+
+## Diferenciemos
+
+```{r}
+#| echo: true
+ts_plot(diff(cartera, lag = 1),
+        title = "Transformación en Nivel",
+        Xtitle = "Años",
+        Ytitle = "Diferencia de cartera")
+```
+
+## Diferenciación opcional
+
+```{r}
+#| echo: true
+ts_plot(diff(log(cartera), lag = 1),
+        title = "Transformación en logaritmo",
+        Xtitle = "Años",
+        Ytitle = "Diferencia/logaritmica de cartera")
+```
+
+## Nuevamente test e identificación
+
+::: panel-tabset
+## DF+
+
+```{r}
+#| echo: true
+dcartera<-diff(cartera, lag=1)
+adf.test(dcartera)
+```
+
+
+## DF C+T
+
+```{r}
+prim4 <- ur.df(dcartera, lags=0, type='trend')
+summary(prim4)
+```
+
+## Recuerde
+
+```{r}
+library(plotly) 
+set.seed(12345) 
+p1 <- plot_ly() 
+p2 <- plot_ly() 
+for(i in 1:20){
+   rm <- NULL
+   rw <- arima.sim(model = list(order = c(0, 1, 0)), n = 500) 
+   p1 <- p1 %>% add_lines(x = time(rw), y = as.numeric(rw))
+   p2 <- p2 %>% add_lines(x = time(diff(rw)), y = as.numeric(diff(rw))) 
+}
+
+p1 %>% layout(title = "Simulación caminata aleatoria", 
+              yaxis = list(title = "Valores"), 
+              xaxis = list(title = "Indice")) %>% 
+   hide_legend()
+```
+:::
+
+## Identificación para pronostico
+
+```{r}
+#| echo: true
+par(mfrow=c(1,2)) 
+acf(dcartera)
+pacf(dcartera)
+```
+
+## Modelos
+
+::: panel-tabset
+
+## Modelo 1
+```{r}
+#| echo: true
+arima_1 <- arima(cartera, order = c(1,1,0))
+arima_1
+```
+
+## Modelo 2
+```{r}
+#| echo: true
+arima_2 <- arima(cartera, order = c(2,1,0))
+arima_2
+```
+:::
+
+# Tenemos modelo!!
+
+## Test de Ruido Blanco
+
+```{r}
+#| echo: true
+forecast::checkresiduals(arima(cartera, order = c(1, 1, 0), include.mean = FALSE))
+```
+
+## Pronostico de cartera
+
+```{r}
+#| echo: true
+
+arima_fc <- forecast(arima_1, h = 12)
+plot_forecast(arima_fc,
+ title = "Pronostico modelo AR(1)", 
+ Ytitle = "Valores",
+ Xtitle = "Años")
+
+```
+
+## Valores
+
+```{r}
+#| echo: true
+arima_fc
+```
+
+
+# Gracias por su atención!! {background-color="#cc0000"}
+
+## Referencias
+
+::: {#refs}
+:::

@@ -682,8 +682,6 @@ plot_forecast(HWm)
 #| echo: true
 plot_forecast(HWd)
 ```
-
-
 :::
 
 ## Status
