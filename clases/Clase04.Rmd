@@ -1,0 +1,762 @@
+---
+title: "Econometría II"
+subtitle: "<br/> ARIMA"
+author: "Carlos A. Yanes Guerra"
+institute: "Universidad del Norte"
+date: "2023-II"
+output:
+  xaringan::moon_reader:
+    css: 
+       - xaringan-themer.css
+       - new-css.css
+    lib_dir: libs
+    seal: false
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+---
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+style_mono_accent(
+  base_color = "#23395b",
+  header_font_google = google_font("Josefin Sans"),
+  text_font_google   = google_font("Montserrat", "300", "300i"),
+  code_font_google   = google_font("Fira Mono")
+)
+```
+
+```{r, setup, include = F}
+# devtools::install_github("dill/emoGG")
+library(pacman)
+p_load(readr, xts, astsa, fpp2,
+  broom, tidyverse,
+  latex2exp, ggplot2, ggthemes, ggforce, viridis, extrafont, gridExtra,
+  kableExtra, snakecase, janitor,
+  data.table, dplyr, estimatr,
+  lubridate, knitr, parallel,
+  lfe, emoGG,
+  here, magrittr, fontawesome, shiny, babynames
+)
+# Define pink color
+red_pink <- "#e64173"
+turquoise <- "#20B2AA"
+orange <- "#FFA500"
+red <- "#fb6107"
+blue <- "#2b59c3"
+green <- "#8bb174"
+grey_light <- "grey70"
+grey_mid <- "grey50"
+grey_dark <- "grey20"
+purple <- "#6A5ACD"
+slate <- "#314f4f"
+met_slate <- "#272822"
+# Dark slate grey: #314f4f
+# Opciones
+opts_chunk$set(
+  comment = "#>",
+  fig.align = "center",
+  fig.height = 7,
+  fig.width = 10.5,
+  warning = F,
+  message = F
+)
+opts_chunk$set(dev = "svg")
+options(device = function(file, width, height) {
+  svg(tempfile(), width = width, height = height)
+})
+options(crayon.enabled = F)
+options(knitr.table.format = "html")
+# A blank theme para ggplot
+theme_empty <- theme_bw() + theme(
+  line = element_blank(),
+  rect = element_blank(),
+  strip.text = element_blank(),
+  axis.text = element_blank(),
+  plot.title = element_blank(),
+  axis.title = element_blank(),
+  plot.margin = structure(c(0, 0, -0.5, -1), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_simple <- theme_bw() + theme(
+  line = element_blank(),
+  panel.grid = element_blank(),
+  rect = element_blank(),
+  strip.text = element_blank(),
+  axis.text.x = element_text(size = 18, family = "STIXGeneral"),
+  axis.text.y = element_blank(),
+  axis.ticks = element_blank(),
+  plot.title = element_blank(),
+  axis.title = element_blank(),
+  # plot.margin = structure(c(0, 0, -1, -1), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes_math <- theme_void() + theme(
+  text = element_text(family = "MathJax_Math"),
+  axis.title = element_text(size = 22),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, 0.15, 0, 0, unit = "lines")),
+  axis.line = element_line(
+    color = "grey70",
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.15, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes_serif <- theme_void() + theme(
+  text = element_text(family = "MathJax_Main"),
+  axis.title = element_text(size = 22),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, 0.15, 0, 0, unit = "lines")),
+  axis.line = element_line(
+    color = "grey70",
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.15, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes <- theme_void() + theme(
+  text = element_text(family = "Fira Sans Book"),
+  axis.title = element_text(size = 18),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, 0.15, 0, 0, unit = "lines")),
+  axis.line = element_line(
+    color = grey_light,
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.15, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_set(theme_gray(base_size = 20))
+# Nombres de las columnas para la regresión
+reg_columns <- c("Term", "Est.", "S.E.", "t stat.", "p-Value")
+# Formato de p valores
+format_pvi <- function(pv) {
+  return(ifelse(
+    pv < 0.0001,
+    "<0.0001",
+    round(pv, 4) %>% format(scientific = F)
+  ))
+}
+format_pv <- function(pvs) lapply(X = pvs, FUN = format_pvi) %>% unlist()
+# Tidy regression results table
+tidy_table <- function(x, terms, highlight_row = 1, highlight_color = "black", highlight_bold = T, digits = c(NA, 3, 3, 2, 5), title = NULL) {
+  x %>%
+    tidy() %>%
+    select(1:5) %>%
+    mutate(
+      term = terms,
+      p.value = p.value %>% format_pv()
+    ) %>%
+    kable(
+      col.names = reg_columns,
+      escape = F,
+      digits = digits,
+      caption = title
+    ) %>%
+    kable_styling(font_size = 20) %>%
+    row_spec(1:nrow(tidy(x)), background = "white") %>%
+    row_spec(highlight_row, bold = highlight_bold, color = highlight_color)
+}
+# A few extras
+xaringanExtra::use_xaringan_extra(c("tile_view", "fit_screen"))
+xaringanExtra::use_clipboard()
+xaringanExtra::use_share_again()
+xaringanExtra::style_share_again(
+  share_buttons = c("twitter", "linkedin", "pocket")
+)
+```
+
+name: xaringan-title
+class: inverse, left, bottom
+background-image: url(pictures/picuniform.jpg)
+background-size: cover
+
+# **`r rmarkdown::metadata$title`**
+----
+
+## **`r rmarkdown::metadata$subtitle`**
+
+### `r rmarkdown::metadata$author`
+### `r rmarkdown::metadata$date`
+
+```{r xaringanExtra-share-again, echo=FALSE}
+xaringanExtra::use_share_again()
+```
+---
+class: inverse
+
+# Preguntas de las sesiones anteriores?
+
+---
+layout: true
+# Estacionariedad
+
+---
+
+--
+
+<cy-blockquote>
+Una serie de tiempo $\{y_t\}$ es **estacionaria** si para cualquier $\rho$, la distribución de $(y_t,\dots,y_{t+\rho})$ no depende de $t$.
+</cy-blockquote>
+
+--
+
+Por ende, una serie es .hi[estacionaria] si:
+
+--
+
+* Aproximadamente tiene comportamiento horizontal
+* Es **Varianza** Constante
+* No posee patrones predecibles a largo plazo
+
+---
+
+--
+
+```{r, echo=FALSE, out.width="70%"}
+autoplot(dj) + ylab("Indice Dow Jones") + xlab("Día")
+```
+
+---
+
+--
+
+```{r, echo=FALSE, out.width="70%"}
+autoplot(hsales) + xlab("Años") + ylab("Ventas Totales") +
+  ggtitle("Ventas de viviendas nuevas en USA")
+```
+
+---
+
+--
+
+$Y_{t}$ es autorregresivo de orden 1 si:
+
+--
+
+$$Y_{t}= \alpha_{0}+ \alpha_{1}Y_{t-1} + \epsilon_{t}, \;  RB \; \epsilon_{t} \sim (0, \sigma^{2})$$
+
+--
+
+Con $\left | \alpha_{1}  \right | < 1$
+
+--
+
+Un modelo .hi[autorregresivo] mas general será constituido:
+
+--
+ 
+$$Y_{t}=\alpha_{0}+\alpha_{i}\sum_{i=1}^{\rho} Y_{t-i}+ \epsilon_{t}$$
+
+--
+
+Tome en consideración la detección de la media del proceso:
+
+--
+
+
+$$\mu_{y}= \frac{\alpha_{0}}{\left ( 1- \alpha_{1}-\alpha_{2}\right)}$$
+--
+
+Note que $|\alpha_1+\alpha_2|<1$. Esto es muy importante tener en cuenta.
+
+---
+
+--
+
+Constituir la detección radica en: (Tome por ejemplo)
+
+--
+
+$$Y_{t}= \alpha_{0}+0.25Y_{t-1}+0.125Y_{t-2}+\epsilon_{t}$$
+
+--
+
+Que despejando y desarrollando queda como:
+
+--
+
+$$Y_{t}-0.25Y_{t-1}-0.125Y_{t-2}=\alpha_{0}+\epsilon_{t}$$
+
+--
+ 
+Solo debe aplicar los operadores rezagos queda:
+
+--
+
+$$Y_{t}-0.25L^{1}-0.125L^{2}=\alpha_{0}+\epsilon_{t}$$
+
+--
+
+Como resultado las raíces del polinomio quedan:
+
+--
+
+$$Z_{1}=2 \quad Z_{2}=-4$$
+
+--
+
+**Ambas** raíces quedan por fuera del circulo unitario (lo teórico), por ende el proceso es estacionario.
+
+---
+
+--
+
+Un modelo AR(1), es aún mas facil de decir si es estacionario o no:
+
+--
+
+$$Y_{t}= \alpha_{0}+0.33Y_{t-1}+\epsilon_{t}$$
+
+--
+
+Se resuelve muy sencillo de la forma:
+
+--
+
+$$Y_{t}-0.33Y_{t-1}= \alpha_{0}+\epsilon_{t}$$
+
+--
+
+Factorizando, luego simplificando la ecuación y únicamente nos quedamos con la ecuación característica (Remplazando $(Y_{t}= Z_{t})$ vamos a tener: 
+$$Z_{t} -0.33Z_{t-1} = 0\; ;\; (1-0.33Z_t)\rightarrow \frac{1}{0.33}=Z_t$$.
+
+--
+
+La raíz de un AR(1) por consiguiente es $z=\frac{1}{\alpha}$ y siempre y cuando $|\alpha|<1$ el proceso carecera de **tendencia** .hi[estocástica]  
+
+---
+
+--
+
+## Problema con raíz unitaria
+
+--
+
+`r fa("sketch", fill="red")` Una caminata aleatoria es un ejemplo de esto, es una especie de AR $(\rho)=1$ o con $\alpha_1=1$.
+
+--
+
+`r fa("sketch", fill="red")` Si el .hi-purple[regresor] $\alpha_1$ tiene raíz unitaria, la serie de tiempo podrá tener distribución muy distinta a la **normal**. Incluso aún teniendo muestras grandes.
+
+--
+
+`r fa("sketch", fill="red")` Si dos (2) series estan correlacionadas y ambas poseen .hi[raíz] unitaria entonces tendremos el fenómeno de regresión .hi[espuria].
+
+--
+
+`r fa("sketch", fill="red")` Las series que poseen .hi[raíz] unitaria podran estar sesgadas a cero(0).
+
+--
+
+`r fa("sketch", fill="red")` Los correlogramas y la prueba de .hi[raíz] **unitaria** fue propuesta por .b[Dickey-Fuller] en 1970.
+
+---
+
+--
+
+### Test de Dickey-Fuller
+
+--
+
+Sea una serie:
+
+--
+
+$$y_t=\rho y_{t-1}+ e_t$$
+
+--
+
+$$y_t - y_{t-1}= \rho y_{t-1}- y_{t-1}+ e_t$$
+
+--
+
+Lo que viene a ser:
+
+--
+
+$$\Delta y_t=(\rho-1)y_{t-1}+ e_t$$
+--
+
+$$\Delta y_t=ay_{t-1}+ e_t$$
+
+--
+
+Si $\rho=1$, entonces la serie sigue una .b[caminata aleatoria]
+
+---
+
+--
+
+### Test de Dickey-Fuller
+
+--
+
+Planteamos la .hi[hipótesis] como:
+
+--
+
+$$\begin{aligned}
+H_0 &: a=0\\
+H_a &: a<0 \;, \text{serie estacionaria}
+\end{aligned}$$
+
+--
+
+`r fa("bell", fill="red")` La forma o manera de hacerlo es:
+
+--
+
+* Sin constante. *P.e*: $y_t=ay_{t-1}+e_t$
+
+* Con constante: $y_t=c+ay_{t-1}+e_t$
+
+* Con constante y tendencia: $y_t=c+\beta t_t+ay_{t-1}+e_t$
+
+--
+
+Podemos incluso asociar el estadístico del **Dickey-Fuller** que debe ser lo suficientemente grande para así .hi[rechazar] la hipótesis de raíz unitaria.
+
+---
+
+--
+
+### Resultado del test
+
+```{r, echo=FALSE}
+# Cargar la librería necesaria para el test de Dickey-Fuller
+library(tseries)
+
+# Generar una serie temporal (por ejemplo, AR(2) con phi1=0.1 y phi2=0.7)
+set.seed(123)
+n <- 100
+phi1 <- 0.7
+phi2 <- 0.2
+sigma <- 1
+ar2_series <- arima.sim(model = list(order = c(2, 0, 0), ar = c(phi1, phi2)), n = n, sd = sigma)
+
+# Aplicar el test de Dickey-Fuller
+adf_result <- adf.test(ar2_series)
+
+# Imprimir los resultados del test
+print(adf_result)
+```
+
+--
+
+### Para uno que si es estacionario
+
+--
+
+```{r, echo=FALSE}
+set.seed(123)
+n <- 100
+phi1 <- 0.7
+phi2 <- 0.2
+sigma <- 1
+ar2_series <- arima.sim(model = list(order = c(2, 4, 0), ar = c(phi1, phi2)), n = n, sd = sigma)
+
+# Aplicar el test de Dickey-Fuller
+adf_result <- adf.test(ar2_series)
+print(adf_result)
+```
+
+
+
+---
+
+--
+
+### Test de Dickey-Fuller aumentado
+
+--
+
+En algunas ocasiones puede que $e_t$ el error del modelo no sea .hi[RUIDO BLANCO]. Para esos casos, lo mejor es implementar el Dickey Fuller aumentado:
+
+--
+
+$$\Delta y_t=(c+)ay_{t-1}(\beta_0t)+\beta_1\Delta y_{t-1}+\cdots+\beta_k\Delta y_{t-k}+e_t$$
+
+--
+
++ La selección óptima de los rezagos, se hace a partir de criterios como el de Akaike, Bayes, entre otros.
+
+--
+
++ La hipótesis no cambia ni el uso de sus tablas tampoco.
+
+---
+
+--
+
+## Corrección de la NO estacionariedad
+
+--
+
+La .hi[diferenciación] permite .hi-orange[estabilizar] la media. Podemos corregir y tener:
+
+--
+
+$$\Delta y_t=y_t-y_{t-1}$$
+
+--
+
+Mas generalizado y en caso tal aun no sea la serie .hi[estacionaria]:
+
+--
+
+$$\begin{aligned}
+\Delta Y_t^2=&\Delta y_t-\Delta y_{t-1}\\
+=&(y_t-y_{t-1})-(y_{t-1}-y_{t-2})\\
+=&y_t-2y_{t-1}+y_{t-2}
+\end{aligned}$$
+
+--
+
+Su uso, solo obedece a estructuras bastante dependientes del tiempo y con demasiada variabilidad.
+
+
+---
+layout: false
+class: inverse, middle, center
+
+# Autocorrelación y autocovarianzas
+
+---
+layout: true
+# Autocorrelación
+
+---
+
+--
+
+<ry-blockquote>
+La .hi[autocovarianza] $\gamma_{s}$ de una serie $Y_{t}$ y cualquiera de sus rezagos $Y_{t-s}$, es igual al planteamiento de la formula de la covarianza entre dos variables. Para la autocovarianza del rezago de orden (0), este resulta ser la misma varianza.
+</ry-blockquote>
+
+--
+
+$$E \left[ \left ( Y_{t} - E(Y_{t}) \right) \left( Y_{t-s} - E(Y_{t-s}) \right) \right] = \gamma_{s}$$
+
+--
+    
+$$E \left[ \left ( Y_{t} - E(Y_{t}) \right) \left( Y_{t} - E(Y_{t}) \right) \right] = \gamma_{0}$$
+
+---
+
+--
+
+<ry-blockquote>
+Las .hi[**autocovarianzas**] dependen sin lugar a duda de las medidas de las series de tiempo, por tanto, es recomendable normalizar el uso de las varianzas que brinda el concepto de correlación, indice que va desde -1 a 1.
+</ry-blockquote>
+
+--
+
+$$\tau = \frac{\gamma_{s}}{\gamma_{0}} \; \text{o mejor} \; \rho=\frac{cov(Y_{t},Y_{t-s})}{\sqrt{ Var(Y_{t})Var(Y_{t-s})}}= \frac{cov(Y_{t},Y_{t-s})}{VarY_{t}}$$
+
+--
+
+.att[Por ejemplo]: para un proceso AR(1) tendríamos una (ACF):
+
+--
+
+$$\rho_s=\frac{cov(Y_{t},Y_{t-s})}{VarY_{t}}=\frac{\phi_1^s \gamma_0}{\gamma_0}=\phi_1^s$$
+---
+
+--
+
+```{r, echo=FALSE, out.width="70%"}
+# Cargar la librería necesaria para el análisis de series temporales
+library(stats)
+# Establecer el número de observaciones
+n <- 100
+# Definir los parámetros del proceso AR(1)
+phi <- 0.7
+sigma <- 1  # Desviación estándar del término de error
+
+# Generar una serie temporal AR(1)
+set.seed(123)  # Establecer una semilla para la reproducibilidad
+ar1_series <- arima.sim(model = list(order = c(1, 0, 0), ar = phi), n = n, sd = sigma)
+
+# Calcular y graficar la Función de Autocorrelación (ACF)
+acf(ar1_series, main = "ACF de un Proceso AR(1) con phi = 0.7")
+```
+
+---
+
+--
+
+```{r, echo=FALSE, out.width="70%"}
+# Cargar la librería necesaria para el análisis de series temporales
+library(stats)
+# Establecer el número de observaciones
+n <- 100
+# Definir los parámetros del proceso AR(1)
+phi <- -0.7
+sigma <- 1  # Desviación estándar del término de error
+
+# Generar una serie temporal AR(1)
+set.seed(123)  # Establecer una semilla para la reproducibilidad
+ar1_series <- arima.sim(model = list(order = c(1, 0, 0), ar = phi), n = n, sd = sigma)
+
+# Calcular y graficar la Función de Autocorrelación (ACF)
+acf(ar1_series, main = "ACF de un Proceso AR(1) con phi = -0.7")
+```
+
+---
+
+--
+
+```{r, echo=FALSE, out.width="70%"}
+# Establecer el número de observaciones
+n <- 100
+
+# Definir los parámetros del proceso AR(2)
+phi1 <- 0.1
+phi2 <- 0.7
+sigma <- 1  # Desviación estándar del término de error
+
+# Generar una serie temporal AR(2)
+set.seed(123)  # Establecer una semilla para la reproducibilidad
+ar2_series <- arima.sim(model = list(order = c(2, 0, 0), ar = c(phi1, phi2)), n = n, sd = sigma)
+
+# Calcular y graficar la Función de Autocorrelación (ACF)
+acf(ar2_series, main = "ACF de un Proceso AR(2) con phi1 = 0.1 y phi2 = 0.7")
+```
+
+---
+
+--
+
+```{r, echo=FALSE, out.width="70%"}
+library(stats)
+
+# Establecer el número de observaciones
+n <- 100
+
+# Definir los parámetros de los procesos AR(3)
+phi1 <- 0.4
+phi2 <- 0.7
+phi3 <- 0.9
+sigma <- 1  # Desviación estándar del término de error
+
+# Generar tres series temporales AR(3) con diferentes valores de phi
+set.seed(123)  # Establecer una semilla para la reproducibilidad
+ar1_series_1 <- arima.sim(model = list(order = c(1, 0, 0), ar = phi1), n = n, sd = sigma)
+ar1_series_2 <- arima.sim(model = list(order = c(1, 0, 0), ar = phi2), n = n, sd = sigma)
+ar1_series_3 <- arima.sim(model = list(order = c(1, 0, 0), ar = phi3), n = n, sd = sigma)
+
+# Crear un gráfico de 3x1 para mostrar las tres series temporales juntas
+par(mfrow = c(2, 2))
+acf(ar1_series_1, main = "ACF de un Proceso AR(1) con phi = 0.4")
+acf(ar1_series_2, main = "ACF de un Proceso AR(1) con phi = 0.7")
+acf(ar1_series_3, main = "ACF de un Proceso AR(1) con phi = 0.9")
+
+# Restablecer la configuración de gráficos
+par(mfrow = c(1, 1))
+
+```
+
+
+---
+
+--
+
+.attn[Pregunta]: Sea el siguiente proceso:
+
+--
+
+$$y_t=a+\phi_1y_{t-1}+\phi_2y_{t-2}+e_t$$
+
+*Deduzca la función de autocorrelación*
+
+--
+
+Si contamos con estacionariedad:
+
+--
+
+--
+.pad-left[
+$\rho_{1}=\frac{\gamma_1}{\gamma_0}=\frac{\phi_1\gamma_0+\phi_2\gamma_1}{\gamma_0}=\phi_1+\phi_2\rho_1\Rightarrow\frac{\phi_1}{1-\phi_2}$
+]
+
+--
+.pad-left[
+$\rho_{2}=\frac{\gamma_2}{\gamma_0}=\frac{\phi_1\gamma_1+\phi_2\gamma_0}{\gamma_0}=\phi_1\rho_1+\phi_2$
+]
+
+--
+.pad-left[
+$\text{y en general,}\;\rho_s=\phi_1\rho_{s-1}+\phi_2\rho_{s-2}\rightarrow \forall s>0$
+]
+--
+.pad-left[
+Se conoce como las ecuaciones de .hi-green[Yule-Walker] .pink[✔]
+]
+
+---
+
+--
+
+### Modelo Arima
+
+Podemos establecer que:
+
+--
+
+$$\underbrace{(1-{\color{#e64173}{\phi_1L}})}_{\color{#e64173}{\text{AR(1)}}} \underbrace{(1-L)y_t}_{\text{Primera diferencia}}= \underbrace{C+(1+\color{#6A5ACD}{\theta_1 L}) \epsilon_t}_{\color{#6A5ACD}{\text{MA(1)}}}$$
+
+--
+
+$AR(\rho):$ orden del Autorregresivo
+
+--
+
+$MA(\theta):$ orden de la media movil.
+
+--
+
+La diferencia depende del nivel de .hi[estacionariedad] que requiera la **serie**, p.e: arima(1,1,1)
+
+---
+layout:false
+# Bibliografía
+
+`r fa('book')` Chatfield, C. (2000). *Time-series forecasting*. CRC press.
+
+`r fa('book')` Hyndman, R.J., & Athanasopoulos, G. (2021). *Forecasting: principles and practice*, 3rd edition, OTexts: Melbourne, Australia.
+
+`r fa('book')` Shumway, R., & Stoffer, D. (2019). *Time series: a data analysis approach using R*. CRC Press.
+
+`r fa('book')` Campo, J. Notas de clase (MIMEO)
+
+---
+name: adios
+class: middle
+
+.pull-left[
+# **¡Gracias!**
+<br/>
+## Estacionariedad
+
+### Seguimos aprendiendo
+]
+
+.pull-right[
+.right[
+<img style="border-radius: 50%;"
+src="https://avatars.githubusercontent.com/u/39503983?v=4"
+width="150px" />
+
+`r fontawesome::fa("link")` [Syllabus/ Curso](https://pomelo.uninorte.edu.co/pls/prod/bwckctlg.p_disp_course_detail?cat_term_in=202210&subj_code_in=ECO&crse_numb_in=0010)<br/>
+`r fontawesome::fa("twitter")` [@keynes37](https://twitter.com/keynes37)<br/>
+`r fontawesome::fa("paper-plane")`[ cayanes@uninorte.edu.co](mailto:cayanes@uninorte.edu.co)
+]
+]
+

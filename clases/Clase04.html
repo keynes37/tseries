@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Econometría II</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Carlos A. Yanes Guerra" />
+    <script src="libs/header-attrs-2.22/header-attrs.js"></script>
+    <link href="libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
+    <script src="libs/tile-view-0.2.6/tile-view.js"></script>
+    <script src="libs/xaringanExtra_fit-screen-0.2.6/fit-screen.js"></script>
+    <script src="libs/clipboard-2.0.6/clipboard.min.js"></script>
+    <link href="libs/xaringanExtra-clipboard-0.2.6/xaringanExtra-clipboard.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-clipboard-0.2.6/xaringanExtra-clipboard.js"></script>
+    <script>window.xaringanExtraClipboard(null, {"button":"Copy Code","success":"Copied!","error":"Press Ctrl+C to Copy"})</script>
+    <link href="libs/shareon-1.4.1/shareon.min.css" rel="stylesheet" />
+    <script src="libs/shareon-1.4.1/shareon.min.js"></script>
+    <link href="libs/xaringanExtra-shareagain-0.2.6/shareagain.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-shareagain-0.2.6/shareagain.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="new-css.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+
+
+
+name: xaringan-title
+class: inverse, left, bottom
+background-image: url(pictures/picuniform.jpg)
+background-size: cover
+
+# **Econometría II**
+----
+
+## **&lt;br/&gt; ARIMA**
+
+### Carlos A. Yanes Guerra
+### 2023-II
+
+
+---
+class: inverse
+
+# Preguntas de las sesiones anteriores?
+
+---
+layout: true
+# Estacionariedad
+
+---
+
+--
+
+&lt;cy-blockquote&gt;
+Una serie de tiempo `\(\{y_t\}\)` es **estacionaria** si para cualquier `\(\rho\)`, la distribución de `\((y_t,\dots,y_{t+\rho})\)` no depende de `\(t\)`.
+&lt;/cy-blockquote&gt;
+
+--
+
+Por ende, una serie es .hi[estacionaria] si:
+
+--
+
+* Aproximadamente tiene comportamiento horizontal
+* Es **Varianza** Constante
+* No posee patrones predecibles a largo plazo
+
+---
+
+--
+
+&lt;img src="Clase04_files/figure-html/unnamed-chunk-1-1.svg" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+--
+
+&lt;img src="Clase04_files/figure-html/unnamed-chunk-2-1.svg" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+--
+
+`\(Y_{t}\)` es autorregresivo de orden 1 si:
+
+--
+
+`$$Y_{t}= \alpha_{0}+ \alpha_{1}Y_{t-1} + \epsilon_{t}, \;  RB \; \epsilon_{t} \sim (0, \sigma^{2})$$`
+
+--
+
+Con `\(\left | \alpha_{1}  \right | &lt; 1\)`
+
+--
+
+Un modelo .hi[autorregresivo] mas general será constituido:
+
+--
+ 
+`$$Y_{t}=\alpha_{0}+\alpha_{i}\sum_{i=1}^{\rho} Y_{t-i}+ \epsilon_{t}$$`
+
+--
+
+Tome en consideración la detección de la media del proceso:
+
+--
+
+
+`$$\mu_{y}= \frac{\alpha_{0}}{\left ( 1- \alpha_{1}-\alpha_{2}\right)}$$`
+--
+
+Note que `\(|\alpha_1+\alpha_2|&lt;1\)`. Esto es muy importante tener en cuenta.
+
+---
+
+--
+
+Constituir la detección radica en: (Tome por ejemplo)
+
+--
+
+`$$Y_{t}= \alpha_{0}+0.25Y_{t-1}+0.125Y_{t-2}+\epsilon_{t}$$`
+
+--
+
+Que despejando y desarrollando queda como:
+
+--
+
+`$$Y_{t}-0.25Y_{t-1}-0.125Y_{t-2}=\alpha_{0}+\epsilon_{t}$$`
+
+--
+ 
+Solo debe aplicar los operadores rezagos queda:
+
+--
+
+`$$Y_{t}-0.25L^{1}-0.125L^{2}=\alpha_{0}+\epsilon_{t}$$`
+
+--
+
+Como resultado las raíces del polinomio quedan:
+
+--
+
+`$$Z_{1}=2 \quad Z_{2}=-4$$`
+
+--
+
+**Ambas** raíces quedan por fuera del circulo unitario (lo teórico), por ende el proceso es estacionario.
+
+---
+
+--
+
+Un modelo AR(1), es aún mas facil de decir si es estacionario o no:
+
+--
+
+`$$Y_{t}= \alpha_{0}+0.33Y_{t-1}+\epsilon_{t}$$`
+
+--
+
+Se resuelve muy sencillo de la forma:
+
+--
+
+`$$Y_{t}-0.33Y_{t-1}= \alpha_{0}+\epsilon_{t}$$`
+
+--
+
+Factorizando, luego simplificando la ecuación y únicamente nos quedamos con la ecuación característica (Remplazando `\((Y_{t}= Z_{t})\)` vamos a tener: 
+`$$Z_{t} -0.33Z_{t-1} = 0\; ;\; (1-0.33Z_t)\rightarrow \frac{1}{0.33}=Z_t$$`.
+
+--
+
+La raíz de un AR(1) por consiguiente es `\(z=\frac{1}{\alpha}\)` y siempre y cuando `\(|\alpha|&lt;1\)` el proceso carecera de **tendencia** .hi[estocástica]  
+
+---
+
+--
+
+## Problema con raíz unitaria
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M27.5 162.2L9 187.1h90.5l6.9-130.7-78.9 105.8zM396.3 45.7L267.7 32l135.7 147.2-7.1-133.5zM112.2 218.3l-11.2-22H9.9L234.8 458zm2-31.2h284l-81.5-88.5L256.3 33zm297.3 9.1L277.6 458l224.8-261.7h-90.9zM415.4 69L406 56.4l.9 17.3 6.1 113.4h90.3zM113.5 93.5l-4.6 85.6L244.7 32 116.1 45.7zm287.7 102.7h-290l42.4 82.9L256.3 480l144.9-283.8z"/></svg> Una caminata aleatoria es un ejemplo de esto, es una especie de AR `\((\rho)=1\)` o con `\(\alpha_1=1\)`.
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M27.5 162.2L9 187.1h90.5l6.9-130.7-78.9 105.8zM396.3 45.7L267.7 32l135.7 147.2-7.1-133.5zM112.2 218.3l-11.2-22H9.9L234.8 458zm2-31.2h284l-81.5-88.5L256.3 33zm297.3 9.1L277.6 458l224.8-261.7h-90.9zM415.4 69L406 56.4l.9 17.3 6.1 113.4h90.3zM113.5 93.5l-4.6 85.6L244.7 32 116.1 45.7zm287.7 102.7h-290l42.4 82.9L256.3 480l144.9-283.8z"/></svg> Si el .hi-purple[regresor] `\(\alpha_1\)` tiene raíz unitaria, la serie de tiempo podrá tener distribución muy distinta a la **normal**. Incluso aún teniendo muestras grandes.
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M27.5 162.2L9 187.1h90.5l6.9-130.7-78.9 105.8zM396.3 45.7L267.7 32l135.7 147.2-7.1-133.5zM112.2 218.3l-11.2-22H9.9L234.8 458zm2-31.2h284l-81.5-88.5L256.3 33zm297.3 9.1L277.6 458l224.8-261.7h-90.9zM415.4 69L406 56.4l.9 17.3 6.1 113.4h90.3zM113.5 93.5l-4.6 85.6L244.7 32 116.1 45.7zm287.7 102.7h-290l42.4 82.9L256.3 480l144.9-283.8z"/></svg> Si dos (2) series estan correlacionadas y ambas poseen .hi[raíz] unitaria entonces tendremos el fenómeno de regresión .hi[espuria].
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M27.5 162.2L9 187.1h90.5l6.9-130.7-78.9 105.8zM396.3 45.7L267.7 32l135.7 147.2-7.1-133.5zM112.2 218.3l-11.2-22H9.9L234.8 458zm2-31.2h284l-81.5-88.5L256.3 33zm297.3 9.1L277.6 458l224.8-261.7h-90.9zM415.4 69L406 56.4l.9 17.3 6.1 113.4h90.3zM113.5 93.5l-4.6 85.6L244.7 32 116.1 45.7zm287.7 102.7h-290l42.4 82.9L256.3 480l144.9-283.8z"/></svg> Las series que poseen .hi[raíz] unitaria podran estar sesgadas a cero(0).
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M27.5 162.2L9 187.1h90.5l6.9-130.7-78.9 105.8zM396.3 45.7L267.7 32l135.7 147.2-7.1-133.5zM112.2 218.3l-11.2-22H9.9L234.8 458zm2-31.2h284l-81.5-88.5L256.3 33zm297.3 9.1L277.6 458l224.8-261.7h-90.9zM415.4 69L406 56.4l.9 17.3 6.1 113.4h90.3zM113.5 93.5l-4.6 85.6L244.7 32 116.1 45.7zm287.7 102.7h-290l42.4 82.9L256.3 480l144.9-283.8z"/></svg> Los correlogramas y la prueba de .hi[raíz] **unitaria** fue propuesta por .b[Dickey-Fuller] en 1970.
+
+---
+
+--
+
+### Test de Dickey-Fuller
+
+--
+
+Sea una serie:
+
+--
+
+`$$y_t=\rho y_{t-1}+ e_t$$`
+
+--
+
+`$$y_t - y_{t-1}= \rho y_{t-1}- y_{t-1}+ e_t$$`
+
+--
+
+Lo que viene a ser:
+
+--
+
+`$$\Delta y_t=(\rho-1)y_{t-1}+ e_t$$`
+--
+
+`$$\Delta y_t=ay_{t-1}+ e_t$$`
+
+--
+
+Si `\(\rho=1\)`, entonces la serie sigue una .b[caminata aleatoria]
+
+---
+
+--
+
+### Test de Dickey-Fuller
+
+--
+
+Planteamos la .hi[hipótesis] como:
+
+--
+
+`$$\begin{aligned}
+H_0 &amp;: a=0\\
+H_a &amp;: a&lt;0 \;, \text{serie estacionaria}
+\end{aligned}$$`
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M224 0c-17.7 0-32 14.3-32 32V49.9C119.5 61.4 64 124.2 64 200v33.4c0 45.4-15.5 89.5-43.8 124.9L5.3 377c-5.8 7.2-6.9 17.1-2.9 25.4S14.8 416 24 416H424c9.2 0 17.6-5.3 21.6-13.6s2.9-18.2-2.9-25.4l-14.9-18.6C399.5 322.9 384 278.8 384 233.4V200c0-75.8-55.5-138.6-128-150.1V32c0-17.7-14.3-32-32-32zm0 96h8c57.4 0 104 46.6 104 104v33.4c0 47.9 13.9 94.6 39.7 134.6H72.3C98.1 328 112 281.3 112 233.4V200c0-57.4 46.6-104 104-104h8zm64 352H224 160c0 17 6.7 33.3 18.7 45.3s28.3 18.7 45.3 18.7s33.3-6.7 45.3-18.7s18.7-28.3 18.7-45.3z"/></svg> La forma o manera de hacerlo es:
+
+--
+
+* Sin constante. *P.e*: `\(y_t=ay_{t-1}+e_t\)`
+
+* Con constante: `\(y_t=c+ay_{t-1}+e_t\)`
+
+* Con constante y tendencia: `\(y_t=c+\beta t_t+ay_{t-1}+e_t\)`
+
+--
+
+Podemos incluso asociar el estadístico del **Dickey-Fuller** que debe ser lo suficientemente grande para así .hi[rechazar] la hipótesis de raíz unitaria.
+
+---
+
+--
+
+### Resultado del test
+
+
+```
+#&gt; 
+#&gt; 	Augmented Dickey-Fuller Test
+#&gt; 
+#&gt; data:  ar2_series
+#&gt; Dickey-Fuller = -1.9077, Lag order = 4, p-value = 0.6149
+#&gt; alternative hypothesis: stationary
+```
+
+--
+
+### Para uno que si es estacionario
+
+--
+
+
+```
+#&gt; 
+#&gt; 	Augmented Dickey-Fuller Test
+#&gt; 
+#&gt; data:  ar2_series
+#&gt; Dickey-Fuller = -3.498, Lag order = 4, p-value = 0.04567
+#&gt; alternative hypothesis: stationary
+```
+
+
+
+---
+
+--
+
+### Test de Dickey-Fuller aumentado
+
+--
+
+En algunas ocasiones puede que `\(e_t\)` el error del modelo no sea .hi[RUIDO BLANCO]. Para esos casos, lo mejor es implementar el Dickey Fuller aumentado:
+
+--
+
+`$$\Delta y_t=(c+)ay_{t-1}(\beta_0t)+\beta_1\Delta y_{t-1}+\cdots+\beta_k\Delta y_{t-k}+e_t$$`
+
+--
+
++ La selección óptima de los rezagos, se hace a partir de criterios como el de Akaike, Bayes, entre otros.
+
+--
+
++ La hipótesis no cambia ni el uso de sus tablas tampoco.
+
+---
+
+--
+
+## Corrección de la NO estacionariedad
+
+--
+
+La .hi[diferenciación] permite .hi-orange[estabilizar] la media. Podemos corregir y tener:
+
+--
+
+`$$\Delta y_t=y_t-y_{t-1}$$`
+
+--
+
+Mas generalizado y en caso tal aun no sea la serie .hi[estacionaria]:
+
+--
+
+`$$\begin{aligned}
+\Delta Y_t^2=&amp;\Delta y_t-\Delta y_{t-1}\\
+=&amp;(y_t-y_{t-1})-(y_{t-1}-y_{t-2})\\
+=&amp;y_t-2y_{t-1}+y_{t-2}
+\end{aligned}$$`
+
+--
+
+Su uso, solo obedece a estructuras bastante dependientes del tiempo y con demasiada variabilidad.
+
+
+---
+layout: false
+class: inverse, middle, center
+
+# Autocorrelación y autocovarianzas
+
+---
+layout: true
+# Autocorrelación
+
+---
+
+--
+
+&lt;ry-blockquote&gt;
+La .hi[autocovarianza] `\(\gamma_{s}\)` de una serie `\(Y_{t}\)` y cualquiera de sus rezagos `\(Y_{t-s}\)`, es igual al planteamiento de la formula de la covarianza entre dos variables. Para la autocovarianza del rezago de orden (0), este resulta ser la misma varianza.
+&lt;/ry-blockquote&gt;
+
+--
+
+`$$E \left[ \left ( Y_{t} - E(Y_{t}) \right) \left( Y_{t-s} - E(Y_{t-s}) \right) \right] = \gamma_{s}$$`
+
+--
+    
+`$$E \left[ \left ( Y_{t} - E(Y_{t}) \right) \left( Y_{t} - E(Y_{t}) \right) \right] = \gamma_{0}$$`
+
+---
+
+--
+
+&lt;ry-blockquote&gt;
+Las .hi[**autocovarianzas**] dependen sin lugar a duda de las medidas de las series de tiempo, por tanto, es recomendable normalizar el uso de las varianzas que brinda el concepto de correlación, indice que va desde -1 a 1.
+&lt;/ry-blockquote&gt;
+
+--
+
+`$$\tau = \frac{\gamma_{s}}{\gamma_{0}} \; \text{o mejor} \; \rho=\frac{cov(Y_{t},Y_{t-s})}{\sqrt{ Var(Y_{t})Var(Y_{t-s})}}= \frac{cov(Y_{t},Y_{t-s})}{VarY_{t}}$$`
+
+--
+
+.att[Por ejemplo]: para un proceso AR(1) tendríamos una (ACF):
+
+--
+
+`$$\rho_s=\frac{cov(Y_{t},Y_{t-s})}{VarY_{t}}=\frac{\phi_1^s \gamma_0}{\gamma_0}=\phi_1^s$$`
+---
+
+--
+
+&lt;img src="Clase04_files/figure-html/unnamed-chunk-5-1.svg" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+--
+
+&lt;img src="Clase04_files/figure-html/unnamed-chunk-6-1.svg" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+--
+
+&lt;img src="Clase04_files/figure-html/unnamed-chunk-7-1.svg" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+--
+
+&lt;img src="Clase04_files/figure-html/unnamed-chunk-8-1.svg" width="70%" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+--
+
+.attn[Pregunta]: Sea el siguiente proceso:
+
+--
+
+`$$y_t=a+\phi_1y_{t-1}+\phi_2y_{t-2}+e_t$$`
+
+*Deduzca la función de autocorrelación*
+
+--
+
+Si contamos con estacionariedad:
+
+--
+
+--
+.pad-left[
+`\(\rho_{1}=\frac{\gamma_1}{\gamma_0}=\frac{\phi_1\gamma_0+\phi_2\gamma_1}{\gamma_0}=\phi_1+\phi_2\rho_1\Rightarrow\frac{\phi_1}{1-\phi_2}\)`
+]
+
+--
+.pad-left[
+`\(\rho_{2}=\frac{\gamma_2}{\gamma_0}=\frac{\phi_1\gamma_1+\phi_2\gamma_0}{\gamma_0}=\phi_1\rho_1+\phi_2\)`
+]
+
+--
+.pad-left[
+`\(\text{y en general,}\;\rho_s=\phi_1\rho_{s-1}+\phi_2\rho_{s-2}\rightarrow \forall s&gt;0\)`
+]
+--
+.pad-left[
+Se conoce como las ecuaciones de .hi-green[Yule-Walker] .pink[✔]
+]
+
+---
+
+--
+
+### Modelo Arima
+
+Podemos establecer que:
+
+--
+
+`$$\underbrace{(1-{\color{#e64173}{\phi_1L}})}_{\color{#e64173}{\text{AR(1)}}} \underbrace{(1-L)y_t}_{\text{Primera diferencia}}= \underbrace{C+(1+\color{#6A5ACD}{\theta_1 L}) \epsilon_t}_{\color{#6A5ACD}{\text{MA(1)}}}$$`
+
+--
+
+`\(AR(\rho):\)` orden del Autorregresivo
+
+--
+
+`\(MA(\theta):\)` orden de la media movil.
+
+--
+
+La diferencia depende del nivel de .hi[estacionariedad] que requiera la **serie**, p.e: arima(1,1,1)
+
+---
+layout:false
+# Bibliografía
+
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></svg> Chatfield, C. (2000). *Time-series forecasting*. CRC press.
+
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></svg> Hyndman, R.J., &amp; Athanasopoulos, G. (2021). *Forecasting: principles and practice*, 3rd edition, OTexts: Melbourne, Australia.
+
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></svg> Shumway, R., &amp; Stoffer, D. (2019). *Time series: a data analysis approach using R*. CRC Press.
+
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></svg> Campo, J. Notas de clase (MIMEO)
+
+---
+name: adios
+class: middle
+
+.pull-left[
+# **¡Gracias!**
+&lt;br/&gt;
+## Estacionariedad
+
+### Seguimos aprendiendo
+]
+
+.pull-right[
+.right[
+&lt;img style="border-radius: 50%;"
+src="https://avatars.githubusercontent.com/u/39503983?v=4"
+width="150px" /&gt;
+
+<svg aria-hidden="true" role="img" viewBox="0 0 640 512" style="height:1em;width:1.25em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M579.8 267.7c56.5-56.5 56.5-148 0-204.5c-50-50-128.8-56.5-186.3-15.4l-1.6 1.1c-14.4 10.3-17.7 30.3-7.4 44.6s30.3 17.7 44.6 7.4l1.6-1.1c32.1-22.9 76-19.3 103.8 8.6c31.5 31.5 31.5 82.5 0 114L422.3 334.8c-31.5 31.5-82.5 31.5-114 0c-27.9-27.9-31.5-71.8-8.6-103.8l1.1-1.6c10.3-14.4 6.9-34.4-7.4-44.6s-34.4-6.9-44.6 7.4l-1.1 1.6C206.5 251.2 213 330 263 380c56.5 56.5 148 56.5 204.5 0L579.8 267.7zM60.2 244.3c-56.5 56.5-56.5 148 0 204.5c50 50 128.8 56.5 186.3 15.4l1.6-1.1c14.4-10.3 17.7-30.3 7.4-44.6s-30.3-17.7-44.6-7.4l-1.6 1.1c-32.1 22.9-76 19.3-103.8-8.6C74 372 74 321 105.5 289.5L217.7 177.2c31.5-31.5 82.5-31.5 114 0c27.9 27.9 31.5 71.8 8.6 103.9l-1.1 1.6c-10.3 14.4-6.9 34.4 7.4 44.6s34.4 6.9 44.6-7.4l1.1-1.6C433.5 260.8 427 182 377 132c-56.5-56.5-148-56.5-204.5 0L60.2 244.3z"/></svg> [Syllabus/ Curso](https://pomelo.uninorte.edu.co/pls/prod/bwckctlg.p_disp_course_detail?cat_term_in=202210&amp;subj_code_in=ECO&amp;crse_numb_in=0010)&lt;br/&gt;
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg> [@keynes37](https://twitter.com/keynes37)&lt;br/&gt;
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M16.1 260.2c-22.6 12.9-20.5 47.3 3.6 57.3L160 376V479.3c0 18.1 14.6 32.7 32.7 32.7c9.7 0 18.9-4.3 25.1-11.8l62-74.3 123.9 51.6c18.9 7.9 40.8-4.5 43.9-24.7l64-416c1.9-12.1-3.4-24.3-13.5-31.2s-23.3-7.5-34-1.4l-448 256zm52.1 25.5L409.7 90.6 190.1 336l1.2 1L68.2 285.7zM403.3 425.4L236.7 355.9 450.8 116.6 403.3 425.4z"/></svg>[ cayanes@uninorte.edu.co](mailto:cayanes@uninorte.edu.co)
+]
+]
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
