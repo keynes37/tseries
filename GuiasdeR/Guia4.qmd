@@ -48,7 +48,7 @@ p_load(tidyverse, TSstudio, tseries, urca, forecast)
 :::{.incremental}
 - Debemos primero mirar la [estacionariedad]{.alert}.
 - Si no es estacionaria la serie hay que [diferenciar]{.blut}.
-- Despues de testear procedemos a leer sus funciones de autocovarianzas denominadas [correlogramas]{.bg style="--col: #FFFF00"}
+- Después de testear procedemos a leer sus funciones de autocovarianzas denominadas [correlogramas]{.bg style="--col: #FFFF00"}
 - Constatar el [RUIDO BLANCO]{.alert}
 - Predecir
 :::
@@ -97,7 +97,7 @@ cartera <- ts(bd, frequency=12, start=c(2016,1))
 
 ```{r}
 #| echo: true
-ts.plot(cartera,
+ts_plot(cartera,
         title = "Cartera comercial de Bancos", 
         Ytitle = "En Miles de Millones de $",
         Xtitle = "Años")
@@ -199,7 +199,7 @@ ts_plot(diff(log(cartera), lag = 1),
 
 ```{r}
 #| echo: true
-dcartera<-diff(cartera, lag=1)
+dcartera<-diff(cartera, lag=1) # creo el objeto
 adf.test(dcartera)
 ```
 
@@ -207,6 +207,7 @@ adf.test(dcartera)
 ## DF C+T
 
 ```{r}
+#| echo: true
 prim4 <- ur.df(dcartera, lags=0, type='trend')
 summary(prim4)
 ```
