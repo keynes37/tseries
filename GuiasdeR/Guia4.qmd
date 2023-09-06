@@ -83,6 +83,16 @@ cartera <- ts(bd, frequency=12, start=c(2016,1))
 
 # A lo que vinimos
 
+## Cargar datos
+
+```r
+library(pacman)
+p_load(readxl, TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, tseries)
+bd <- read_excel("cartera.xlsx")
+bd <- bd |> select(Cartera)
+cartera <- ts(bd, frequency=12, start=c(2016,1))
+```
+
 ## Graficar normal
 
 ```{r}
@@ -272,6 +282,18 @@ plot_forecast(arima_fc,
 
 ```
 
+## Detras de la serie
+
+```{r}
+#| echo: true
+# Crear el gráfico de las dos series de tiempo
+plot.ts(cartera, col = "blue", xlab = "Tiempo", ylab = "Cartera Comercial", main = "Predicción de cartera comercial")
+lines(arima_fc$fitted, col = "red")
+legend("topleft", legend = c("Serie Original", "Predicción"), col = c("blue", "red"), lty = 1)
+
+```
+
+
 ## Valores
 
 ```{r}
@@ -279,6 +301,22 @@ plot_forecast(arima_fc,
 arima_fc
 ```
 
+## Selección de modelos
+
+:::{.fragment}
+- Existen varias formas de buscar elegir un modelo entre varios que se han estimado por pensar que es nuestro mejor modelo generador de datos. Estos vienen a ser los criterios de [Akaike]{.alert} (AIC) y [Bayes]{.alert} (BIC)
+:::
+
+:::{.fragment}
+- $AIC=-2\times log(L)+ 2\times p$
+- P es el número de parámetros del modelo
+- L la razón de [máxima verosimilitud]{.bg style="--col: #00FFFF"} del modelo
+:::
+
+:::{.fragment}
+- $BIC=-2\times log(L)+ p \times log(n)$
+- n es es tamaño de la muestra
+:::
 
 # Gracias por su atención!! {background-color="#cc0000"}
 
