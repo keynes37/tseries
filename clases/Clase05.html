@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Econometría II</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Carlos A. Yanes Guerra" />
+    <script src="libs/header-attrs-2.22/header-attrs.js"></script>
+    <link href="libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
+    <script src="libs/tile-view-0.2.6/tile-view.js"></script>
+    <script src="libs/xaringanExtra_fit-screen-0.2.6/fit-screen.js"></script>
+    <script src="libs/clipboard-2.0.6/clipboard.min.js"></script>
+    <link href="libs/xaringanExtra-clipboard-0.2.6/xaringanExtra-clipboard.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-clipboard-0.2.6/xaringanExtra-clipboard.js"></script>
+    <script>window.xaringanExtraClipboard(null, {"button":"Copy Code","success":"Copied!","error":"Press Ctrl+C to Copy"})</script>
+    <link href="libs/shareon-1.4.1/shareon.min.css" rel="stylesheet" />
+    <script src="libs/shareon-1.4.1/shareon.min.js"></script>
+    <link href="libs/xaringanExtra-shareagain-0.2.6/shareagain.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-shareagain-0.2.6/shareagain.js"></script>
+    <script src="libs/kePrint-0.0.1/kePrint.js"></script>
+    <link href="libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="new-css.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+
+
+
+name: xaringan-title
+class: inverse, left, bottom
+background-image: url(pictures/picuniform.jpg)
+background-size: cover
+
+# **Econometría II**
+----
+
+## **&lt;br/&gt; ARIMA B**
+
+### Carlos A. Yanes Guerra
+### 2023-II
+
+
+---
+class: inverse
+
+# Preguntas de las sesiones anteriores?
+
+---
+# Recordeis
+
+--
+
+1. Es .hi[estacionario] o .hi-purple[no estacionario]?
+
+--
+
+2. Qué tipo de .hi[autocorrelación] manifiestan los patrones de la serie?
+
+--
+
+3. Posee una variación .hi-slate[estacional]?
+
+--
+
+4. Existe algún desplazamiento estructural?
+
+---
+layout: true
+# Procesos MA
+
+---
+
+--
+
+&lt;cy-blockquote&gt;
+Los **MA(q)** son procesos que indican que la serie de tiempo depende de los errores pasados. Al igual que los AR(p), sirven para modelar y pronosticar desde el modelo univariado los periodos futuros
+&lt;/cy-blockquote&gt;
+
+--
+
+Algunas características de este proceso son:
+
+--
+
++ Un MA(1) se representa como: `\(y_t=\mu+\epsilon_t+ \theta_1 \epsilon_{t-1}\)`
+
++ Un MA(2) se representa como: `\(y_t=\mu+\epsilon_t+ \theta_1 \epsilon_{t-1}+ \theta_2 \epsilon_{t-2}\)`
+
++ Un MA(q) se representa como: `\(y_t=\mu+\epsilon_t+ \theta_1 \epsilon_{t-1}+\cdots+\theta_q \epsilon_{t-q}\)`
+
+---
+
+--
+
+Existe en series de tiempo un *teorema* y es el que nos dice que cualquier serie que es .hi-purple[**estacionaria**] puede representarse mediante un .hi[MA(q)] de orden infinito. Esto lo dice Wold(1936).
+
+--
+
+&lt;img src="Clase05_files/figure-html/bo-1.svg" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+--
+
+Determine si el Proceso MA es .hi[estacionario] en .hi-slate[media] y .hi-slate[varianza]
+
+--
+
+`$$y_t=a+\theta_1 \epsilon_{t-1}+ \epsilon_t$$`
+--
+
+`$$E[y_t]=E[a+\theta_1 \epsilon_{t-1}+ \epsilon_t]$$`
+
+--
+
+`$$E[y_t]=a+\theta_1 \color{red}{E[\epsilon_{t-1}]}+ \color{blue}{E[\epsilon_t]}$$`
+
+--
+
+Recordemos que por .hi[**ruido blanco**] eso es `\(\sim(0, \sigma^2)\)`
+
+--
+
+`$$\boxed{E[y_t]=a}$$`
+
+--
+
+No depende de `\((t)\)`.
+
+---
+
+--
+
+Vamos ahora con la .hi-slate[**varianza**]:
+
+--
+
+`$$y_t=a+\theta_1 \epsilon_{t-1}+ \epsilon_t$$`
+--
+
+`$$Var[y_t]=Var[a+\theta_1 \epsilon_{t-1}+ \epsilon_t]$$`
+
+--
+
+`$$Var[y_t]=\theta_1^2 \color{red}{Var[\epsilon_{t-1}]}+ \color{blue}{Var[\epsilon_t]}$$`
+
+--
+
+Recordemos nuevamente que por .hi[**ruido blanco**] eso es `\(\sim(0, \sigma^2)\)`
+
+--
+
+`$$Var[y_t]=\theta_1^2\color{blue}{\sigma^2}+\color{blue}{\sigma^2}$$`
+
+--
+
+`$$Var[y_t]=\color{blue}{\sigma^2}(\theta_1^2+1)$$`
+
+--
+
+Tambien piense que la .hi[varianza] se escribe como `\(\gamma_0\)`
+
+--
+
+`$$\boxed{\gamma_0=\color{blue}{\sigma^2}(\theta_1^2+1)}$$`
+
+---
+
+--
+
+El asunto de la .hi[covarianza] permite gráficar e identificar los procesos concernientes a la autocorrelación y por ende tener las funciones de autocorrelación .hi-slate[simple] y hi-purple[parcial].
+
+--
+
+`$$cov[y_t, y_{t-s}]=\theta_{1}^2cov[\epsilon_{t-1}, \epsilon_{(t-s)-1}]+ cov[\epsilon_t, \epsilon_{t-s}]$$`
+--
+
+`$$\gamma_0=\theta_1^2\color{blue}{\sigma^2}+\color{blue}{\sigma^2}$$`
+
+--
+
+Entonces si `\(s=-1,1\Rightarrow \quad \gamma_1=\theta_1\sigma^2\)`
+
+--
+
+Entonces si `\(s=2\Rightarrow \quad \gamma_2=0\)`
+
+--
+
+Entonces si `\(s=3\Rightarrow \quad \gamma_3=0\)`
+
+--
+
+Dicho mejor
+
+--
+
+`$$\rho =\left\{\begin{matrix}
+ 1&amp; si \quad s=0 \\ 
+ \frac{\theta_1}{1+\theta_1^2}&amp; si \quad s=1, -1 \\ 
+ 0 &amp; \text{de otro lado} 
+\end{matrix}\right.$$`
+
+---
+
+--
+
+&lt;img src="Clase05_files/figure-html/unnamed-chunk-1-1.svg" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 640 512" style="height:1em;width:1.25em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:blue;overflow:visible;position:relative;"><path d="M160 24c0-13.3 10.7-24 24-24H296c13.3 0 24 10.7 24 24s-10.7 24-24 24H280L384 192H500.4c7.7 0 15.3 1.4 22.5 4.1L625 234.4c9 3.4 15 12 15 21.6s-6 18.2-15 21.6L522.9 315.9c-7.2 2.7-14.8 4.1-22.5 4.1H384L280 464h16c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24h8V320H160l-54.6 54.6c-6 6-14.1 9.4-22.6 9.4H64c-17.7 0-32-14.3-32-32V288c-17.7 0-32-14.3-32-32s14.3-32 32-32V160c0-17.7 14.3-32 32-32H82.7c8.5 0 16.6 3.4 22.6 9.4L160 192h32V48h-8c-13.3 0-24-10.7-24-24zM80 240c-8.8 0-16 7.2-16 16s7.2 16 16 16h64c8.8 0 16-7.2 16-16s-7.2-16-16-16H80z"/></svg> Preguntemos algo: Intente identificar el orden del siguiente modelo
+
+--
+
+&lt;img src="Clase05_files/figure-html/unnamed-chunk-2-1.svg" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+--
+
+&lt;img src="Clase05_files/figure-html/unnamed-chunk-3-1.svg" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+--
+
+- Identificar los modelos por sus respectivas `ACF` y `PACF` es mejor que estar haciendo 1000 modelos y encontrar el modelo con menor criterio AIC o BIC.
+
+--
+
+- Dentro de los criterios, recordando nuevamente su formulación pero en términos de varianza:
+
+--
+
+.hi-orange[Criterio de AKAIKE]:
+Es el menos estricto de todos, no es .hi[consistente] pero si eficiente.
+
+--
+
+`$$AIC= ln (\sigma^{2})+ \dfrac{2k}{T}$$`
+--
+
+.hi-orange[Criterio de BAYES]:
+Es el mejor, castiga (sobre parametrización), es consistente pero no muy eficiente (no robusto en residuos).
+
+--
+
+`$$BIC= ln (\sigma^{2})+ \dfrac{k}{T}Ln(T)$$`
+
+--
+
+Donde `\((\sigma^{2})\)` es la varianza de los errores (residuos del modelo), `\((k)\)` el número de parámetros (p+q+1) si se incluye la constante y de (p+q) si se omite y por último `\((T)\)` es el numero de observaciones.
+
+---
+
+--
+
+Ejercicio 1:
+
+--
+
+Qué modelo es mejor?
+
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:left;"&gt; # Lags &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; AIC &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; BIC &lt;/th&gt;
+   &lt;th style="text-align:center;"&gt; R2 &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;color: #272822 !important;line-height: 110%;font-style: italic;color: #272822 !important;"&gt; 0 &lt;/td&gt;
+   &lt;td style="text-align:center;color: #272822 !important;line-height: 110%;"&gt; 1.095 &lt;/td&gt;
+   &lt;td style="text-align:center;color: #272822 !important;line-height: 110%;"&gt; 1.076 &lt;/td&gt;
+   &lt;td style="text-align:center;color: #272822 !important;line-height: 110%;"&gt; 0.000 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;color: #272822 !important;line-height: 110%;font-style: italic;color: #272822 !important;"&gt; 1 &lt;/td&gt;
+   &lt;td style="text-align:center;color: #272822 !important;line-height: 110%;"&gt; 1.067 &lt;/td&gt;
+   &lt;td style="text-align:center;color: #272822 !important;line-height: 110%;"&gt; 1.030 &lt;/td&gt;
+   &lt;td style="text-align:center;color: #272822 !important;line-height: 110%;"&gt; 0.056 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;color: #272822 !important;line-height: 110%;font-style: italic;color: #272822 !important;"&gt; 2 &lt;/td&gt;
+   &lt;td style="text-align:center;color: #272822 !important;line-height: 110%;"&gt; 0.955 &lt;/td&gt;
+   &lt;td style="text-align:center;color: #272822 !important;line-height: 110%;"&gt; 0.900 &lt;/td&gt;
+   &lt;td style="text-align:center;color: #272822 !important;line-height: 110%;"&gt; 0.181 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;color: #272822 !important;line-height: 110%;font-style: italic;color: #272822 !important;"&gt; 3 &lt;/td&gt;
+   &lt;td style="text-align:center;color: #272822 !important;line-height: 110%;"&gt; 0.957 &lt;/td&gt;
+   &lt;td style="text-align:center;color: #272822 !important;line-height: 110%;"&gt; 0.884 &lt;/td&gt;
+   &lt;td style="text-align:center;color: #272822 !important;line-height: 110%;"&gt; 0.203 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;color: #272822 !important;line-height: 110%;font-style: italic;color: #272822 !important;"&gt; 4 &lt;/td&gt;
+   &lt;td style="text-align:center;color: #272822 !important;line-height: 110%;"&gt; 0.986 &lt;/td&gt;
+   &lt;td style="text-align:center;color: #272822 !important;line-height: 110%;"&gt; 0.895 &lt;/td&gt;
+   &lt;td style="text-align:center;color: #272822 !important;line-height: 110%;"&gt; 0.204 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;color: #272822 !important;line-height: 110%;font-style: italic;color: #272822 !important;"&gt; 5 &lt;/td&gt;
+   &lt;td style="text-align:center;color: #272822 !important;line-height: 110%;"&gt; 1.016 &lt;/td&gt;
+   &lt;td style="text-align:center;color: #272822 !important;line-height: 110%;"&gt; 0.906 &lt;/td&gt;
+   &lt;td style="text-align:center;color: #272822 !important;line-height: 110%;"&gt; 0.204 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:left;color: #272822 !important;line-height: 110%;font-style: italic;color: #272822 !important;"&gt; 6 &lt;/td&gt;
+   &lt;td style="text-align:center;color: #272822 !important;line-height: 110%;"&gt; 1.046 &lt;/td&gt;
+   &lt;td style="text-align:center;color: #272822 !important;line-height: 110%;"&gt; 0.918 &lt;/td&gt;
+   &lt;td style="text-align:center;color: #272822 !important;line-height: 110%;"&gt; 0.205 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+--
+
+**R./** Note que depende que quiere ver el investigador. Si desea muchos rezagos lo mejor es tomar entonces el `\(\bar{R}^2_{adj}\)`. El BIC penaliza la sobreparametrización y el AIC es un poco mas intermedio.
+
+---
+layout: false
+class: inverse, middle, center
+
+# Otras consideraciones de los Procesos MA 😛
+
+---
+# Invertibilidad
+
+--
+
+&gt; Un proceso MA es invertible si:
+
+--
+
+Considere el modelo MA:
+
+--
+
+`$$y_t-\mu=(1+\theta L)\epsilon_t$$`
+
+--
+
+`$$E(\epsilon_t, \epsilon_{s})=\left\{\begin{matrix}
+ \sigma^2&amp; si \quad s=t \\ 
+ 0 &amp; \text{de otro lado} 
+\end{matrix}\right.$$`
+
+--
+
+`$$Si \quad |\theta|&lt;1$$`
+--
+
+.pad-left[
+`\((1+\theta L)^{-1}(y_t-\mu)=\epsilon_t\)`
+]
+
+--
+
+.pad-left[
+`\((1-\theta L+\theta^2 L^2-\theta^3 L^3+\cdots)(y_t-\mu)=\epsilon_t\)`
+]
+
+--
+
+.pad-left[
+Es .hi-green[Invertible AR(p)] .pink[✔]
+]
+
+---
+class: inverse, middle, center
+
+# Con respecto a los modelos Diferenciados!!
+
+---
+# Ejemplo
+
+--
+
+.attn[Punto]: Suponga que le ha tocado hacer un modelo y pronostico para .hi[inflación]. El resultado de todo, término siendo:
+
+--
+
+`$$\Delta Inf_{t}=-0.0145-.3215 \Delta inf_{t-1}$$`
+--
+
+`\(Inf_{2021:3}=6.53\%\)` es la inflación del respectivo año 2021 en el mes 3.
+
+--
+
+La inflación del siguiente periodo fué `\(Inf_{2021:4}=6.56\%\)`. Note que si diferenciamos tendremos
+
+--
+
+`$$Inf_{2021:4}-Inf_{2021:3}=0.029$$`
+
+--
+
+Reemplazamos ese valor en nuestro modelo original:
+
+--
+
+`$$\Delta Inf_{t}=-0.0145-.3215 (\color{red}{0.029})=\color{purple}{-0.02382}$$`
+
+--
+
+Lo que usando el último valor del mes:
+
+--
+
+`$$Inf_{2021:3}+\Delta_{2021:4}\Rightarrow 6.56-0.02382=6.54\%$$`
+
+
+
+
+
+---
+# Bibliografía
+
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></svg> Chatfield, C. (2000). *Time-series forecasting*. CRC press.
+
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></svg> Hyndman, R.J., &amp; Athanasopoulos, G. (2021). *Forecasting: principles and practice*, 3rd edition, OTexts: Melbourne, Australia.
+
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></svg> Shumway, R., &amp; Stoffer, D. (2019). *Time series: a data analysis approach using R*. CRC Press.
+
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></svg> Campo, J. Notas de clase (MIMEO)
+
+---
+name: adios
+class: middle
+
+.pull-left[
+# **¡Gracias!**
+&lt;br/&gt;
+## Modelos MA
+
+### Seguimos aprendiendo
+]
+
+.pull-right[
+.right[
+&lt;img style="border-radius: 50%;"
+src="https://avatars.githubusercontent.com/u/39503983?v=4"
+width="150px" /&gt;
+
+<svg aria-hidden="true" role="img" viewBox="0 0 640 512" style="height:1em;width:1.25em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M579.8 267.7c56.5-56.5 56.5-148 0-204.5c-50-50-128.8-56.5-186.3-15.4l-1.6 1.1c-14.4 10.3-17.7 30.3-7.4 44.6s30.3 17.7 44.6 7.4l1.6-1.1c32.1-22.9 76-19.3 103.8 8.6c31.5 31.5 31.5 82.5 0 114L422.3 334.8c-31.5 31.5-82.5 31.5-114 0c-27.9-27.9-31.5-71.8-8.6-103.8l1.1-1.6c10.3-14.4 6.9-34.4-7.4-44.6s-34.4-6.9-44.6 7.4l-1.1 1.6C206.5 251.2 213 330 263 380c56.5 56.5 148 56.5 204.5 0L579.8 267.7zM60.2 244.3c-56.5 56.5-56.5 148 0 204.5c50 50 128.8 56.5 186.3 15.4l1.6-1.1c14.4-10.3 17.7-30.3 7.4-44.6s-30.3-17.7-44.6-7.4l-1.6 1.1c-32.1 22.9-76 19.3-103.8-8.6C74 372 74 321 105.5 289.5L217.7 177.2c31.5-31.5 82.5-31.5 114 0c27.9 27.9 31.5 71.8 8.6 103.9l-1.1 1.6c-10.3 14.4-6.9 34.4 7.4 44.6s34.4 6.9 44.6-7.4l1.1-1.6C433.5 260.8 427 182 377 132c-56.5-56.5-148-56.5-204.5 0L60.2 244.3z"/></svg> [Syllabus/ Curso](https://pomelo.uninorte.edu.co/pls/prod/bwckctlg.p_disp_course_detail?cat_term_in=202210&amp;subj_code_in=ECO&amp;crse_numb_in=0010)&lt;br/&gt;
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg> [@keynes37](https://twitter.com/keynes37)&lt;br/&gt;
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M16.1 260.2c-22.6 12.9-20.5 47.3 3.6 57.3L160 376V479.3c0 18.1 14.6 32.7 32.7 32.7c9.7 0 18.9-4.3 25.1-11.8l62-74.3 123.9 51.6c18.9 7.9 40.8-4.5 43.9-24.7l64-416c1.9-12.1-3.4-24.3-13.5-31.2s-23.3-7.5-34-1.4l-448 256zm52.1 25.5L409.7 90.6 190.1 336l1.2 1L68.2 285.7zM403.3 425.4L236.7 355.9 450.8 116.6 403.3 425.4z"/></svg>[ cayanes@uninorte.edu.co](mailto:cayanes@uninorte.edu.co)
+]
+]
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

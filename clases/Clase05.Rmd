@@ -1,0 +1,653 @@
+---
+title: "Econometría II"
+subtitle: "<br/> ARIMA B"
+author: "Carlos A. Yanes Guerra"
+institute: "Universidad del Norte"
+date: "2023-II"
+output:
+  xaringan::moon_reader:
+    css: 
+       - xaringan-themer.css
+       - new-css.css
+    lib_dir: libs
+    seal: false
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+---
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+style_mono_accent(
+  base_color = "#23395b",
+  header_font_google = google_font("Josefin Sans"),
+  text_font_google   = google_font("Montserrat", "300", "300i"),
+  code_font_google   = google_font("Fira Mono")
+)
+```
+
+```{r, setup, include = F}
+# devtools::install_github("dill/emoGG")
+library(pacman)
+p_load(readr, xts, astsa, fpp2,
+  broom, tidyverse,
+  latex2exp, ggplot2, ggthemes, ggforce, viridis, extrafont, gridExtra,
+  kableExtra, snakecase, janitor,
+  data.table, dplyr, estimatr,
+  lubridate, knitr, parallel,
+  lfe, emoGG,
+  here, magrittr, fontawesome, shiny, babynames
+)
+# Define pink color
+red_pink <- "#e64173"
+turquoise <- "#20B2AA"
+orange <- "#FFA500"
+red <- "#fb6107"
+blue <- "#2b59c3"
+green <- "#8bb174"
+grey_light <- "grey70"
+grey_mid <- "grey50"
+grey_dark <- "grey20"
+purple <- "#6A5ACD"
+slate <- "#314f4f"
+met_slate <- "#272822"
+# Dark slate grey: #314f4f
+# Opciones
+opts_chunk$set(
+  comment = "#>",
+  fig.align = "center",
+  fig.height = 7,
+  fig.width = 10.5,
+  warning = F,
+  message = F
+)
+opts_chunk$set(dev = "svg")
+options(device = function(file, width, height) {
+  svg(tempfile(), width = width, height = height)
+})
+options(crayon.enabled = F)
+options(knitr.table.format = "html")
+# A blank theme para ggplot
+theme_empty <- theme_bw() + theme(
+  line = element_blank(),
+  rect = element_blank(),
+  strip.text = element_blank(),
+  axis.text = element_blank(),
+  plot.title = element_blank(),
+  axis.title = element_blank(),
+  plot.margin = structure(c(0, 0, -0.5, -1), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_simple <- theme_bw() + theme(
+  line = element_blank(),
+  panel.grid = element_blank(),
+  rect = element_blank(),
+  strip.text = element_blank(),
+  axis.text.x = element_text(size = 18, family = "STIXGeneral"),
+  axis.text.y = element_blank(),
+  axis.ticks = element_blank(),
+  plot.title = element_blank(),
+  axis.title = element_blank(),
+  # plot.margin = structure(c(0, 0, -1, -1), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes_math <- theme_void() + theme(
+  text = element_text(family = "MathJax_Math"),
+  axis.title = element_text(size = 22),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, 0.15, 0, 0, unit = "lines")),
+  axis.line = element_line(
+    color = "grey70",
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.15, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes_serif <- theme_void() + theme(
+  text = element_text(family = "MathJax_Main"),
+  axis.title = element_text(size = 22),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, 0.15, 0, 0, unit = "lines")),
+  axis.line = element_line(
+    color = "grey70",
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.15, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes <- theme_void() + theme(
+  text = element_text(family = "Fira Sans Book"),
+  axis.title = element_text(size = 18),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, 0.15, 0, 0, unit = "lines")),
+  axis.line = element_line(
+    color = grey_light,
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.15, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_set(theme_gray(base_size = 20))
+# Nombres de las columnas para la regresión
+reg_columns <- c("Term", "Est.", "S.E.", "t stat.", "p-Value")
+# Formato de p valores
+format_pvi <- function(pv) {
+  return(ifelse(
+    pv < 0.0001,
+    "<0.0001",
+    round(pv, 4) %>% format(scientific = F)
+  ))
+}
+format_pv <- function(pvs) lapply(X = pvs, FUN = format_pvi) %>% unlist()
+# Tidy regression results table
+tidy_table <- function(x, terms, highlight_row = 1, highlight_color = "black", highlight_bold = T, digits = c(NA, 3, 3, 2, 5), title = NULL) {
+  x %>%
+    tidy() %>%
+    select(1:5) %>%
+    mutate(
+      term = terms,
+      p.value = p.value %>% format_pv()
+    ) %>%
+    kable(
+      col.names = reg_columns,
+      escape = F,
+      digits = digits,
+      caption = title
+    ) %>%
+    kable_styling(font_size = 20) %>%
+    row_spec(1:nrow(tidy(x)), background = "white") %>%
+    row_spec(highlight_row, bold = highlight_bold, color = highlight_color)
+}
+# A few extras
+xaringanExtra::use_xaringan_extra(c("tile_view", "fit_screen"))
+xaringanExtra::use_clipboard()
+xaringanExtra::use_share_again()
+xaringanExtra::style_share_again(
+  share_buttons = c("twitter", "linkedin", "pocket")
+)
+```
+
+name: xaringan-title
+class: inverse, left, bottom
+background-image: url(pictures/picuniform.jpg)
+background-size: cover
+
+# **`r rmarkdown::metadata$title`**
+----
+
+## **`r rmarkdown::metadata$subtitle`**
+
+### `r rmarkdown::metadata$author`
+### `r rmarkdown::metadata$date`
+
+```{r xaringanExtra-share-again, echo=FALSE}
+xaringanExtra::use_share_again()
+```
+---
+class: inverse
+
+# Preguntas de las sesiones anteriores?
+
+---
+# Recordeis
+
+--
+
+1. Es .hi[estacionario] o .hi-purple[no estacionario]?
+
+--
+
+2. Qué tipo de .hi[autocorrelación] manifiestan los patrones de la serie?
+
+--
+
+3. Posee una variación .hi-slate[estacional]?
+
+--
+
+4. Existe algún desplazamiento estructural?
+
+---
+layout: true
+# Procesos MA
+
+---
+
+--
+
+<cy-blockquote>
+Los **MA(q)** son procesos que indican que la serie de tiempo depende de los errores pasados. Al igual que los AR(p), sirven para modelar y pronosticar desde el modelo univariado los periodos futuros
+</cy-blockquote>
+
+--
+
+Algunas características de este proceso son:
+
+--
+
++ Un MA(1) se representa como: $y_t=\mu+\epsilon_t+ \theta_1 \epsilon_{t-1}$
+
++ Un MA(2) se representa como: $y_t=\mu+\epsilon_t+ \theta_1 \epsilon_{t-1}+ \theta_2 \epsilon_{t-2}$
+
++ Un MA(q) se representa como: $y_t=\mu+\epsilon_t+ \theta_1 \epsilon_{t-1}+\cdots+\theta_q \epsilon_{t-q}$
+
+---
+
+--
+
+Existe en series de tiempo un *teorema* y es el que nos dice que cualquier serie que es .hi-purple[**estacionaria**] puede representarse mediante un .hi[MA(q)] de orden infinito. Esto lo dice Wold(1936).
+
+--
+
+```{r, bo, echo=FALSE, warning=FALSE, out.width="70%"}
+# Cargar la librería necesaria para el análisis de series temporales
+library(stats)
+
+# Definir los parámetros del proceso MA
+phi_values <- c(0.5, -0.2)  # Coeficientes MA, puedes agregar más si lo deseas
+n <- 1000  # Longitud de la serie temporal
+
+# Generar una serie temporal MA hasta un rezago grande
+ma_infinite <- arima.sim(model = list(order = c(0, 0, 2), ma = phi_values), n = n)
+
+# Graficar la serie temporal
+plot(ma_infinite, type = "l", main = "Simulación de MA Infinito", ylab = "Valor", xlab = "Tiempo")
+
+```
+
+---
+
+--
+
+Determine si el Proceso MA es .hi[estacionario] en .hi-slate[media] y .hi-slate[varianza]
+
+--
+
+$$y_t=a+\theta_1 \epsilon_{t-1}+ \epsilon_t$$
+--
+
+$$E[y_t]=E[a+\theta_1 \epsilon_{t-1}+ \epsilon_t]$$
+
+--
+
+$$E[y_t]=a+\theta_1 \color{red}{E[\epsilon_{t-1}]}+ \color{blue}{E[\epsilon_t]}$$
+
+--
+
+Recordemos que por .hi[**ruido blanco**] eso es $\sim(0, \sigma^2)$
+
+--
+
+$$\boxed{E[y_t]=a}$$
+
+--
+
+No depende de $(t)$.
+
+---
+
+--
+
+Vamos ahora con la .hi-slate[**varianza**]:
+
+--
+
+$$y_t=a+\theta_1 \epsilon_{t-1}+ \epsilon_t$$
+--
+
+$$Var[y_t]=Var[a+\theta_1 \epsilon_{t-1}+ \epsilon_t]$$
+
+--
+
+$$Var[y_t]=\theta_1^2 \color{red}{Var[\epsilon_{t-1}]}+ \color{blue}{Var[\epsilon_t]}$$
+
+--
+
+Recordemos nuevamente que por .hi[**ruido blanco**] eso es $\sim(0, \sigma^2)$
+
+--
+
+$$Var[y_t]=\theta_1^2\color{blue}{\sigma^2}+\color{blue}{\sigma^2}$$
+
+--
+
+$$Var[y_t]=\color{blue}{\sigma^2}(\theta_1^2+1)$$
+
+--
+
+Tambien piense que la .hi[varianza] se escribe como $\gamma_0$
+
+--
+
+$$\boxed{\gamma_0=\color{blue}{\sigma^2}(\theta_1^2+1)}$$
+
+---
+
+--
+
+El asunto de la .hi[covarianza] permite gráficar e identificar los procesos concernientes a la autocorrelación y por ende tener las funciones de autocorrelación .hi-slate[simple] y hi-purple[parcial].
+
+--
+
+$$cov[y_t, y_{t-s}]=\theta_{1}^2cov[\epsilon_{t-1}, \epsilon_{(t-s)-1}]+ cov[\epsilon_t, \epsilon_{t-s}]$$
+--
+
+$$\gamma_0=\theta_1^2\color{blue}{\sigma^2}+\color{blue}{\sigma^2}$$
+
+--
+
+Entonces si $s=-1,1\Rightarrow \quad \gamma_1=\theta_1\sigma^2$
+
+--
+
+Entonces si $s=2\Rightarrow \quad \gamma_2=0$
+
+--
+
+Entonces si $s=3\Rightarrow \quad \gamma_3=0$
+
+--
+
+Dicho mejor
+
+--
+
+$$\rho =\left\{\begin{matrix}
+ 1& si \quad s=0 \\ 
+ \frac{\theta_1}{1+\theta_1^2}& si \quad s=1, -1 \\ 
+ 0 & \text{de otro lado} 
+\end{matrix}\right.$$
+
+---
+
+--
+
+```{r, echo=FALSE, out.width="70%"}
+# Establecer el número de observaciones
+n <- 100
+
+# Definir los parámetros de los procesos AR(3)
+phi1 <- 0.4
+phi2 <- 0.6
+phi3 <- -0.6
+phi4 <- 2
+
+sigma <- 1  # Desviación estándar del término de error
+
+# Generar tres series temporales MA(3) con diferentes valores de phi
+set.seed(12345)  # Establecer una semilla para la reproducibilidad
+ma1_series_1 <- arima.sim(model = list(order = c(0, 0, 1), ma = phi1), n = n, sd = sigma)
+ma1_series_2 <- arima.sim(model = list(order = c(0, 0, 1), ma = phi2), n = n, sd = sigma)
+ma1_series_3 <- arima.sim(model = list(order = c(0, 0, 1), ma = phi3), n = n, sd = sigma)
+ma1_series_4 <- arima.sim(model = list(order = c(0, 0, 1), ma = phi4), n = n, sd = sigma)
+
+# Crear un gráfico de 3x1 para mostrar las tres series temporales juntas
+par(mfrow = c(2, 2))
+acf(ma1_series_1, main = "ACF de un Proceso MA(1) con phi = 0.4")
+acf(ma1_series_2, main = "ACF de un Proceso MA(1) con phi = 0.6")
+acf(ma1_series_3, main = "ACF de un Proceso MA(1) con phi = -0.6")
+acf(ma1_series_4, main = "ACF de un Proceso MA(1) con phi = 2")
+
+# Restablecer la configuración de gráficos
+par(mfrow = c(1, 1))
+
+```
+
+---
+
+--
+
+`r fa("fighter-jet", fill="blue")` Preguntemos algo: Intente identificar el orden del siguiente modelo
+
+--
+
+```{r, echo=FALSE, out.width="70%"}
+set.seed(8976)
+
+# Definir los coeficientes del proceso MA(3)
+ma_coeficientes <- c(0.5, -0.2, 0.3)
+
+# Longitud de la serie temporal a simular
+n <- 100
+
+# Simular una serie temporal MA(3)
+serie_ma3 <- arima.sim(model = list(order = c(0, 0, 3), ma = ma_coeficientes), n = n)
+
+# Graficar la serie temporal
+#plot(serie_ma3, type = "l", main = "Simulación de MA(3)", ylab = "Valor", xlab = "Tiempo")
+
+par(mfrow = c(2, 1))
+acf(serie_ma3, main = "ACF de prueba")
+pacf(serie_ma3, main = "PACF de prueba")
+# Restablecer la configuración de gráficos
+par(mfrow = c(1, 1))
+
+```
+
+---
+
+--
+
+```{r, echo=FALSE, out.width="70%"}
+# Longitud de las series temporales
+n <- 100
+# Simulación del modelo AR(1)
+set.seed(123)  # Establecer una semilla para la reproducibilidad
+phi <- 0.7
+ar1 <- arima.sim(model = list(order = c(1, 0, 0), ar = phi), n = n)
+# Simulación del modelo MA(1)
+set.seed(123)  # Establecer una semilla diferente
+theta <- 0.7
+ma1 <- arima.sim(model = list(order = c(0, 0, 1), ma = theta), n = n)
+
+# Simulación del modelo ARMA(1,1)
+set.seed(123)  # Establecer otra semilla diferente
+phi_arma <- 0.7
+theta_arma <- 0.3
+arma11 <- arima.sim(model = list(order = c(1, 0, 1), ar = phi_arma, ma = theta_arma), n = n)
+
+# Crear gráficos para cada serie temporal
+par(mfrow = c(3, 1))
+acf(ar1, main = "ACF de AR(1)")
+acf(ma1, main = "ACF de MA(1)")
+acf(arma11, main = "ACF de ARMA(11)")
+par(mfrow = c(1, 1))  # Restaurar el diseño de gráfico por defecto
+```
+
+---
+
+--
+
+- Identificar los modelos por sus respectivas `ACF` y `PACF` es mejor que estar haciendo 1000 modelos y encontrar el modelo con menor criterio AIC o BIC.
+
+--
+
+- Dentro de los criterios, recordando nuevamente su formulación pero en términos de varianza:
+
+--
+
+.hi-orange[Criterio de AKAIKE]:
+Es el menos estricto de todos, no es .hi[consistente] pero si eficiente.
+
+--
+
+$$AIC= ln (\sigma^{2})+ \dfrac{2k}{T}$$
+--
+
+.hi-orange[Criterio de BAYES]:
+Es el mejor, castiga (sobre parametrización), es consistente pero no muy eficiente (no robusto en residuos).
+
+--
+
+$$BIC= ln (\sigma^{2})+ \dfrac{k}{T}Ln(T)$$
+
+--
+
+Donde $(\sigma^{2})$ es la varianza de los errores (residuos del modelo), $(k)$ el número de parámetros (p+q+1) si se incluye la constante y de (p+q) si se omite y por último $(T)$ es el numero de observaciones.
+
+---
+
+--
+
+Ejercicio 1:
+
+--
+
+Qué modelo es mejor?
+
+```{r, mi234, echo = FALSE}
+data.frame(
+  A = c(0:6),
+  B = c(1.095,1.067, 0.955,0.957, 0.986, 1.016, 1.046),
+  C= c(1.076,1.030, 0.900,0.884, 0.895, 0.906,0.918),
+  D= c(0.000, .056, 0.181, .203, 0.204, 0.204, 0.205))%>%
+kable(
+  escape = F,
+  col.names = c("# Lags", "AIC", "BIC", "R2"),
+  align = c("l", "c", "c", "c")
+) %>%
+row_spec(1:7, color = met_slate) %>%
+row_spec(1:7, extra_css = "line-height: 110%;") %>% 
+column_spec(1, italic = T, color = met_slate)
+```
+
+--
+
+**R./** Note que depende que quiere ver el investigador. Si desea muchos rezagos lo mejor es tomar entonces el $\bar{R}^2_{adj}$. El BIC penaliza la sobreparametrización y el AIC es un poco mas intermedio.
+
+---
+layout: false
+class: inverse, middle, center
+
+# Otras consideraciones de los Procesos MA 😛
+
+---
+# Invertibilidad
+
+--
+
+> Un proceso MA es invertible si:
+
+--
+
+Considere el modelo MA:
+
+--
+
+$$y_t-\mu=(1+\theta L)\epsilon_t$$
+
+--
+
+$$E(\epsilon_t, \epsilon_{s})=\left\{\begin{matrix}
+ \sigma^2& si \quad s=t \\ 
+ 0 & \text{de otro lado} 
+\end{matrix}\right.$$
+
+--
+
+$$Si \quad |\theta|<1$$
+--
+
+.pad-left[
+$(1+\theta L)^{-1}(y_t-\mu)=\epsilon_t$
+]
+
+--
+
+.pad-left[
+$(1-\theta L+\theta^2 L^2-\theta^3 L^3+\cdots)(y_t-\mu)=\epsilon_t$
+]
+
+--
+
+.pad-left[
+Es .hi-green[Invertible AR(p)] .pink[✔]
+]
+
+---
+class: inverse, middle, center
+
+# Con respecto a los modelos Diferenciados!!
+
+---
+# Ejemplo
+
+--
+
+.attn[Punto]: Suponga que le ha tocado hacer un modelo y pronostico para .hi[inflación]. El resultado de todo, término siendo:
+
+--
+
+$$\Delta Inf_{t}=-0.0145-.3215 \Delta inf_{t-1}$$
+--
+
+$Inf_{2021:3}=6.53\%$ es la inflación del respectivo año 2021 en el mes 3.
+
+--
+
+La inflación del siguiente periodo fué $Inf_{2021:4}=6.56\%$. Note que si diferenciamos tendremos
+
+--
+
+$$Inf_{2021:4}-Inf_{2021:3}=0.029$$
+
+--
+
+Reemplazamos ese valor en nuestro modelo original:
+
+--
+
+$$\Delta Inf_{t}=-0.0145-.3215 (\color{red}{0.029})=\color{purple}{-0.02382}$$
+
+--
+
+Lo que usando el último valor del mes:
+
+--
+
+$$Inf_{2021:3}+\Delta_{2021:4}\Rightarrow 6.56-0.02382=6.54\%$$
+
+
+
+
+
+---
+# Bibliografía
+
+`r fa('book')` Chatfield, C. (2000). *Time-series forecasting*. CRC press.
+
+`r fa('book')` Hyndman, R.J., & Athanasopoulos, G. (2021). *Forecasting: principles and practice*, 3rd edition, OTexts: Melbourne, Australia.
+
+`r fa('book')` Shumway, R., & Stoffer, D. (2019). *Time series: a data analysis approach using R*. CRC Press.
+
+`r fa('book')` Campo, J. Notas de clase (MIMEO)
+
+---
+name: adios
+class: middle
+
+.pull-left[
+# **¡Gracias!**
+<br/>
+## Modelos MA
+
+### Seguimos aprendiendo
+]
+
+.pull-right[
+.right[
+<img style="border-radius: 50%;"
+src="https://avatars.githubusercontent.com/u/39503983?v=4"
+width="150px" />
+
+`r fontawesome::fa("link")` [Syllabus/ Curso](https://pomelo.uninorte.edu.co/pls/prod/bwckctlg.p_disp_course_detail?cat_term_in=202210&subj_code_in=ECO&crse_numb_in=0010)<br/>
+`r fontawesome::fa("twitter")` [@keynes37](https://twitter.com/keynes37)<br/>
+`r fontawesome::fa("paper-plane")`[ cayanes@uninorte.edu.co](mailto:cayanes@uninorte.edu.co)
+]
+]
+
+
