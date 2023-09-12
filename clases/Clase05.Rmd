@@ -569,6 +569,29 @@ Es .hi-green[Invertible AR(p)] .pink[✔]
 ]
 
 ---
+# Invertibilidad
+
+--
+
+<cy-blockquote> Dentro de las condiciones de invertibilidad también debe tenerse en cuenta las **raíces complejas** y esto es $1+\theta_1 z+\theta_2 z^2+\cdots +\theta_q z^q z$, en un plano complejo deben caer por fuera del circulo unitario</cy-blockquote>
+
+--
+
+Esto es condicionante de:
+
+--
+
+- Para procesos de $q=1$: $-1<\theta_1 < 1$
+
+--
+
+- Para procesos de $q=2$: $-1<\theta_2 < 1$ pero $\theta_2+\theta_1> -1$ o $\theta_1 - \theta_2 < 1$
+
+--
+
+- Para procesos de $q=3$ es mas complejo... pero los softwares responden por ello.
+
+---
 class: inverse, middle, center
 
 # Con respecto a los modelos Diferenciados!!
@@ -610,12 +633,57 @@ Lo que usando el último valor del mes:
 --
 
 $$Inf_{2021:3}+\Delta_{2021:4}\Rightarrow 6.56-0.02382=6.54\%$$
+---
+class: inverse, middle, center
 
-
-
-
+# Modelo SARIMA
 
 ---
+layout: true
+# Modelo Sarima
+
+---
+
+--
+
+| ARIMA | $~\underbrace{(p, d, q)}$ | $\underbrace{(P, D, Q)_{m}}$ |
+| ----: | :-----------------------: | :--------------------------: |
+|       | ${\uparrow}$              | ${\uparrow}$                 |
+|       | Parte NO estacional       | Parte estacional             |
+|       | del modelo                | del modelo                   |
+
+Donde $m =$ número de observaciones por año.
+
+--
+
+Los modelos SARIMA, permiten no tener raices estacionales. Recuerde que no ser .hi[**estacionario**] tiene muchos problemas a la hora de pronosticar.
+
+---
+
+--
+
+La .hi[parte estacional] de un modelo AR o MA se verá en los rezagos estacionales de PACF y ACF.
+
+--
+
+Un $ARIMA(0,0,0)(0,0,1)_{12}$ mostrará:
+
+--
+
+* Un pico en el lag 12 del ACF pero ningún otro pico significativo.
+* El PACF mostrará un decaimiento exponencial en los rezagos estacionales; es decir, en los rezagos $12, 24, 36, \dots$.
+
+--
+
+Un $ARIMA(0,0,0)(1,0,0)_{12}$ mostrará:
+
+--
+
+* Decaimiento exponencial en los .hi-orange[rezagos estacionales] de la ACF
+* Un único pico significativo en el lag 12 en el PACF.
+
+---
+layout: false
 # Bibliografía
 
 `r fa('book')` Chatfield, C. (2000). *Time-series forecasting*. CRC press.
