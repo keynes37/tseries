@@ -1,0 +1,231 @@
+---
+title: "Econometría II: SARIMA"
+subtitle: "Departamento de Economía"
+author: "Carlos A. Yanes G."
+format: 
+  revealjs:
+    footer: "Universidad del Norte"
+    theme: [simple, ob.scss]
+    logo: micrologouni.png
+    embed-resources: true
+    code-fold: true
+from: markdown+emoji
+editor: visual
+date: last-modified
+bibliography: refs.bib
+---
+
+## Paquetes con que se trabaja la sesión
+
+::: callout-note
+## R libraries
+
+Los paquetes que vamos a utilizar en la sesión de hoy son:
+
+::: callout-note
+## Ejecución
+
+No olvide que debe desde luego tener presente en su documento de *R Markdown* cargar estos paquetes.
+
+``` r
+library(pacman)
+p_load(readxl, TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, tseries, fpp2))
+```
+:::
+
+# Preambulo {{< fa bug >}}
+
+## SARIMA
+
+:::{.incremental}
+- Nos acercamos a modelos un poco mas superiores que los anteriormente vistos.
+
+- Llega la hora de trabajar con [modelos estacionales]{.blut}, estos desde luego intentaran mostrar la referencia estacional en las series de tiempo.
+
+- Se presenta la opción de [Pronostico Rápido]{.under} de `auto.arima`
+:::
+
+## Datos
+
+::: {.callout-tip}
+## Cartera comercial de bancos
+
+-   Enero de 2016 hasta Abril 2023
+-   Web site de [Superintendencia Financiera](https://www.superfinanciera.gov.co/inicio/informes-y-cifras/cifras/establecimientos-de-credito/informacion-periodica/mensual/evolucion-cartera-de-creditos-60950)
+-   Frecuencia Mensual
+:::
+
+::: {.callout-warning}
+## Producto de industria Manufacturera Perú
+
+-   Enero de 1992 hasta Diciembre 2010
+-   Web site de [Banco Central del Perú](https://www.bcrp.gob.pe/estadisticas.html)
+-   Frecuencia Mensual
+:::
+
+# Proceso 1 
+
+## Nuevamente Cartera comercial
+
+- La vez pasada supimos que no era una serie [Ruido Blanco]{.bg style="--col: #e64173"}
+
+- Eso nos afecta el [Pronostico]{.bg style="--col: #00FFFF"} de esa serie. Tal vez podamos mirar otro modelo. Puede ser estacional, como de otro orden. Eso vamos hacer hoy.
+
+## Cargamos datos
+
+::: {.panel-tabset}
+## Base de datos 1
+
+```{r, set}
+#| include: false
+#| warning: false
+library(pacman)
+p_load(readxl, TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, tseries, fpp2)
+```
+
+```{r}
+#| echo: true
+bd <- read_excel("cartera.xlsx")
+bd <- bd |> select(Cartera)
+cartera <- ts(bd, frequency=12, start=c(2016,1))
+```
+
+
+## Base de datos 2
+
+```{r}
+#| echo: true
+bd2 <- read_excel("Pind01.xlsx")
+bd2 <- bd2 |> select(pind)
+pind<- ts(bd2, frequency=12, start=c(1992,1))
+```
+:::
+
+## {background-color="white"}
+
+::: {.panel-tabset}
+## Modelo
+```{r, echo=TRUE, fig.height=5.1}
+cartera %>% diff(lag=12) %>% diff() %>%
+  ggtsdisplay()
+```
+
+## Lectura
+- Este modelo ya diferenciado y resumido (vamos paso adelante) nos dice que el [ACF]{.alert} cae lentamente y tenemos dos picos uno de AR y uno de MA en el lag 12 de la función de [PACF]{.blut}.
+
+- Los modelos que pueden ser candidatos son:
+    - SARIMA $(1,1,0)(0,1,1)_{12}$
+    - SARIMA $(1,1,0)(1,1,1)_{12}$
+    - SARIMA $(1,1,1)(1,1,1)_{12}$ *(opcional)*
+:::
+
+## {background-color="white"}
+
+::: {.panel-tabset}
+## Modelo 1
+```{r, echo=TRUE, fig.height=5.1}
+sarima_1<-Arima(cartera, order=c(1,1,0), seasonal=c(0,1,1))
+checkresiduals(sarima_1)
+```
+
+## Modelo 2
+
+```{r, echo=TRUE, fig.height=5.1}
+sarima_2<-Arima(cartera, order=c(1,1,0), seasonal=c(1,1,1))
+checkresiduals(sarima_2)
+```
+
+## Modelo 3
+
+```{r, echo=TRUE, fig.height=5.1}
+sarima_3<-Arima(cartera, order=c(1,1,1), seasonal=c(1,1,1))
+checkresiduals(sarima_3)
+```
+
+## Lect
+
+- El [mejor]{.blut} modelo por lo pronto es el (opcional) o sarima de orden (1,1,1) en ambas partes.
+
+- Tenemos que igual revisar cada uno en test de [ruido blanco]{.fg style="--col: #FF8000}.
+:::
+
+## Test de Ruido para cada modelo
+
+:::{.panel-tabset}
+## Modelo 1
+```{r, echo=TRUE}
+checkresiduals(sarima_1, plot=FALSE)
+```
+
+## Modelo 2
+```{r, echo=FALSE}
+checkresiduals(sarima_2, plot=FALSE)
+```
+
+## Modelo 3
+```{r, echo=FALSE}
+checkresiduals(sarima_3, plot=FALSE)
+```
+:::
+
+## Selección final
+
+### Usamos el criterio AKAIKE
+
+```{r, echo=TRUE}
+aicc <- c(
+  Arima(cartera, order=c(1,1,0), seasonal=c(0,1,1))$aicc,
+  Arima(cartera, order=c(1,1,0), seasonal=c(1,1,1))$aicc,
+  Arima(cartera, order=c(1,1,0), seasonal=c(1,1,0))$aicc,
+  Arima(cartera, order=c(1,1,1), seasonal=c(1,1,1))$aicc
+  )
+```
+
+- Primer modelo SARIMA  (1,1,0)(0,1,1): `r round(aicc[1],2)`.
+- Segundo modelo SARIMA (1,1,0)(1,1,1): `r round(aicc[2],2)`.
+- Tercer modelo SARIMA  (1,1,0)(1,1,0): `r round(aicc[3],2)`.
+- Cuarto modelo SARIMA  (1,1,1)(1,1,1): `r round(aicc[4],2)`.
+
+# Tenemos modelo :green_circle:
+
+
+
+## Resultado
+:::{.panel-tabset}
+
+## Predicción 
+```{r, echo=TRUE, fig.height=4.5}
+autoplot(forecast(sarima_3, h=12))
+```
+
+## Modelo final
+
+```{r, echo=TRUE}
+summary(sarima_3)
+```
+
+## Valores
+
+```{r, echo=TRUE}
+pb<-forecast(sarima_3, h=12)
+pb
+```
+:::
+
+# Auto arima
+
+## Miremos como trabaja la IA
+
+```{r, echo=TRUE}
+auto.arima(cartera)
+```
+
+## Sin pasos
+
+```{r euretailtryharder, echo=TRUE}
+auto.arima(cartera, 
+  stepwise=FALSE, approximation=FALSE)
+```
+
+# Gracias por su atención!! {background-color="#cc0000"}
+

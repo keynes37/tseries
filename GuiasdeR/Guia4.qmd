@@ -45,12 +45,12 @@ p_load(tidyverse, TSstudio, tseries, urca, forecast)
 
 ## Modelar ARIMA
 
-:::{.incremental}
-- Debemos primero mirar la [estacionariedad]{.alert}.
-- Si no es estacionaria la serie hay que [diferenciar]{.blut}.
-- Después de testear procedemos a leer sus funciones de autocovarianzas denominadas [correlogramas]{.bg style="--col: #FFFF00"}
-- Constatar el [RUIDO BLANCO]{.alert}
-- Predecir
+::: incremental
+-   Debemos primero mirar la [estacionariedad]{.alert}.
+-   Si no es estacionaria la serie hay que [diferenciar]{.blut}.
+-   Después de testear procedemos a leer sus funciones de autocovarianzas denominadas [correlogramas]{.bg style="--col: #FFFF00"}
+-   Constatar el [RUIDO BLANCO]{.alert}
+-   Predecir
 :::
 
 ## Datos
@@ -80,12 +80,11 @@ bd <- bd |> select(Cartera)
 cartera <- ts(bd, frequency=12, start=c(2016,1))
 ```
 
-
 # A lo que vinimos
 
 ## Cargar datos
 
-```r
+``` r
 library(pacman)
 p_load(readxl, TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, tseries)
 bd <- read_excel("cartera.xlsx")
@@ -103,11 +102,11 @@ ts_plot(cartera,
         Xtitle = "Años")
 ```
 
-
 ## Prueba de estacionariedad (1)
 
 ::: panel-tabset
 ## DF
+
 ```{r}
 #| echo: true
 prim <- ur.df(y=cartera, lags=0, type='none')
@@ -131,6 +130,7 @@ summary(prim3)
 ```
 
 ## DF+
+
 ```{r}
 #| echo: true
 # adf.test(cartera,k=0)
@@ -142,16 +142,19 @@ adf.test(cartera) # automático
 
 ::: panel-tabset
 ## Anotaciones
-- Permiten mirar o -sospechar- si la serie es estacionaria
-- La serie de cartera por ninguna parte parece ser [estacionaria]{.bg style="--col: #00FFFF"}
+
+-   Permiten mirar o -sospechar- si la serie es estacionaria
+-   La serie de cartera por ninguna parte parece ser [estacionaria]{.bg style="--col: #00FFFF"}
 
 ## ACF
+
 ```{r}
 #| echo: true
 acf(cartera, lag.max = 20)
 ```
 
 ## PAC
+
 ```{r}
 #| echo: true
 pacf(cartera, lag.max = 20)
@@ -203,7 +206,6 @@ dcartera<-diff(cartera, lag=1) # creo el objeto
 adf.test(dcartera)
 ```
 
-
 ## DF C+T
 
 ```{r}
@@ -245,8 +247,8 @@ pacf(dcartera)
 ## Modelos
 
 ::: panel-tabset
-
 ## Modelo 1
+
 ```{r}
 #| echo: true
 arima_1 <- arima(cartera, order = c(1,1,0))
@@ -254,6 +256,7 @@ arima_1
 ```
 
 ## Modelo 2
+
 ```{r}
 #| echo: true
 arima_2 <- arima(cartera, order = c(2,1,0))
@@ -294,7 +297,6 @@ legend("topleft", legend = c("Serie Original", "Predicción"), col = c("blue", "
 
 ```
 
-
 ## Valores
 
 ```{r}
@@ -304,19 +306,19 @@ arima_fc
 
 ## Selección de modelos
 
-:::{.fragment}
-- Existen varias formas de buscar elegir un modelo entre varios que se han estimado por pensar que es nuestro mejor modelo generador de datos. Estos vienen a ser los criterios de [Akaike]{.alert} (AIC) y [Bayes]{.alert} (BIC)
+::: fragment
+-   Existen varias formas de buscar elegir un modelo entre varios que se han estimado por pensar que es nuestro mejor modelo generador de datos. Estos vienen a ser los criterios de [Akaike]{.alert} (AIC) y [Bayes]{.alert} (BIC)
 :::
 
-:::{.fragment}
-- $AIC=-2\times log(L)+ 2\times p$
-- P es el número de parámetros del modelo
-- L la razón de [máxima verosimilitud]{.bg style="--col: #00FFFF"} del modelo
+::: fragment
+-   $AIC=-2\times log(L)+ 2\times p$
+-   P es el número de parámetros del modelo
+-   L la razón de [máxima verosimilitud]{.bg style="--col: #00FFFF"} del modelo
 :::
 
-:::{.fragment}
-- $BIC=-2\times log(L)+ p \times log(n)$
-- n es es tamaño de la muestra
+::: fragment
+-   $BIC=-2\times log(L)+ p \times log(n)$
+-   n es es tamaño de la muestra
 :::
 
 # Gracias por su atención!! {background-color="#cc0000"}
