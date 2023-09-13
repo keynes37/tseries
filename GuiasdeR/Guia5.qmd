@@ -14,16 +14,11 @@ editor: visual
 date: last-modified
 bibliography: refs.bib
 ---
-
 ## Paquetes con que se trabaja la sesión
-
 Los paquetes que vamos a utilizar en la sesión de hoy son:
 
-::: callout-note}
-## Ejecución
-
+::: callout-note
 No olvide que debe desde luego debe tener presente en su documento de *R Markdown* los siguientes paquetes:
-
 ``` r
 library(pacman)
 p_load(readxl, TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, tseries, fpp2))
