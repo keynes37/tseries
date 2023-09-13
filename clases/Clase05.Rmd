@@ -329,7 +329,7 @@ $$\boxed{\gamma_0=\color{blue}{\sigma^2}(\theta_1^2+1)}$$
 
 --
 
-El asunto de la .hi[covarianza] permite gráficar e identificar los procesos concernientes a la autocorrelación y por ende tener las funciones de autocorrelación .hi-slate[simple] y hi-purple[parcial].
+El asunto de la .hi[covarianza] permite gráficar e identificar los procesos concernientes a la autocorrelación y por ende tener las funciones de autocorrelación .hi-slate[simple] y .hi-purple[parcial].
 
 --
 
