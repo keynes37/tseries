@@ -14,11 +14,14 @@ editor: visual
 date: last-modified
 bibliography: refs.bib
 ---
+
 ## Paquetes con que se trabaja la sesión
+
 Los paquetes que vamos a utilizar en la sesión de hoy son:
 
 ::: callout-note
 No olvide que debe desde luego debe tener presente en su documento de *R Markdown* los siguientes paquetes:
+
 ``` r
 library(pacman)
 p_load(readxl, TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, tseries, fpp2))
@@ -109,10 +112,9 @@ cartera %>% diff() %>%
   ggtsdisplay()
 ```
 
-
 ## Lectura
 
-- Este modelo ya diferenciado [estacionalmente]{.alert} y -*resumido (vamos paso adelante)*- nos dice que el [ACF]{.alert} cae lentamente y tenemos dos picos uno de AR y uno de MA en el lag 12 de la función de [PACF]{.blut}. Esta parte nos indica en conformidad un ARIMA (1,1,1) para ambos correlogramas. Sin embargo los candidatos pueden ser los siguientes:
+-   Este modelo ya diferenciado [estacionalmente]{.alert} y -*resumido (vamos paso adelante)*- nos dice que el [ACF]{.alert} cae lentamente y tenemos dos picos uno de AR y uno de MA en el lag 12 de la función de [PACF]{.blut}. Esta parte nos indica en conformidad un ARIMA (1,1,1) para ambos correlogramas. Sin embargo los candidatos pueden ser los siguientes:
 
 -   Los modelos que pueden ser candidatos son:
 

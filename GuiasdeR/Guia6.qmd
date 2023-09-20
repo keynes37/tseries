@@ -212,6 +212,20 @@ cartera <- ts(bd, frequency=12, start=c(2016,1))
 ```
 
 ```{r, echo=TRUE}
+cartera %>% decompose()
+```
+
+Miramos el comportamiento de cada componente
+
+## Grafico de serie decompuesta
+
+```{r, echo=TRUE}
+cartera %>% decompose() %>% plot()
+```
+
+## Modelo ETS
+
+```{r, echo=TRUE}
 ets(cartera)
 ```
 
@@ -245,8 +259,9 @@ cartera %>% ets() %>% accuracy()
 cartera %>% ets(model="AAA", damped=FALSE) %>% accuracy()
 ```
 
+*El RMSE del modelo AAA es mejor que el de MAN, sin embargo, en el ME el error es mucho menor y es de considerar todos los criterios también.*
 
-## Miremos los componentes
+## Miremos los parámetros del modelo ETS
 
 ```{r, echo=TRUE}
 cartera %>% ets() %>% autoplot
