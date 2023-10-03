@@ -1,0 +1,525 @@
+---
+title: "Econometría II"
+subtitle: "<br/> ARMAX"
+author: "Carlos A. Yanes Guerra"
+institute: "Universidad del Norte"
+date: "2023-II"
+output:
+  xaringan::moon_reader:
+    css: 
+       - xaringan-themer.css
+       - new-css.css
+    lib_dir: libs
+    seal: false
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+---
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+style_mono_accent(
+  base_color = "#23395b",
+  header_font_google = google_font("Josefin Sans"),
+  text_font_google   = google_font("Montserrat", "300", "300i"),
+  code_font_google   = google_font("Fira Mono")
+)
+```
+
+```{r, setup, include = F}
+# devtools::install_github("dill/emoGG")
+library(pacman)
+p_load(readr, xts, astsa, fpp2,
+  broom, tidyverse,
+  latex2exp, ggplot2, ggthemes, ggforce, viridis, extrafont, gridExtra,
+  kableExtra, snakecase, janitor, TSstudio, urca, forecast,
+  data.table, dplyr, estimatr,
+  lubridate, knitr, parallel,
+  lfe, emoGG,
+  here, magrittr, fontawesome, shiny, babynames
+)
+# Define pink color
+red_pink <- "#e64173"
+turquoise <- "#20B2AA"
+orange <- "#FFA500"
+red <- "#fb6107"
+blue <- "#2b59c3"
+green <- "#8bb174"
+grey_light <- "grey70"
+grey_mid <- "grey50"
+grey_dark <- "grey20"
+purple <- "#6A5ACD"
+slate <- "#314f4f"
+met_slate <- "#272822"
+# Dark slate grey: #314f4f
+# Opciones
+opts_chunk$set(
+  comment = "#>",
+  fig.align = "center",
+  fig.height = 7,
+  fig.width = 10.5,
+  warning = F,
+  message = F
+)
+opts_chunk$set(dev = "svg")
+options(device = function(file, width, height) {
+  svg(tempfile(), width = width, height = height)
+})
+options(crayon.enabled = F)
+options(knitr.table.format = "html")
+# A blank theme para ggplot
+theme_empty <- theme_bw() + theme(
+  line = element_blank(),
+  rect = element_blank(),
+  strip.text = element_blank(),
+  axis.text = element_blank(),
+  plot.title = element_blank(),
+  axis.title = element_blank(),
+  plot.margin = structure(c(0, 0, -0.5, -1), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_simple <- theme_bw() + theme(
+  line = element_blank(),
+  panel.grid = element_blank(),
+  rect = element_blank(),
+  strip.text = element_blank(),
+  axis.text.x = element_text(size = 18, family = "STIXGeneral"),
+  axis.text.y = element_blank(),
+  axis.ticks = element_blank(),
+  plot.title = element_blank(),
+  axis.title = element_blank(),
+  # plot.margin = structure(c(0, 0, -1, -1), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes_math <- theme_void() + theme(
+  text = element_text(family = "MathJax_Math"),
+  axis.title = element_text(size = 22),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, 0.15, 0, 0, unit = "lines")),
+  axis.line = element_line(
+    color = "grey70",
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.15, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes_serif <- theme_void() + theme(
+  text = element_text(family = "MathJax_Main"),
+  axis.title = element_text(size = 22),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, 0.15, 0, 0, unit = "lines")),
+  axis.line = element_line(
+    color = "grey70",
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.15, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes <- theme_void() + theme(
+  text = element_text(family = "Fira Sans Book"),
+  axis.title = element_text(size = 18),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, 0.15, 0, 0, unit = "lines")),
+  axis.line = element_line(
+    color = grey_light,
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.15, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_set(theme_gray(base_size = 20))
+# Nombres de las columnas para la regresión
+reg_columns <- c("Term", "Est.", "S.E.", "t stat.", "p-Value")
+# Formato de p valores
+format_pvi <- function(pv) {
+  return(ifelse(
+    pv < 0.0001,
+    "<0.0001",
+    round(pv, 4) %>% format(scientific = F)
+  ))
+}
+format_pv <- function(pvs) lapply(X = pvs, FUN = format_pvi) %>% unlist()
+# Tidy regression results table
+tidy_table <- function(x, terms, highlight_row = 1, highlight_color = "black", highlight_bold = T, digits = c(NA, 3, 3, 2, 5), title = NULL) {
+  x %>%
+    tidy() %>%
+    select(1:5) %>%
+    mutate(
+      term = terms,
+      p.value = p.value %>% format_pv()
+    ) %>%
+    kable(
+      col.names = reg_columns,
+      escape = F,
+      digits = digits,
+      caption = title
+    ) %>%
+    kable_styling(font_size = 20) %>%
+    row_spec(1:nrow(tidy(x)), background = "white") %>%
+    row_spec(highlight_row, bold = highlight_bold, color = highlight_color)
+}
+# A few extras
+xaringanExtra::use_xaringan_extra(c("tile_view", "fit_screen"))
+xaringanExtra::use_clipboard()
+xaringanExtra::use_share_again()
+xaringanExtra::style_share_again(
+  share_buttons = c("twitter", "linkedin", "pocket")
+)
+```
+
+name: xaringan-title
+class: inverse, left, bottom
+background-image: url(pictures/picuniform.jpg)
+background-size: cover
+
+# **`r rmarkdown::metadata$title`**
+----
+
+## **`r rmarkdown::metadata$subtitle`**
+
+### `r rmarkdown::metadata$author`
+### `r rmarkdown::metadata$date`
+
+```{r xaringanExtra-share-again, echo=FALSE}
+xaringanExtra::use_share_again()
+```
+---
+class: inverse, middle, center
+
+# Preguntas de las sesiones anteriores?
+
+---
+layout: true
+# Modelos ARMAX
+
+---
+
+--
+
+`r fa("palette", fill="red")` A pesar de haber sido desarrollados hace tiempo, siguen siendo útiles.
+
+--
+
+`r fa("palette", fill="red")` Igualmente presentan limitaciones hacia acciones de largo plazo y necesitan los datos ser actualizados.
+
+--
+
+`r fa("palette", fill="red")` Elaborar pronósticos con la metodología ARIMAX también es un "Arte".
+
+--
+
+`r fa("palette", fill="red")` No se puede decir que el mejor modelo que se establece, es o ha sido el **mejor**.
+
+--
+
+`r fa("palette", fill="red")` Las .hi-purple[variables económicas] son procesos aleatorios y por ello tienen una distribución de probabilidad generalmente desconocida a la que también se le llama el .hi[proceso generador de datos] (PGD) de la variable.
+
+---
+
+--
+
+<cy-blockquote>Teniendo como referencia los modelos univariados, podemos entonces involucrar de manera exogena, la participación de un componente **exogeno** que acompaña nuestro modelo</cy-blockquote>
+
+--
+
+`r fa("fighter-jet", fill="blue")` Nuestro modelo ahora se transfigura a:
+
+--
+
+$$y_t=\color{red}{c}+\color{purple}{v(\beta)x_t}+ e_t$$
+
+--
+
+Dicho de otra manera:
+
+--
+
+$$y_t=C_0+\sum \limits_{i=1}^p \phi_i y_{t-1}+\color{purple}{\sum \limits_{k=1}^r \beta_k x_{t}}+\color{blue}{\sum \limits_{j=1}^q \theta_i e_{t-1}}+ \color{red}{e_t}$$
+
+--
+
+*La parte de x, es exogena e incluso se vincula como variable en función de (t), es decir en el presente*.
+
+
+---
+
+--
+
+Los modelos de tipo .hi[ARMAX] son usados en agricultura, energia, por ejemplo el siguiente paper de [Rabbi, et.al (2020)](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=9350326&tag=1) nos muestra algo de ello.
+
+--
+
+Un modelo ARMAX suele ser representado como:
+
+--
+
+$$Y_{t}=\alpha_{0} +\alpha_{1}Y_{t-1}+\cdots+\alpha_{\rho}Y_{t-\rho}+\beta_{1}X_{t}+\epsilon_{t}$$
+
+--
+
+Donde:
+
+--
+
+$X_{t}$ es la variable exogena o explicativa y el error del modelo debe tener la estimación:
+
+--
+
+$$\epsilon_{t}= \rho \epsilon_{t-1}+ \theta_{1}V_{t-1}+ V_{t}$$
+Que vendría a ser un proceso .hi[ARMA] para el .hi-red[residuo] del modelo original.
+
+---
+
+--
+
+Un modelo autoregresivo (AR) y de media móvil (MA) puede contener variables exógenas, siempre y cuando el proceso $(Y_{t})$ sea una solución .hi-purple[estacionaria] de ecuaciones en diferencia de tal forma que:
+
+--
+
+$$Y_{t} - \alpha_{1} Y_{t-1}- \cdots-\alpha_{\rho} Y_{t-\rho} = Z_{t}+ \Theta_{1} Z_{t-1}+\cdots + \Theta_{q} Z_{t-q}$$
+
+--
+
+Donde tanto $\alpha$ y $\Theta$ son parámetros de las variables y $Z_{t}$ es una variable exógena que se distribuye R.B $\sim (0, \sigma^{2})$
+
+---
+layout: false
+.attn[Ejemplo:]
+
+--
+
+```{r usconsump, fig.height=6.8, fig.width=8, echo=FALSE}
+autoplot(uschange, facets=TRUE) +
+  xlab("Años") + ylab("") +
+  ggtitle("Series trimestrales de Estados Unidos")
+```
+
+---
+
+--
+
+```{r, fig.height=6, fig.width=8.5, echo=FALSE}
+ggplot(aes(x=Income,y=Consumption), data=as.data.frame(uschange)) +
+  xlab("Ingreso") + ylab("Consumo general") +
+  geom_point() +
+  ggtitle("Consumo e Ingreso (Tasas %)")
+```
+
+---
+layout: true
+# Ejemplo
+
+---
+
+--
+
+### Condiciones de estimación
+
+--
+
+`r fa("mug-hot", fill="red")` Estacionariedad, mas que nada replicamos todo el proceso que ya se ha venido desarrollando.
+
+--
+
+`r fa("mug-hot", fill="red")` La serie (x), tambien debe ser en lo posible estacionaria. Ya que si no lo es, puede afectar a los .hi[errores] del modelo y generar algo **espurio**.
+
+--
+
+`r fa("mug-hot", fill="red")` Los residuos finalmente deben ser .hi-purple[ruido blanco]
+
+---
+
+--
+
+.pull-left[
+```{r, echo=FALSE}
+testkp<-ur.kpss(uschange[,1], type = "tau", lags = "short")
+summary(testkp)
+```
+`r fa("long-arrow-alt-right", fill="red")` Serie .hi-purple[Consumo]
+]
+
+--
+
+.pull-right[
+```{r, echo=FALSE}
+testkp2<-ur.kpss(uschange[,2], type = "tau", lags = "short")
+summary(testkp2)
+```
+`r fa("long-arrow-alt-right", fill="red")` Serie .hi[Ingreso]
+]
+
+
+
+---
+
+--
+
+```{r, echo=FALSE}
+# Correlograma
+ts_cor(uschange[,1], lag = 20)
+```
+
+---
+
+--
+
+```{r}
+ax <- Arima(uschange[,1], c(1, 0, 2), 
+                xreg = uschange[,2])
+summary(ax)
+```
+
+--
+
+.attn[Qué pasa si lo quiero con mas] (X's)
+
+---
+
+--
+
+Toca algo como:
+
+--
+
+```r
+conjunto <- ts.intersect(uschange[,2],
+                         uschange[,3],
+                         uschange[,4])
+```
+
+--
+
+Luego solo en la parte donde va `xreg= conjunto`. Recuerde que todas las variables deben ser estacionarias. A modo de ejemplo vamos a mirar todas las variables, pero no van a ser correctamente especificado.
+
+--
+
+Por otro lado se comporta como un modelo de .hi-purple[regresión] y haremos uso del paquete `library(lmtest)`.
+
+---
+
+--
+
+```{r, include=FALSE, echo=FALSE}
+conjunto <- ts.intersect(uschange[,2],
+                         uschange[,3],
+                         uschange[,4])
+```
+
+```{r}
+axc <- Arima(uschange[,1], c(1, 0, 2), xreg = conjunto)
+summary(axc)
+```
+
+---
+
+--
+
+.pull-left[
+```{r}
+library(lmtest)
+coeftest(ax)
+```
+]
+
+--
+
+.pull-right[
+```{r}
+coeftest(axc)
+```
+]
+
+
+---
+
+--
+
+```{r, fig.height=6, fig.width=8.5, echo=FALSE}
+checkresiduals(ax)
+```
+
+---
+
+--
+
+```{r, fig.height=6, fig.width=8.5, echo=FALSE}
+checkresiduals(ax, plot=FALSE)
+```
+
+---
+
+--
+
+.attn[Pronostico Modelo Real]
+
+--
+
+```{r}
+fcast <- forecast(ax,
+xreg=rep(mean(uschange[,2]),8), h=8)
+fcast
+```
+
+---
+
+--
+
+```{r, fig.height=6, fig.width=8.5, echo=FALSE}
+autoplot(fcast) + xlab("Años")    +
+ylab("Cambio porcentual del consumo")    +
+ggtitle("Pronostico con ARIMA(1,0,2)")
+```
+
+
+
+---
+layout: false
+class: inverse, middle, center
+
+# Modelos de Volatilidad
+
+---
+layout: true
+# Modelo ARCH
+
+
+
+---
+layout: false
+# Bibliografía
+
+
+`r fa('book')` Rabbi, F., Tareq, S.U., Islam, M.M., Chowdhury, M.A., & Abul Kashem, M. (2020). *A Multivariate Time Series Approach for Forecasting of Electricity Demand in Bangladesh Using ARIMAX Model*. 2020 2nd International Conference on Sustainable Technologies for Industry 4.0 (STI), 1-5.
+
+`r fa('book')` Hyndman, R.J., & Athanasopoulos, G. (2021). *Forecasting: principles and practice*, 3rd edition, OTexts: Melbourne, Australia.
+
+`r fa('book')` Shumway, R., & Stoffer, D. (2019). *Time series: a data analysis approach using R*. CRC Press.
+
+---
+name: adios
+class: middle
+
+.pull-left[
+# **¡Gracias!**
+<br/>
+## Modelos ARMAX
+
+### Seguimos aprendiendo
+]
+
+.pull-right[
+.right[
+<img style="border-radius: 50%;"
+src="https://avatars.githubusercontent.com/u/39503983?v=4"
+width="150px" />
+
+`r fontawesome::fa("link")` [Syllabus/ Curso](https://pomelo.uninorte.edu.co/pls/prod/bwckctlg.p_disp_course_detail?cat_term_in=202210&subj_code_in=ECO&crse_numb_in=0010)<br/>
+`r fontawesome::fa("twitter")` [@keynes37](https://twitter.com/keynes37)<br/>
+`r fontawesome::fa("paper-plane")`[ cayanes@uninorte.edu.co](mailto:cayanes@uninorte.edu.co)
+]
+]

@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Econometría II</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Carlos A. Yanes Guerra" />
+    <script src="libs/header-attrs-2.22/header-attrs.js"></script>
+    <link href="libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
+    <script src="libs/tile-view-0.2.6/tile-view.js"></script>
+    <script src="libs/xaringanExtra_fit-screen-0.2.6/fit-screen.js"></script>
+    <script src="libs/clipboard-2.0.6/clipboard.min.js"></script>
+    <link href="libs/xaringanExtra-clipboard-0.2.6/xaringanExtra-clipboard.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-clipboard-0.2.6/xaringanExtra-clipboard.js"></script>
+    <script>window.xaringanExtraClipboard(null, {"button":"Copy Code","success":"Copied!","error":"Press Ctrl+C to Copy"})</script>
+    <link href="libs/shareon-1.4.1/shareon.min.css" rel="stylesheet" />
+    <script src="libs/shareon-1.4.1/shareon.min.js"></script>
+    <link href="libs/xaringanExtra-shareagain-0.2.6/shareagain.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-shareagain-0.2.6/shareagain.js"></script>
+    <script src="libs/htmlwidgets-1.6.2/htmlwidgets.js"></script>
+    <script src="libs/plotly-binding-4.10.0/plotly.js"></script>
+    <script src="libs/typedarray-0.1/typedarray.min.js"></script>
+    <script src="libs/jquery-3.5.1/jquery.min.js"></script>
+    <link href="libs/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
+    <script src="libs/crosstalk-1.2.0/js/crosstalk.min.js"></script>
+    <link href="libs/plotly-htmlwidgets-css-2.5.1/plotly-htmlwidgets.css" rel="stylesheet" />
+    <script src="libs/plotly-main-2.5.1/plotly-latest.min.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="new-css.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+
+
+
+name: xaringan-title
+class: inverse, left, bottom
+background-image: url(pictures/picuniform.jpg)
+background-size: cover
+
+# **Econometría II**
+----
+
+## **&lt;br/&gt; ARMAX**
+
+### Carlos A. Yanes Guerra
+### 2023-II
+
+
+---
+class: inverse, middle, center
+
+# Preguntas de las sesiones anteriores?
+
+---
+layout: true
+# Modelos ARMAX
+
+---
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M512 256c0 .9 0 1.8 0 2.7c-.4 36.5-33.6 61.3-70.1 61.3H344c-26.5 0-48 21.5-48 48c0 3.4 .4 6.7 1 9.9c2.1 10.2 6.5 20 10.8 29.9c6.1 13.8 12.1 27.5 12.1 42c0 31.8-21.6 60.7-53.4 62c-3.5 .1-7 .2-10.6 .2C114.6 512 0 397.4 0 256S114.6 0 256 0S512 114.6 512 256zM128 288a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm0-96a32 32 0 1 0 0-64 32 32 0 1 0 0 64zM288 96a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm96 96a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></svg> A pesar de haber sido desarrollados hace tiempo, siguen siendo útiles.
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M512 256c0 .9 0 1.8 0 2.7c-.4 36.5-33.6 61.3-70.1 61.3H344c-26.5 0-48 21.5-48 48c0 3.4 .4 6.7 1 9.9c2.1 10.2 6.5 20 10.8 29.9c6.1 13.8 12.1 27.5 12.1 42c0 31.8-21.6 60.7-53.4 62c-3.5 .1-7 .2-10.6 .2C114.6 512 0 397.4 0 256S114.6 0 256 0S512 114.6 512 256zM128 288a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm0-96a32 32 0 1 0 0-64 32 32 0 1 0 0 64zM288 96a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm96 96a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></svg> Igualmente presentan limitaciones hacia acciones de largo plazo y necesitan los datos ser actualizados.
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M512 256c0 .9 0 1.8 0 2.7c-.4 36.5-33.6 61.3-70.1 61.3H344c-26.5 0-48 21.5-48 48c0 3.4 .4 6.7 1 9.9c2.1 10.2 6.5 20 10.8 29.9c6.1 13.8 12.1 27.5 12.1 42c0 31.8-21.6 60.7-53.4 62c-3.5 .1-7 .2-10.6 .2C114.6 512 0 397.4 0 256S114.6 0 256 0S512 114.6 512 256zM128 288a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm0-96a32 32 0 1 0 0-64 32 32 0 1 0 0 64zM288 96a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm96 96a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></svg> Elaborar pronósticos con la metodología ARIMAX también es un "Arte".
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M512 256c0 .9 0 1.8 0 2.7c-.4 36.5-33.6 61.3-70.1 61.3H344c-26.5 0-48 21.5-48 48c0 3.4 .4 6.7 1 9.9c2.1 10.2 6.5 20 10.8 29.9c6.1 13.8 12.1 27.5 12.1 42c0 31.8-21.6 60.7-53.4 62c-3.5 .1-7 .2-10.6 .2C114.6 512 0 397.4 0 256S114.6 0 256 0S512 114.6 512 256zM128 288a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm0-96a32 32 0 1 0 0-64 32 32 0 1 0 0 64zM288 96a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm96 96a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></svg> No se puede decir que el mejor modelo que se establece, es o ha sido el **mejor**.
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M512 256c0 .9 0 1.8 0 2.7c-.4 36.5-33.6 61.3-70.1 61.3H344c-26.5 0-48 21.5-48 48c0 3.4 .4 6.7 1 9.9c2.1 10.2 6.5 20 10.8 29.9c6.1 13.8 12.1 27.5 12.1 42c0 31.8-21.6 60.7-53.4 62c-3.5 .1-7 .2-10.6 .2C114.6 512 0 397.4 0 256S114.6 0 256 0S512 114.6 512 256zM128 288a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm0-96a32 32 0 1 0 0-64 32 32 0 1 0 0 64zM288 96a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm96 96a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></svg> Las .hi-purple[variables económicas] son procesos aleatorios y por ello tienen una distribución de probabilidad generalmente desconocida a la que también se le llama el .hi[proceso generador de datos] (PGD) de la variable.
+
+---
+
+--
+
+&lt;cy-blockquote&gt;Teniendo como referencia los modelos univariados, podemos entonces involucrar de manera exogena, la participación de un componente **exogeno** que acompaña nuestro modelo&lt;/cy-blockquote&gt;
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 640 512" style="height:1em;width:1.25em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:blue;overflow:visible;position:relative;"><path d="M160 24c0-13.3 10.7-24 24-24H296c13.3 0 24 10.7 24 24s-10.7 24-24 24H280L384 192H500.4c7.7 0 15.3 1.4 22.5 4.1L625 234.4c9 3.4 15 12 15 21.6s-6 18.2-15 21.6L522.9 315.9c-7.2 2.7-14.8 4.1-22.5 4.1H384L280 464h16c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24h8V320H160l-54.6 54.6c-6 6-14.1 9.4-22.6 9.4H64c-17.7 0-32-14.3-32-32V288c-17.7 0-32-14.3-32-32s14.3-32 32-32V160c0-17.7 14.3-32 32-32H82.7c8.5 0 16.6 3.4 22.6 9.4L160 192h32V48h-8c-13.3 0-24-10.7-24-24zM80 240c-8.8 0-16 7.2-16 16s7.2 16 16 16h64c8.8 0 16-7.2 16-16s-7.2-16-16-16H80z"/></svg> Nuestro modelo ahora se transfigura a:
+
+--
+
+`$$y_t=\color{red}{c}+\color{purple}{v(\beta)x_t}+ e_t$$`
+
+--
+
+Dicho de otra manera:
+
+--
+
+`$$y_t=C_0+\sum \limits_{i=1}^p \phi_i y_{t-1}+\color{purple}{\sum \limits_{k=1}^r \beta_k x_{t}}+\color{blue}{\sum \limits_{j=1}^q \theta_i e_{t-1}}+ \color{red}{e_t}$$`
+
+--
+
+*La parte de x, es exogena e incluso se vincula como variable en función de (t), es decir en el presente*.
+
+
+---
+
+--
+
+Los modelos de tipo .hi[ARMAX] son usados en agricultura, energia, por ejemplo el siguiente paper de [Rabbi, et.al (2020)](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&amp;arnumber=9350326&amp;tag=1) nos muestra algo de ello.
+
+--
+
+Un modelo ARMAX suele ser representado como:
+
+--
+
+`$$Y_{t}=\alpha_{0} +\alpha_{1}Y_{t-1}+\cdots+\alpha_{\rho}Y_{t-\rho}+\beta_{1}X_{t}+\epsilon_{t}$$`
+
+--
+
+Donde:
+
+--
+
+`\(X_{t}\)` es la variable exogena o explicativa y el error del modelo debe tener la estimación:
+
+--
+
+`$$\epsilon_{t}= \rho \epsilon_{t-1}+ \theta_{1}V_{t-1}+ V_{t}$$`
+Que vendría a ser un proceso .hi[ARMA] para el .hi-red[residuo] del modelo original.
+
+---
+
+--
+
+Un modelo autoregresivo (AR) y de media móvil (MA) puede contener variables exógenas, siempre y cuando el proceso `\((Y_{t})\)` sea una solución .hi-purple[estacionaria] de ecuaciones en diferencia de tal forma que:
+
+--
+
+`$$Y_{t} - \alpha_{1} Y_{t-1}- \cdots-\alpha_{\rho} Y_{t-\rho} = Z_{t}+ \Theta_{1} Z_{t-1}+\cdots + \Theta_{q} Z_{t-q}$$`
+
+--
+
+Donde tanto `\(\alpha\)` y `\(\Theta\)` son parámetros de las variables y `\(Z_{t}\)` es una variable exógena que se distribuye R.B `\(\sim (0, \sigma^{2})\)`
+
+---
+layout: false
+.attn[Ejemplo:]
+
+--
+
+&lt;img src="Clase06_files/figure-html/usconsump-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+--
+
+&lt;img src="Clase06_files/figure-html/unnamed-chunk-1-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+layout: true
+# Ejemplo
+
+---
+
+--
+
+### Condiciones de estimación
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M88 0C74.7 0 64 10.7 64 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C120.5 112.3 128 119.9 128 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C119.5 47.7 112 40.1 112 24c0-13.3-10.7-24-24-24zM32 192c-17.7 0-32 14.3-32 32V416c0 53 43 96 96 96H288c53 0 96-43 96-96h16c61.9 0 112-50.1 112-112s-50.1-112-112-112H352 32zm352 64h16c26.5 0 48 21.5 48 48s-21.5 48-48 48H384V256zM224 24c0-13.3-10.7-24-24-24s-24 10.7-24 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C232.5 112.3 240 119.9 240 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C231.5 47.7 224 40.1 224 24z"/></svg> Estacionariedad, mas que nada replicamos todo el proceso que ya se ha venido desarrollando.
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M88 0C74.7 0 64 10.7 64 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C120.5 112.3 128 119.9 128 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C119.5 47.7 112 40.1 112 24c0-13.3-10.7-24-24-24zM32 192c-17.7 0-32 14.3-32 32V416c0 53 43 96 96 96H288c53 0 96-43 96-96h16c61.9 0 112-50.1 112-112s-50.1-112-112-112H352 32zm352 64h16c26.5 0 48 21.5 48 48s-21.5 48-48 48H384V256zM224 24c0-13.3-10.7-24-24-24s-24 10.7-24 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C232.5 112.3 240 119.9 240 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C231.5 47.7 224 40.1 224 24z"/></svg> La serie (x), tambien debe ser en lo posible estacionaria. Ya que si no lo es, puede afectar a los .hi[errores] del modelo y generar algo **espurio**.
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M88 0C74.7 0 64 10.7 64 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C120.5 112.3 128 119.9 128 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C119.5 47.7 112 40.1 112 24c0-13.3-10.7-24-24-24zM32 192c-17.7 0-32 14.3-32 32V416c0 53 43 96 96 96H288c53 0 96-43 96-96h16c61.9 0 112-50.1 112-112s-50.1-112-112-112H352 32zm352 64h16c26.5 0 48 21.5 48 48s-21.5 48-48 48H384V256zM224 24c0-13.3-10.7-24-24-24s-24 10.7-24 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C232.5 112.3 240 119.9 240 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C231.5 47.7 224 40.1 224 24z"/></svg> Los residuos finalmente deben ser .hi-purple[ruido blanco]
+
+---
+
+--
+
+.pull-left[
+
+```
+#&gt; 
+#&gt; ####################### 
+#&gt; # KPSS Unit Root Test # 
+#&gt; ####################### 
+#&gt; 
+#&gt; Test is of type: tau with 4 lags. 
+#&gt; 
+#&gt; Value of test-statistic is: 0.0887 
+#&gt; 
+#&gt; Critical value for a significance level of: 
+#&gt;                 10pct  5pct 2.5pct  1pct
+#&gt; critical values 0.119 0.146  0.176 0.216
+```
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M334.5 414c8.8 3.8 19 2 26-4.6l144-136c4.8-4.5 7.5-10.8 7.5-17.4s-2.7-12.9-7.5-17.4l-144-136c-7-6.6-17.2-8.4-26-4.6s-14.5 12.5-14.5 22l0 72L32 192c-17.7 0-32 14.3-32 32l0 64c0 17.7 14.3 32 32 32l288 0 0 72c0 9.6 5.7 18.2 14.5 22z"/></svg> Serie .hi-purple[Consumo]
+]
+
+--
+
+.pull-right[
+
+```
+#&gt; 
+#&gt; ####################### 
+#&gt; # KPSS Unit Root Test # 
+#&gt; ####################### 
+#&gt; 
+#&gt; Test is of type: tau with 4 lags. 
+#&gt; 
+#&gt; Value of test-statistic is: 0.0601 
+#&gt; 
+#&gt; Critical value for a significance level of: 
+#&gt;                 10pct  5pct 2.5pct  1pct
+#&gt; critical values 0.119 0.146  0.176 0.216
+```
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M334.5 414c8.8 3.8 19 2 26-4.6l144-136c4.8-4.5 7.5-10.8 7.5-17.4s-2.7-12.9-7.5-17.4l-144-136c-7-6.6-17.2-8.4-26-4.6s-14.5 12.5-14.5 22l0 72L32 192c-17.7 0-32 14.3-32 32l0 64c0 17.7 14.3 32 32 32l288 0 0 72c0 9.6 5.7 18.2 14.5 22z"/></svg> Serie .hi[Ingreso]
+]
+
+
+
+---
+
+--
+
+<div class="plotly html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-5b4a87dec52417aabf3c" style="width:756px;height:504px;"></div>
+<script type="application/json" data-for="htmlwidget-5b4a87dec52417aabf3c">{"x":{"data":[{"x":[0],"y":[0.99999999999999989],"type":"bar","marker":{"color":"black","line":{"color":"rgba(31,119,180,1)"}},"width":0.10000000000000001,"name":"Lag-Zero","legendgroup":"lagzero","showlegend":false,"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[4,8,12,16,20],"y":[0.14401974158217148,-0.11672952116462632,-0.067106323725105874,0.051069513460358963,-0.011047750469569278],"type":"bar","marker":{"color":"red","line":{"color":"rgba(255,127,14,1)"}},"width":[0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001],"legendgroup":"seasonal","name":"Seasonal Lag 4","error_y":{"color":"rgba(255,127,14,1)"},"error_x":{"color":"rgba(255,127,14,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[1,2,3,5,6,7,9,10,11,13,14,15,17,18,19],"y":[0.34992120347443517,0.31397022997731977,0.33385182833054594,0.078610769313965434,0.073949290928396721,-0.0077840292041916693,-0.041963137808417074,-0.043039164690182853,-0.033582304595138564,-0.0063232722578321814,-0.098234551865359343,-0.037619186155897641,-0.048104251846139319,-0.010277893886910231,-0.00080308737348067886],"type":"bar","marker":{"color":"#00526d","line":{"color":"rgba(44,160,44,1)"}},"width":[0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001],"legendgroup":"nonseasonal","name":"Non-Seasonal","error_y":{"color":"rgba(44,160,44,1)"},"error_x":{"color":"rgba(44,160,44,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0,20],"y":[0.1433267614176475,0.1433267614176475],"type":"scatter","mode":"lines","line":{"color":"green","dash":"dash"},"legendgroup":"ci","showlegend":false,"name":"CI Upper Bound","marker":{"color":"rgba(214,39,40,1)","line":{"color":"rgba(214,39,40,1)"}},"error_y":{"color":"rgba(214,39,40,1)"},"error_x":{"color":"rgba(214,39,40,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0,20],"y":[-0.1433267614176475,-0.1433267614176475],"type":"scatter","mode":"lines","line":{"color":"green","dash":"dash"},"legendgroup":"ci","showlegend":false,"name":"CI Lower Bound","marker":{"color":"rgba(148,103,189,1)","line":{"color":"rgba(148,103,189,1)"}},"error_y":{"color":"rgba(148,103,189,1)"},"error_x":{"color":"rgba(148,103,189,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[4,8,12,16,20],"y":[-0.068805360369531596,-0.13351132771455632,-0.069851931426272273,0.087102708100357695,0.0076763084975037307],"type":"bar","marker":{"color":"red","line":{"color":"rgba(140,86,75,1)"}},"width":[0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001],"legendgroup":"seasonal","showlegend":false,"name":"Seasonal Lag 4","error_y":{"color":"rgba(140,86,75,1)"},"error_x":{"color":"rgba(140,86,75,1)"},"xaxis":"x","yaxis":"y2","frame":null},{"x":[1,2,3,5,6,7,9,10,11,13,14,15,17,18,19],"y":[0.34992120347443501,0.21824882577433685,0.20531731926320429,-0.074718539886262134,-0.010270549249851848,-0.039991007269246655,0.024977908570316246,0.042227102190761409,0.056917224285089871,0.024619789583653837,-0.10367257851227968,0.024669782319064106,-0.043150467297154146,-0.0083284229427663965,-0.015649353591767196],"type":"bar","marker":{"color":"#00526d","line":{"color":"rgba(227,119,194,1)"}},"width":[0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001],"legendgroup":"nonseasonal","showlegend":false,"name":"Non-Seasonal","error_y":{"color":"rgba(227,119,194,1)"},"error_x":{"color":"rgba(227,119,194,1)"},"xaxis":"x","yaxis":"y2","frame":null},{"x":[1,20],"y":[0.1433267614176475,0.1433267614176475],"type":"scatter","mode":"lines","line":{"color":"green","dash":"dash"},"legendgroup":"ci","showlegend":false,"name":"CI Upper Bound","marker":{"color":"rgba(127,127,127,1)","line":{"color":"rgba(127,127,127,1)"}},"error_y":{"color":"rgba(127,127,127,1)"},"error_x":{"color":"rgba(127,127,127,1)"},"xaxis":"x","yaxis":"y2","frame":null},{"x":[1,20],"y":[-0.1433267614176475,-0.1433267614176475],"type":"scatter","mode":"lines","line":{"color":"green","dash":"dash"},"legendgroup":"ci","showlegend":false,"name":"CI Lower Bound","marker":{"color":"rgba(188,189,34,1)","line":{"color":"rgba(188,189,34,1)"}},"error_y":{"color":"rgba(188,189,34,1)"},"error_x":{"color":"rgba(188,189,34,1)"},"xaxis":"x","yaxis":"y2","frame":null}],"layout":{"xaxis":{"domain":[0,1],"automargin":true,"dtick":4,"title":"Lag","anchor":"y2"},"yaxis2":{"domain":[0,0.47999999999999998],"automargin":true,"title":"PACF","anchor":"x"},"yaxis":{"domain":[0.52000000000000002,1],"automargin":true,"title":"ACF","anchor":"x"},"annotations":[],"shapes":[],"images":[],"margin":{"b":40,"l":60,"t":25,"r":10},"hovermode":"compare","showlegend":true,"title":"uschange[, 1] ACF and PACF Plots"},"attrs":{"161a836b0b7b8":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],"y":[0.99999999999999989,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"type":"bar","marker":{"color":"black"},"width":0.10000000000000001,"name":"Lag-Zero","legendgroup":"lagzero","showlegend":false,"inherit":true},"161a836b0b7b8.1":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],"y":[null,null,null,null,0.14401974158217148,null,null,null,-0.11672952116462632,null,null,null,-0.067106323725105874,null,null,null,0.051069513460358963,null,null,null,-0.011047750469569278],"type":"bar","marker":{"color":"red"},"width":0.10000000000000001,"legendgroup":"seasonal","name":"Seasonal Lag 4","inherit":true},"161a836b0b7b8.2":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],"y":[null,0.34992120347443517,0.31397022997731977,0.33385182833054594,null,0.078610769313965434,0.073949290928396721,-0.0077840292041916693,null,-0.041963137808417074,-0.043039164690182853,-0.033582304595138564,null,-0.0063232722578321814,-0.098234551865359343,-0.037619186155897641,null,-0.048104251846139319,-0.010277893886910231,-0.00080308737348067886,null],"type":"bar","marker":{"color":"#00526d"},"width":0.10000000000000001,"legendgroup":"nonseasonal","name":"Non-Seasonal","inherit":true},"161a836b0b7b8.3":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":0,"y":0.1433267614176475,"xend":20,"yend":0.1433267614176475,"type":"scatter","mode":"lines","line":{"color":"green","dash":"dash"},"legendgroup":"ci","showlegend":false,"name":"CI Upper Bound","inherit":true},"161a836b0b7b8.4":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":0,"y":-0.1433267614176475,"xend":20,"yend":-0.1433267614176475,"type":"scatter","mode":"lines","line":{"color":"green","dash":"dash"},"legendgroup":"ci","showlegend":false,"name":"CI Lower Bound","inherit":true},"161a8bedad15":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],"y":[null,null,null,-0.068805360369531596,null,null,null,-0.13351132771455632,null,null,null,-0.069851931426272273,null,null,null,0.087102708100357695,null,null,null,0.0076763084975037307],"type":"bar","marker":{"color":"red"},"width":0.10000000000000001,"legendgroup":"seasonal","showlegend":false,"name":"Seasonal Lag 4","inherit":true},"161a8bedad15.1":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],"y":[0.34992120347443501,0.21824882577433685,0.20531731926320429,null,-0.074718539886262134,-0.010270549249851848,-0.039991007269246655,null,0.024977908570316246,0.042227102190761409,0.056917224285089871,null,0.024619789583653837,-0.10367257851227968,0.024669782319064106,null,-0.043150467297154146,-0.0083284229427663965,-0.015649353591767196,null],"type":"bar","marker":{"color":"#00526d"},"width":0.10000000000000001,"legendgroup":"nonseasonal","showlegend":false,"name":"Non-Seasonal","inherit":true},"161a8bedad15.2":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":1,"y":0.1433267614176475,"xend":20,"yend":0.1433267614176475,"type":"scatter","mode":"lines","line":{"color":"green","dash":"dash"},"legendgroup":"ci","showlegend":false,"name":"CI Upper Bound","inherit":true},"161a8bedad15.3":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":1,"y":-0.1433267614176475,"xend":20,"yend":-0.1433267614176475,"type":"scatter","mode":"lines","line":{"color":"green","dash":"dash"},"legendgroup":"ci","showlegend":false,"name":"CI Lower Bound","inherit":true}},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"subplot":true,"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+
+---
+
+--
+
+
+```r
+ax &lt;- Arima(uschange[,1], c(1, 0, 2), 
+                xreg = uschange[,2])
+summary(ax)
+```
+
+```
+#&gt; Series: uschange[, 1] 
+#&gt; Regression with ARIMA(1,0,2) errors 
+#&gt; 
+#&gt; Coefficients:
+#&gt;          ar1      ma1     ma2  intercept    xreg
+#&gt;       0.6922  -0.5758  0.1984     0.5990  0.2028
+#&gt; s.e.  0.1159   0.1301  0.0756     0.0884  0.0461
+#&gt; 
+#&gt; sigma^2 estimated as 0.3219:  log likelihood=-156.95
+#&gt; AIC=325.91   AICc=326.37   BIC=345.29
+#&gt; 
+#&gt; Training set error measures:
+#&gt;                       ME      RMSE       MAE     MPE     MAPE      MASE
+#&gt; Training set 0.001714366 0.5597088 0.4209056 27.4477 161.8417 0.6594731
+#&gt;                     ACF1
+#&gt; Training set 0.006299231
+```
+
+--
+
+.attn[Qué pasa si lo quiero con mas] (X's)
+
+---
+
+--
+
+Toca algo como:
+
+--
+
+```r
+conjunto &lt;- ts.intersect(uschange[,2],
+                         uschange[,3],
+                         uschange[,4])
+```
+
+--
+
+Luego solo en la parte donde va `xreg= conjunto`. Recuerde que todas las variables deben ser estacionarias. A modo de ejemplo vamos a mirar todas las variables, pero no van a ser correctamente especificado.
+
+--
+
+Por otro lado se comporta como un modelo de .hi-purple[regresión] y haremos uso del paquete `library(lmtest)`.
+
+---
+
+--
+
+
+
+
+```r
+axc &lt;- Arima(uschange[,1], c(1, 0, 2), xreg = conjunto)
+summary(axc)
+```
+
+```
+#&gt; Series: uschange[, 1] 
+#&gt; Regression with ARIMA(1,0,2) errors 
+#&gt; 
+#&gt; Coefficients:
+#&gt;           ar1     ma1     ma2  intercept  uschange[, 2]  uschange[, 3]
+#&gt;       -0.3591  0.2691  0.1051     0.2361         0.7313         0.0823
+#&gt; s.e.   0.3552  0.3459  0.1013     0.0348         0.0427         0.0171
+#&gt;       uschange[, 4]
+#&gt;             -0.0460
+#&gt; s.e.         0.0028
+#&gt; 
+#&gt; sigma^2 estimated as 0.1084:  log likelihood=-54.04
+#&gt; AIC=124.08   AICc=124.88   BIC=149.92
+#&gt; 
+#&gt; Training set error measures:
+#&gt;                        ME     RMSE       MAE      MPE    MAPE      MASE
+#&gt; Training set 0.0001104599 0.323003 0.2343151 14.62825 82.0396 0.3671239
+#&gt;                      ACF1
+#&gt; Training set -0.003148503
+```
+
+---
+
+--
+
+.pull-left[
+
+```r
+library(lmtest)
+coeftest(ax)
+```
+
+```
+#&gt; 
+#&gt; z test of coefficients:
+#&gt; 
+#&gt;            Estimate Std. Error z value  Pr(&gt;|z|)    
+#&gt; ar1        0.692229   0.115905  5.9724 2.338e-09 ***
+#&gt; ma1       -0.575809   0.130063 -4.4272 9.549e-06 ***
+#&gt; ma2        0.198361   0.075585  2.6243  0.008682 ** 
+#&gt; intercept  0.599040   0.088398  6.7767 1.230e-11 ***
+#&gt; xreg       0.202819   0.046075  4.4019 1.073e-05 ***
+#&gt; ---
+#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+]
+
+--
+
+.pull-right[
+
+```r
+coeftest(axc)
+```
+
+```
+#&gt; 
+#&gt; z test of coefficients:
+#&gt; 
+#&gt;                 Estimate Std. Error  z value  Pr(&gt;|z|)    
+#&gt; ar1           -0.3591467  0.3551614  -1.0112    0.3119    
+#&gt; ma1            0.2691179  0.3459332   0.7779    0.4366    
+#&gt; ma2            0.1050597  0.1012945   1.0372    0.2997    
+#&gt; intercept      0.2360594  0.0348330   6.7769 1.228e-11 ***
+#&gt; uschange[, 2]  0.7312921  0.0427249  17.1163 &lt; 2.2e-16 ***
+#&gt; uschange[, 3]  0.0822889  0.0170837   4.8168 1.459e-06 ***
+#&gt; uschange[, 4] -0.0459726  0.0028476 -16.1441 &lt; 2.2e-16 ***
+#&gt; ---
+#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+]
+
+
+---
+
+--
+
+&lt;img src="Clase06_files/figure-html/unnamed-chunk-10-1.svg" style="display: block; margin: auto;" /&gt;
+
+```
+#&gt; 
+#&gt; 	Ljung-Box test
+#&gt; 
+#&gt; data:  Residuals from Regression with ARIMA(1,0,2) errors
+#&gt; Q* = 5.8916, df = 3, p-value = 0.117
+#&gt; 
+#&gt; Model df: 5.   Total lags used: 8
+```
+
+---
+
+--
+
+
+```
+#&gt; 
+#&gt; 	Ljung-Box test
+#&gt; 
+#&gt; data:  Residuals from Regression with ARIMA(1,0,2) errors
+#&gt; Q* = 5.8916, df = 3, p-value = 0.117
+#&gt; 
+#&gt; Model df: 5.   Total lags used: 8
+```
+
+---
+
+--
+
+.attn[Pronostico Modelo Real]
+
+--
+
+
+```r
+fcast &lt;- forecast(ax,
+xreg=rep(mean(uschange[,2]),8), h=8)
+fcast
+```
+
+```
+#&gt;         Point Forecast        Lo 80    Hi 80      Lo 95    Hi 95
+#&gt; 2016 Q4      0.7844455  0.057363562 1.511527 -0.3275304 1.896421
+#&gt; 2017 Q1      0.7860095  0.054016921 1.518002 -0.3334766 1.905496
+#&gt; 2017 Q2      0.7732613  0.013689680 1.532833 -0.3884033 1.934926
+#&gt; 2017 Q3      0.7644367 -0.008001435 1.536875 -0.4169055 1.945779
+#&gt; 2017 Q4      0.7583280 -0.020200117 1.536856 -0.4323280 1.948984
+#&gt; 2018 Q1      0.7540994 -0.027330110 1.535529 -0.4409939 1.949193
+#&gt; 2018 Q2      0.7511722 -0.031643749 1.533988 -0.4460415 1.948386
+#&gt; 2018 Q3      0.7491459 -0.034333517 1.532625 -0.4490825 1.947374
+```
+
+---
+
+--
+
+&lt;img src="Clase06_files/figure-html/unnamed-chunk-13-1.svg" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+layout: false
+class: inverse, middle, center
+
+# Modelos de Volatilidad
+
+---
+layout: true
+# Modelo ARCH
+
+
+
+---
+layout: false
+# Bibliografía
+
+
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></svg> Rabbi, F., Tareq, S.U., Islam, M.M., Chowdhury, M.A., &amp; Abul Kashem, M. (2020). *A Multivariate Time Series Approach for Forecasting of Electricity Demand in Bangladesh Using ARIMAX Model*. 2020 2nd International Conference on Sustainable Technologies for Industry 4.0 (STI), 1-5.
+
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></svg> Hyndman, R.J., &amp; Athanasopoulos, G. (2021). *Forecasting: principles and practice*, 3rd edition, OTexts: Melbourne, Australia.
+
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></svg> Shumway, R., &amp; Stoffer, D. (2019). *Time series: a data analysis approach using R*. CRC Press.
+
+---
+name: adios
+class: middle
+
+.pull-left[
+# **¡Gracias!**
+&lt;br/&gt;
+## Modelos ARMAX
+
+### Seguimos aprendiendo
+]
+
+.pull-right[
+.right[
+&lt;img style="border-radius: 50%;"
+src="https://avatars.githubusercontent.com/u/39503983?v=4"
+width="150px" /&gt;
+
+<svg aria-hidden="true" role="img" viewBox="0 0 640 512" style="height:1em;width:1.25em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M579.8 267.7c56.5-56.5 56.5-148 0-204.5c-50-50-128.8-56.5-186.3-15.4l-1.6 1.1c-14.4 10.3-17.7 30.3-7.4 44.6s30.3 17.7 44.6 7.4l1.6-1.1c32.1-22.9 76-19.3 103.8 8.6c31.5 31.5 31.5 82.5 0 114L422.3 334.8c-31.5 31.5-82.5 31.5-114 0c-27.9-27.9-31.5-71.8-8.6-103.8l1.1-1.6c10.3-14.4 6.9-34.4-7.4-44.6s-34.4-6.9-44.6 7.4l-1.1 1.6C206.5 251.2 213 330 263 380c56.5 56.5 148 56.5 204.5 0L579.8 267.7zM60.2 244.3c-56.5 56.5-56.5 148 0 204.5c50 50 128.8 56.5 186.3 15.4l1.6-1.1c14.4-10.3 17.7-30.3 7.4-44.6s-30.3-17.7-44.6-7.4l-1.6 1.1c-32.1 22.9-76 19.3-103.8-8.6C74 372 74 321 105.5 289.5L217.7 177.2c31.5-31.5 82.5-31.5 114 0c27.9 27.9 31.5 71.8 8.6 103.9l-1.1 1.6c-10.3 14.4-6.9 34.4 7.4 44.6s34.4 6.9 44.6-7.4l1.1-1.6C433.5 260.8 427 182 377 132c-56.5-56.5-148-56.5-204.5 0L60.2 244.3z"/></svg> [Syllabus/ Curso](https://pomelo.uninorte.edu.co/pls/prod/bwckctlg.p_disp_course_detail?cat_term_in=202210&amp;subj_code_in=ECO&amp;crse_numb_in=0010)&lt;br/&gt;
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg> [@keynes37](https://twitter.com/keynes37)&lt;br/&gt;
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M16.1 260.2c-22.6 12.9-20.5 47.3 3.6 57.3L160 376V479.3c0 18.1 14.6 32.7 32.7 32.7c9.7 0 18.9-4.3 25.1-11.8l62-74.3 123.9 51.6c18.9 7.9 40.8-4.5 43.9-24.7l64-416c1.9-12.1-3.4-24.3-13.5-31.2s-23.3-7.5-34-1.4l-448 256zm52.1 25.5L409.7 90.6 190.1 336l1.2 1L68.2 285.7zM403.3 425.4L236.7 355.9 450.8 116.6 403.3 425.4z"/></svg>[ cayanes@uninorte.edu.co](mailto:cayanes@uninorte.edu.co)
+]
+]
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
