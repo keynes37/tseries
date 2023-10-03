@@ -487,8 +487,12 @@ class: inverse, middle, center
 layout: true
 # Modelo ARCH
 
+---
 
-
+--
+<cy-blockquote>
+Por sus siglas hace referencia a **Autoregressive conditional heteroskedasticity**, modelos que involucran en una *estimación* comportamientos *volatiles* y que merecen ser tenidos en cuenta. La naturaleza de este tipo de series se encuentran en las .hi[financieras] y las .hi[macroeconómicas].
+</cy-blockquote>
 ---
 layout: false
 # Bibliografía
