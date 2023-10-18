@@ -1,0 +1,205 @@
+---
+title: "Econometría II: ARCH"
+subtitle: "Departamento de Economía"
+author: "Carlos A. Yanes G."
+format: 
+  revealjs:
+    footer: "Universidad del Norte"
+    theme: [simple, ob.scss]
+    logo: micrologouni.png
+    embed-resources: true
+    code-fold: true
+from: markdown+emoji
+editor: visual
+date: last-modified
+bibliography: refs.bib
+---
+
+## Paquetes con que se trabaja la sesión
+
+```{r, setup}
+#| include: false
+#| echo: false
+
+library(pacman)
+p_load(readxl, TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, tseries, fpp2, fontawesome, broom, dynlm)
+```
+
+Los paquetes que vamos a utilizar en la sesión de hoy son:
+
+::: callout-note
+Para trabajar en esta ocasión vamos a usar los paquetes de `r fa("r-project", fill="lightblue")`:
+
+``` r
+library(pacman)
+p_load(readxl, TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, tseries, fpp2, dynlm, broom))
+```
+:::
+
+- Es importante resaltar el paquete `dynlm`, ya que con el estimaremos los modelos. Algo de lo que estará explicado aquí tiene mucho del libro [@colonescu2016principles]
+
+# Preambulo {{< fa bug >}}
+
+## Modelo ARCH
+
+::: fragment
+::: callout-note
+## Definición
+Son modelos utilizados para modelar la media condicional de una serie y con esto su error. Son muy usados para pronostico de volatilidad o choque en el tiempo de la variable **observada**.  
+:::
+:::
+
+::: fragment
+::: incremental
+- $$y_t=\phi+\varepsilon_{t}$$
+- $$\varepsilon_t=\rho_{t-1}+\nu_t$$
+- $$\nu_t \sim N(0, \sigma_t^2)$$
+:::
+:::
+
+## Contexto de los modelos {.smaller}
+
+::: incremental
+- Con la [heterocedasticidad]{.bg style="--col: #00FFFF"} los estimadores siguen siendo **lineales** e insesgados pero ya no con mínima varianza.
+$$Var(\epsilon_{t}|X)=\sigma^{2}_{i}; \ con \quad i=1,2,...,n$$
+- Suponga que tiene un modelo `r fa("long-arrow-alt-right", fill="red")`AR, de tal forma:
+    $$Y_{t}= \phi Y_{t-1}+\epsilon_{t}, \quad |\phi| < 1$$
+- Se encuentra que su valor esperado (esperanza) y su varianza será:
+$$E(Y)=0 \quad Var= \frac{\sigma^{2}_{\epsilon}}{(1-\phi^{2})}$$
+:::
+
+## Contexto de los modelos {.smaller}
+
+::: fragment
+`r fa("palette", fill="red")` Un modelo ARCH es:
+:::
+
+::: fragment
+::: incremental
+- La forma matemática de
+$$Y_{t}= \phi Y_{t-1}+\epsilon_{t}, \quad |\phi| < 1$$
+- Si su `r fa("mug-hot", fill="red")` varianza es:
+$$Var_{t-1}\epsilon_{t}=h^{2}_{t}= \alpha_{0}+\alpha_{1}\epsilon^{2}_{t-1}$$
+- Lo *anterior* puede ser reescrito como:
+$$h^{2}_{t}-\sigma^{2}= \alpha_{1}(\epsilon^{2}_{t-1}-\sigma^{2})$$
+:::
+:::
+
+## Datos
+
+::: callout-tip
+## Cartera comercial de bancos (pero en crecimiento)
+
+-   Enero de 2016 hasta Abril 2023
+-   Web site de [Superintendencia Financiera](https://www.superfinanciera.gov.co/inicio/informes-y-cifras/cifras/establecimientos-de-credito/informacion-periodica/mensual/evolucion-cartera-de-creditos-60950)
+-   Frecuencia Mensual
+:::
+
+## Datos a trabajar
+
+::: panel-tabset
+## Base de datos 
+
+```{r, set}
+#| include: false
+#| warning: false
+library(pacman)
+p_load(readxl, TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, tseries, fpp2, dynlm, broom)
+```
+
+```{r}
+#| echo: true
+bd <- read_excel("cartera.xlsx")
+bd <- bd |> select(Cartera)
+bd <- bd |> mutate(rt = log(Cartera) - lag(log(Cartera)))
+rcartera <- ts(bd$rt, frequency=12, start=c(2016,1))
+rcartera
+```
+
+## Gráfico
+
+```{r}
+#| echo: true
+par(mfrow = c(1, 2))
+plot.ts(rcartera)
+hist(rcartera, main="", breaks=20, freq=FALSE, col="grey")
+```
+:::
+
+# Modelo {{< fa gear >}}
+
+## Modelo
+
+```{r}
+#| echo: true
+tcartera.prom <- dynlm(rcartera~1)
+summary(tcartera.prom )
+```
+
+## Modelo{.smaller}
+
+::: incremental
+- A continuación lo que requerimos es tener el comportamiento del [residuo]{.bg style="--col: #FFFF00"}
+- Las noticias son las que **alimentan** la volatilidad de la serie.
+- Una vez estimado el modelo en media (solo con constante), procedemos aplicar el [Test de Lagrange]{.fg style="--col: #FF0000"}
+$$(T-q)R^2 \sim \chi^2_{(1-\alpha, q)}$$
+- El cual contrasta a:
+$$H_0: \gamma_1\neq\gamma_2\neq0$$
+- Al estimar vamos a tener la siguiente [ecuación]{.bg style="--col: #FFFF00"}
+$$\varepsilon_t^2=\gamma_0+\gamma_1\varepsilon_{t-1}^2$$
+
+:::
+
+## Modelo de error
+
+```{r}
+#| echo: true
+errorsq <- ts(resid(tcartera.prom)^2)
+tcar.ARCH <- dynlm(errorsq~L(errorsq))
+summary(tcar.ARCH)
+```
+
+## Modelo
+
+Estamos al punto de aplicar entonces el [Test de Lagrange]{.fg style="--col: #FF0000"}
+
+```{r}
+#| echo: true
+T <- nobs(tcartera.prom)
+q <- length(coef(tcar.ARCH))-1
+Rsq <- glance(tcar.ARCH)[[1]]
+LM <- (T-q)*Rsq
+alpha <- 0.05
+Chicr <- qchisq(1-alpha, q)
+```
+
+Lo cual nos arroja un `r LM` < `r Chicr``, que es prácticamente cero. *Note la notación científica*. Para decir que nuestra serie posee efectos [ARCH]{.fg style="--col: #FF0000"} este valor debe ser siempre **mayor**.
+
+## Una forma automática del Test
+
+```{r}
+#| echo: true
+library(FinTS)
+carteraArchTest <- ArchTest(rcartera, lags=1, demean=TRUE)
+carteraArchTest
+```
+
+
+## Graficando volatilidad
+
+```{r}
+#| echo: true
+hhat <- ts(2*tcar.ARCH$fitted.values^2)
+plot.ts(hhat)
+```
+
+
+
+# Gracias por su atención!! {background-color="#cc0000"}
+
+## Referencias
+
+::: {#refs}
+:::
+
+
