@@ -36,7 +36,7 @@ p_load(readxl, TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, t
 ```
 :::
 
-- Es importante resaltar el paquete `dynlm`, ya que con el estimaremos los modelos. Algo de lo que estará explicado aquí tiene mucho del libro [@colonescu2016principles]
+-   Es importante resaltar el paquete `dynlm`, ya que con el estimaremos los modelos. Algo de lo que estará explicado aquí tiene mucho del libro [@colonescu2016principles]
 
 # Preambulo {{< fa bug >}}
 
@@ -45,27 +45,25 @@ p_load(readxl, TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, t
 ::: fragment
 ::: callout-note
 ## Definición
-Son modelos utilizados para modelar la media condicional de una serie y con esto su error. Son muy usados para pronostico de volatilidad o choque en el tiempo de la variable **observada**.  
+
+Son modelos utilizados para modelar la media condicional de una serie y con esto su error. Son muy usados para pronostico de volatilidad o choque en el tiempo de la variable **observada**.
 :::
 :::
 
 ::: fragment
 ::: incremental
-- $$y_t=\phi+\varepsilon_{t}$$
-- $$\varepsilon_t=\rho_{t-1}+\nu_t$$
-- $$\nu_t \sim N(0, \sigma_t^2)$$
+-   $$y_t=\phi+\varepsilon_{t}$$
+-   $$\varepsilon_t=\rho_{t-1}+\nu_t$$
+-   $$\nu_t \sim N(0, \sigma_t^2)$$
 :::
 :::
 
 ## Contexto de los modelos {.smaller}
 
 ::: incremental
-- Con la [heterocedasticidad]{.bg style="--col: #00FFFF"} los estimadores siguen siendo **lineales** e insesgados pero ya no con mínima varianza.
-$$Var(\epsilon_{t}|X)=\sigma^{2}_{i}; \ con \quad i=1,2,...,n$$
-- Suponga que tiene un modelo `r fa("long-arrow-alt-right", fill="red")`AR, de tal forma:
-    $$Y_{t}= \phi Y_{t-1}+\epsilon_{t}, \quad |\phi| < 1$$
-- Se encuentra que su valor esperado (esperanza) y su varianza será:
-$$E(Y)=0 \quad Var= \frac{\sigma^{2}_{\epsilon}}{(1-\phi^{2})}$$
+-   Con la [heterocedasticidad]{.bg style="--col: #00FFFF"} los estimadores siguen siendo **lineales** e insesgados pero ya no con mínima varianza. $$Var(\epsilon_{t}|X)=\sigma^{2}_{i}; \ con \quad i=1,2,...,n$$
+-   Suponga que tiene un modelo `r fa("long-arrow-alt-right", fill="red")`AR, de tal forma: $$Y_{t}= \phi Y_{t-1}+\epsilon_{t}, \quad |\phi| < 1$$
+-   Se encuentra que su valor esperado (esperanza) y su varianza será: $$E(Y)=0 \quad Var= \frac{\sigma^{2}_{\epsilon}}{(1-\phi^{2})}$$
 :::
 
 ## Contexto de los modelos {.smaller}
@@ -76,12 +74,9 @@ $$E(Y)=0 \quad Var= \frac{\sigma^{2}_{\epsilon}}{(1-\phi^{2})}$$
 
 ::: fragment
 ::: incremental
-- La forma matemática de
-$$Y_{t}= \phi Y_{t-1}+\epsilon_{t}, \quad |\phi| < 1$$
-- Si su `r fa("mug-hot", fill="red")` varianza es:
-$$Var_{t-1}\epsilon_{t}=h^{2}_{t}= \alpha_{0}+\alpha_{1}\epsilon^{2}_{t-1}$$
-- Lo *anterior* puede ser reescrito como:
-$$h^{2}_{t}-\sigma^{2}= \alpha_{1}(\epsilon^{2}_{t-1}-\sigma^{2})$$
+-   La forma matemática de $$Y_{t}= \phi Y_{t-1}+\epsilon_{t}, \quad |\phi| < 1$$
+-   Si su `r fa("mug-hot", fill="red")` varianza es: $$Var_{t-1}\epsilon_{t}=h^{2}_{t}= \alpha_{0}+\alpha_{1}\epsilon^{2}_{t-1}$$
+-   Lo *anterior* puede ser reescrito como: $$h^{2}_{t}-\sigma^{2}= \alpha_{1}(\epsilon^{2}_{t-1}-\sigma^{2})$$
 :::
 :::
 
@@ -98,7 +93,7 @@ $$h^{2}_{t}-\sigma^{2}= \alpha_{1}(\epsilon^{2}_{t-1}-\sigma^{2})$$
 ## Datos a trabajar
 
 ::: panel-tabset
-## Base de datos 
+## Base de datos
 
 ```{r, set}
 #| include: false
@@ -136,18 +131,15 @@ tcartera.prom <- dynlm(rcartera~1)
 summary(tcartera.prom )
 ```
 
-## Modelo{.smaller}
+## Modelo {.smaller}
 
 ::: incremental
-- A continuación lo que requerimos es tener el comportamiento del [residuo]{.bg style="--col: #FFFF00"}
-- Las noticias son las que **alimentan** la volatilidad de la serie.
-- Una vez estimado el modelo en media (solo con constante), procedemos aplicar el [Test de Lagrange]{.fg style="--col: #FF0000"}
-$$(T-q)R^2 \sim \chi^2_{(1-\alpha, q)}$$
-- El cual contrasta a:
-$$H_0: \gamma_1\neq\gamma_2\neq0$$
-- Al estimar vamos a tener la siguiente [ecuación]{.bg style="--col: #FFFF00"}
-$$\varepsilon_t^2=\gamma_0+\gamma_1\varepsilon_{t-1}^2$$
-
+-   A continuación lo que requerimos es tener el comportamiento del [residuo]{.bg style="--col: #FFFF00"}
+-   Las noticias son las que **alimentan** la volatilidad de la serie.
+-   Una vez estimado el modelo en media (solo con constante), procedemos aplicar el [Test de Lagrange]{.fg style="--col: #FF0000"} $$(T-q)R^2 \sim \chi^2_{(1-\alpha, q)}$$
+Siendo $H_0:\gamma_i=\gamma_j=0$.
+-   El cual contrasta a: $$H_a: \gamma_1\neq\gamma_2\neq0$$
+-   Al estimar vamos a tener la siguiente [ecuación]{.bg style="--col: #FFFF00"} $$\varepsilon_t^2=\gamma_0+\gamma_1\varepsilon_{t-1}^2$$
 :::
 
 ## Modelo de error
@@ -173,7 +165,9 @@ alpha <- 0.05
 Chicr <- qchisq(1-alpha, q)
 ```
 
-Lo cual nos arroja un `r LM` < `r Chicr``, que es prácticamente cero. *Note la notación científica*. Para decir que nuestra serie posee efectos [ARCH]{.fg style="--col: #FF0000"} este valor debe ser siempre **mayor**.
+Lo cual nos arroja un valor de `r LM` < `r round(Chicr, 4)`, que es prácticamente **cero** -*Note la notación científica*-. En este caso nuestra serie no tiene efectos [autoregresivos]{.bg style="--col: #FFFF00"} o ARCH.
+
+Para decir que nuestra serie posee efectos [ARCH]{.fg style="--col: #FF0000"} este valor o test de Lagrange debe ser siempre **mayor** al estadístico crítico de la distribución $\chi^2$.
 
 ## Una forma automática del Test
 
@@ -184,7 +178,6 @@ carteraArchTest <- ArchTest(rcartera, lags=1, demean=TRUE)
 carteraArchTest
 ```
 
-
 ## Graficando volatilidad
 
 ```{r}
@@ -193,13 +186,9 @@ hhat <- ts(2*tcar.ARCH$fitted.values^2)
 plot.ts(hhat)
 ```
 
-
-
 # Gracias por su atención!! {background-color="#cc0000"}
 
 ## Referencias
 
 ::: {#refs}
 :::
-
-
