@@ -132,24 +132,24 @@ Tenemos que:
 
 --
 
-- `\(\beta_{11}\)` es el .hi[efecto contemporáneo] de una unidad de cambio de `\(R_t\)` sobre `\(Y_t\)`
-- `\(\beta_{21}\)` es el .hi[efecto contemporáneo] de una unidad de cambio de `\(Y_t\)`  sobre `\(R_t\)`
-- `\(\gamma_{12}\)`  y `\(\gamma_{12}\)` son los .hi-purple[efectos de los rezagos] de `\(Y_t\)` y `\(R_t\)` sobre `\(Y_t\)` 
-- `\(\gamma_{21}\)`  y `\(\gamma_{22}\)` son los .hi-purple[efectos de los rezagos] de `\(Y_t\)` y `\(R_t\)` sobre `\(R_t\)`
+- `\(\beta_{11}\)` es el .hi[efecto contemporáneo] de una unidad de cambio de `\(X_t\)` sobre `\(Y_t\)`
+- `\(\beta_{21}\)` es el .hi[efecto contemporáneo] de una unidad de cambio de `\(Y_t\)`  sobre `\(X_t\)`
+- `\(\gamma_{12}\)`  y `\(\gamma_{12}\)` son los .hi-purple[efectos de los rezagos] de `\(Y_t\)` y `\(X_t\)` sobre `\(Y_t\)` 
+- `\(\gamma_{21}\)`  y `\(\gamma_{22}\)` son los .hi-purple[efectos de los rezagos] de `\(Y_t\)` y `\(X_t\)` sobre `\(X_t\)`
 
 --
 
-Si `\(\beta_{11}\)` no es cero, `\(\varepsilon_{rt}\)` tiene un efecto contemporáneo indirecto sobre `\(Y_t\)`. Es decir, un choque en `\(R_t\)` afecta a `\(Y_t\)`.
+Si `\(\beta_{11}\)` no es cero, `\(\varepsilon_{rt}\)` tiene un efecto contemporáneo indirecto sobre `\(Y_t\)`. Es decir, un choque en `\(X_t\)` afecta a `\(Y_t\)`.
 
 --
 
-Las ecuaciones del sistema no se pueden estimar por .hi-purple[MCO] debido a la existencia de esos efectos contemporáneos `\(\beta_{11}\)` y `\(\beta_{21}\)` que generan .hi[endegoneidad] por doble causalidad, lo que lleva a estimar estimadores sesgados.
+Las ecuaciones del sistema no se pueden estimar por .hi-purple[MCO] debido a la existencia de esos efectos contemporáneos `\(\beta_{11}\)` y `\(\beta_{21}\)` que generan .hi[endogeneidad] por doble causalidad, lo que lleva a estimar estimadores sesgados.
 
 ---
 
 --
 
-## VAR en forma matricial
+## VAR FORMA ESTRUCTURAL
 
 --
 
@@ -183,7 +183,7 @@ X_{t-1}
 
 --
 
-Desde luego podemos imponer un modelo ecuacional de tal forma que:
+Desde luego podemos imponer un modelo .hi[estructural] de tal forma que:
 
 --
 
@@ -201,7 +201,7 @@ Note que la diagonal de la matriz de covarianza es igual a (1), la razón es que
 
 --
 
-## Prueba VAR representación matricial:
+### Prueba VAR representación matricial (un parentesis):
 
 --
 
@@ -245,7 +245,7 @@ X_{t-1}
 
 --
 
-<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M512 256c0 .9 0 1.8 0 2.7c-.4 36.5-33.6 61.3-70.1 61.3H344c-26.5 0-48 21.5-48 48c0 3.4 .4 6.7 1 9.9c2.1 10.2 6.5 20 10.8 29.9c6.1 13.8 12.1 27.5 12.1 42c0 31.8-21.6 60.7-53.4 62c-3.5 .1-7 .2-10.6 .2C114.6 512 0 397.4 0 256S114.6 0 256 0S512 114.6 512 256zM128 288a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm0-96a32 32 0 1 0 0-64 32 32 0 1 0 0 64zM288 96a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm96 96a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></svg> A partir de la forma estructural del VAR cuya ecuación viene siendo: `\(BX_t=G=+G_1X_{t-1}+\varepsilon_{t}\)`, se puede estimar una forma .hi[reducida], para ello se **premultiplica** la matriz `\(B^{-1}\)` (matriz inversa) en ambos lados de la ecuación, de tal forma que:
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M512 256c0 .9 0 1.8 0 2.7c-.4 36.5-33.6 61.3-70.1 61.3H344c-26.5 0-48 21.5-48 48c0 3.4 .4 6.7 1 9.9c2.1 10.2 6.5 20 10.8 29.9c6.1 13.8 12.1 27.5 12.1 42c0 31.8-21.6 60.7-53.4 62c-3.5 .1-7 .2-10.6 .2C114.6 512 0 397.4 0 256S114.6 0 256 0S512 114.6 512 256zM128 288a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm0-96a32 32 0 1 0 0-64 32 32 0 1 0 0 64zM288 96a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm96 96a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></svg> A partir de la forma estructural del VAR cuya ecuación viene siendo: `\(BX_t=G_0+G_1X_{t-1}+\varepsilon_{t}\)`, se puede estimar una forma .hi[reducida], para ello se **premultiplica** la matriz `\(B^{-1}\)` (matriz inversa) en ambos lados de la ecuación, de tal forma que:
 
 --
 
@@ -308,7 +308,7 @@ X_t=&amp;a_{20}+a_{21}Y_{t-1}+a_{22}X_{t-1}+e_{xt}
 
 --
 
-De esta forma .hi[reducida], observe que no hay .hi-purple[efectos contemporaneos] directos tal como `\(\beta_{11}\)` y `\(\beta_{21}\)`, sin embargo no estan eliminados, estan dentro del residuo `\(\color{red}{e_t}\)`.
+De esta forma .hi[reducida], observe que no hay .hi-purple[efectos contemporáneos] directos tal como `\(\beta_{11}\)` y `\(\beta_{21}\)`, sin embargo no estan eliminados, estan dentro del residuo `\(\color{red}{e_t}\)`.
 
 --
 
@@ -336,7 +336,7 @@ Cuando se tiene la opción reducida del VAR, tenemos un resultado importante:
 
 --
 
-De esta forma .hi[reducida] no se modelan las relaciones .hi-slate[contemporaneas] entre variables, esto requiere de los modelos estructurales y de la identificación del VAR.
+De esta forma .hi[reducida] no se modelan las relaciones .hi-slate[contemporáneas] entre variables, esto requiere de los modelos estructurales y de la identificación del VAR.
 
 ---
 layout: false
@@ -387,7 +387,7 @@ El problema anterior es el mismo que se presenta en VAR, no se pueden encontrar 
 
 --
 
-- En el caso de la relación entre PIB `\((Y_t)\)` y la Tasa de interés `\(X_t)\)`, se sabe que los Bancos centrales modifican la .hi-orange[tasa de interés] ante los datos observados de PIB, de esta manera, si se reporta un dato de **crecimiento negativo** entonces se procede a bajar la tasa de interés. Ahora bien, esa reducción de la tasa de interés no afectará el PIB inmediatamente.
+- En el caso de la relación entre PIB `\((Y_t)\)` y la Tasa de interés `\((X_t)\)`, se sabe que los Bancos centrales modifican la .hi-orange[tasa de interés] ante los datos observados de PIB, de esta manera, si se reporta un dato de **crecimiento negativo** entonces se procede a bajar la tasa de interés. Ahora bien, esa reducción de la tasa de interés no afectará el PIB inmediatamente.
 
 --
 
@@ -428,7 +428,7 @@ X_{t-1}
 
 --
 
-Si implantamos una restricción en el efecto contemporaneo, entonces vamos a tener
+Si implantamos una restricción en el efecto contemporáneo, entonces vamos a tener
 
 --
 

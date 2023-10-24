@@ -278,24 +278,24 @@ Tenemos que:
 
 --
 
-- $\beta_{11}$ es el .hi[efecto contemporáneo] de una unidad de cambio de $R_t$ sobre $Y_t$
-- $\beta_{21}$ es el .hi[efecto contemporáneo] de una unidad de cambio de $Y_t$  sobre $R_t$
-- $\gamma_{12}$  y $\gamma_{12}$ son los .hi-purple[efectos de los rezagos] de $Y_t$ y $R_t$ sobre $Y_t$ 
-- $\gamma_{21}$  y $\gamma_{22}$ son los .hi-purple[efectos de los rezagos] de $Y_t$ y $R_t$ sobre $R_t$
+- $\beta_{11}$ es el .hi[efecto contemporáneo] de una unidad de cambio de $X_t$ sobre $Y_t$
+- $\beta_{21}$ es el .hi[efecto contemporáneo] de una unidad de cambio de $Y_t$  sobre $X_t$
+- $\gamma_{12}$  y $\gamma_{12}$ son los .hi-purple[efectos de los rezagos] de $Y_t$ y $X_t$ sobre $Y_t$ 
+- $\gamma_{21}$  y $\gamma_{22}$ son los .hi-purple[efectos de los rezagos] de $Y_t$ y $X_t$ sobre $X_t$
 
 --
 
-Si $\beta_{11}$ no es cero, $\varepsilon_{rt}$ tiene un efecto contemporáneo indirecto sobre $Y_t$. Es decir, un choque en $R_t$ afecta a $Y_t$.
+Si $\beta_{11}$ no es cero, $\varepsilon_{rt}$ tiene un efecto contemporáneo indirecto sobre $Y_t$. Es decir, un choque en $X_t$ afecta a $Y_t$.
 
 --
 
-Las ecuaciones del sistema no se pueden estimar por .hi-purple[MCO] debido a la existencia de esos efectos contemporáneos $\beta_{11}$ y $\beta_{21}$ que generan .hi[endegoneidad] por doble causalidad, lo que lleva a estimar estimadores sesgados.
+Las ecuaciones del sistema no se pueden estimar por .hi-purple[MCO] debido a la existencia de esos efectos contemporáneos $\beta_{11}$ y $\beta_{21}$ que generan .hi[endogeneidad] por doble causalidad, lo que lleva a estimar estimadores sesgados.
 
 ---
 
 --
 
-## VAR en forma matricial
+## VAR FORMA ESTRUCTURAL
 
 --
 
@@ -329,7 +329,7 @@ X_{t-1}
 
 --
 
-Desde luego podemos imponer un modelo ecuacional de tal forma que:
+Desde luego podemos imponer un modelo .hi[estructural] de tal forma que:
 
 --
 
@@ -347,7 +347,7 @@ Note que la diagonal de la matriz de covarianza es igual a (1), la razón es que
 
 --
 
-## Prueba VAR representación matricial:
+### Prueba VAR representación matricial (un parentesis):
 
 --
 
@@ -391,7 +391,7 @@ X_{t-1}
 
 --
 
-`r fa("palette", fill="red")` A partir de la forma estructural del VAR cuya ecuación viene siendo: $BX_t=G=+G_1X_{t-1}+\varepsilon_{t}$, se puede estimar una forma .hi[reducida], para ello se **premultiplica** la matriz $B^{-1}$ (matriz inversa) en ambos lados de la ecuación, de tal forma que:
+`r fa("palette", fill="red")` A partir de la forma estructural del VAR cuya ecuación viene siendo: $BX_t=G_0+G_1X_{t-1}+\varepsilon_{t}$, se puede estimar una forma .hi[reducida], para ello se **premultiplica** la matriz $B^{-1}$ (matriz inversa) en ambos lados de la ecuación, de tal forma que:
 
 --
 
@@ -454,7 +454,7 @@ X_t=&a_{20}+a_{21}Y_{t-1}+a_{22}X_{t-1}+e_{xt}
 
 --
 
-De esta forma .hi[reducida], observe que no hay .hi-purple[efectos contemporaneos] directos tal como $\beta_{11}$ y $\beta_{21}$, sin embargo no estan eliminados, estan dentro del residuo $\color{red}{e_t}$.
+De esta forma .hi[reducida], observe que no hay .hi-purple[efectos contemporáneos] directos tal como $\beta_{11}$ y $\beta_{21}$, sin embargo no estan eliminados, estan dentro del residuo $\color{red}{e_t}$.
 
 --
 
@@ -482,7 +482,7 @@ $$e_t=B^{-1}\varepsilon_t$$
 
 --
 
-De esta forma .hi[reducida] no se modelan las relaciones .hi-slate[contemporaneas] entre variables, esto requiere de los modelos estructurales y de la identificación del VAR.
+De esta forma .hi[reducida] no se modelan las relaciones .hi-slate[contemporáneas] entre variables, esto requiere de los modelos estructurales y de la identificación del VAR.
 
 ---
 layout: false
@@ -533,7 +533,7 @@ El problema anterior es el mismo que se presenta en VAR, no se pueden encontrar 
 
 --
 
-- En el caso de la relación entre PIB $(Y_t)$ y la Tasa de interés $X_t)$, se sabe que los Bancos centrales modifican la .hi-orange[tasa de interés] ante los datos observados de PIB, de esta manera, si se reporta un dato de **crecimiento negativo** entonces se procede a bajar la tasa de interés. Ahora bien, esa reducción de la tasa de interés no afectará el PIB inmediatamente.
+- En el caso de la relación entre PIB $(Y_t)$ y la Tasa de interés $(X_t)$, se sabe que los Bancos centrales modifican la .hi-orange[tasa de interés] ante los datos observados de PIB, de esta manera, si se reporta un dato de **crecimiento negativo** entonces se procede a bajar la tasa de interés. Ahora bien, esa reducción de la tasa de interés no afectará el PIB inmediatamente.
 
 --
 
@@ -574,7 +574,7 @@ X_{t-1}
 
 --
 
-Si implantamos una restricción en el efecto contemporaneo, entonces vamos a tener
+Si implantamos una restricción en el efecto contemporáneo, entonces vamos a tener
 
 --
 
