@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Econometría II</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Carlos A. Yanes Guerra" />
+    <script src="libs/header-attrs-2.22/header-attrs.js"></script>
+    <link href="libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
+    <script src="libs/tile-view-0.2.6/tile-view.js"></script>
+    <script src="libs/xaringanExtra_fit-screen-0.2.6/fit-screen.js"></script>
+    <script src="libs/clipboard-2.0.6/clipboard.min.js"></script>
+    <link href="libs/xaringanExtra-clipboard-0.2.6/xaringanExtra-clipboard.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-clipboard-0.2.6/xaringanExtra-clipboard.js"></script>
+    <script>window.xaringanExtraClipboard(null, {"button":"Copy Code","success":"Copied!","error":"Press Ctrl+C to Copy"})</script>
+    <link href="libs/shareon-1.4.1/shareon.min.css" rel="stylesheet" />
+    <script src="libs/shareon-1.4.1/shareon.min.js"></script>
+    <link href="libs/xaringanExtra-shareagain-0.2.6/shareagain.css" rel="stylesheet" />
+    <script src="libs/xaringanExtra-shareagain-0.2.6/shareagain.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+    <link rel="stylesheet" href="new-css.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+
+
+
+name: xaringan-title
+class: inverse, left, bottom
+background-image: url(pictures/picuniform.jpg)
+background-size: cover
+
+# **Econometría II**
+----
+
+## **&lt;br/&gt; VAR**
+
+### Carlos A. Yanes Guerra
+### 2023-II
+
+
+---
+class: inverse, middle, center
+
+# Preguntas de las sesiones anteriores?
+
+---
+background-size: 100%
+background-image: url(https://media.giphy.com/media/E3cX3sxRHMZWM/giphy.gif)
+
+---
+layout: true
+# Modelos VAR
+
+---
+
+--
+
+### Justificación
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg> Las regresiones en series de tiempo como se vio en econometría I, pueden estar marcadas por la doble simultaneidad o retroalimentación entre las variables usadas, generando sesgos en los **coeficientes**.
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg> Los modelos de .hi[vectores auto-regresivos] (VAR) fueron desarrollados a partir de la critica de Sims a los modelos macroeconómicos que no identificaban la existencia de relaciones exógenas y endógenas entre las variables.
+
+--
+
+### Para que sirve un VAR
+
+--
+
+- Como el pasado afecta el presente de las variables y si una variable puede ser útil para pronosticar otra (causalidad de Granger)
+
+- Analizar las .hi-purple[relaciones dinámicas] basadas en efectos contemporáneos e impulsos respuesta 
+
+- Pronósticos 
+
+---
+
+--
+
+&lt;div class="figure" style="text-align: center"&gt;
+&lt;img src="pictures/vardi.png" alt="Figura 1: Estructura de Modelamiento" width="70%" /&gt;
+&lt;p class="caption"&gt;Figura 1: Estructura de Modelamiento&lt;/p&gt;
+&lt;/div&gt;
+
+---
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M88 0C74.7 0 64 10.7 64 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C120.5 112.3 128 119.9 128 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C119.5 47.7 112 40.1 112 24c0-13.3-10.7-24-24-24zM32 192c-17.7 0-32 14.3-32 32V416c0 53 43 96 96 96H288c53 0 96-43 96-96h16c61.9 0 112-50.1 112-112s-50.1-112-112-112H352 32zm352 64h16c26.5 0 48 21.5 48 48s-21.5 48-48 48H384V256zM224 24c0-13.3-10.7-24-24-24s-24 10.7-24 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C232.5 112.3 240 119.9 240 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C231.5 47.7 224 40.1 224 24z"/></svg> Los .hi[modelos VAR] parten de una forma *estructural* o primitiva que requiere ser transformada a una forma reducida.
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M88 0C74.7 0 64 10.7 64 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C120.5 112.3 128 119.9 128 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C119.5 47.7 112 40.1 112 24c0-13.3-10.7-24-24-24zM32 192c-17.7 0-32 14.3-32 32V416c0 53 43 96 96 96H288c53 0 96-43 96-96h16c61.9 0 112-50.1 112-112s-50.1-112-112-112H352 32zm352 64h16c26.5 0 48 21.5 48 48s-21.5 48-48 48H384V256zM224 24c0-13.3-10.7-24-24-24s-24 10.7-24 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C232.5 112.3 240 119.9 240 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C231.5 47.7 224 40.1 224 24z"/></svg> En principio se muestra un sistema de ecuaciones con dos variables: PIB `\((Y_t)\)` y Tasa de interés `\((X_t)\)` que se retroalimentan. Si se asume un modelo VAR(1), entonces:
+
+--
+
+Considere un modelo bivariado `\((Y_{t}, X_{t})\)` y de primer orden:
+
+`$$Y_{t}= \beta_{10} - \beta_{11} X_{t} + \gamma_{11} Y_{t-1}+\gamma_{12} X_{t-1}+ \epsilon_{yt}$$`
+`$$X_{t}= \beta_{20} - \beta_{21} Y_{t} + \gamma_{21} Y_{t-1}+\gamma_{22} X_{t-1}+ \epsilon_{xt}$$`
+
+--
+
+Donde
+
+--
+
+- Tanto X y Y son endógenas.
+- Los términos de error del modelo `\((\epsilon_{yt}, \epsilon_{xt}) \sim \; R.B (0, \sigma^{2})\)`.
+- .hi[Habría] que estimar 10 términos (8 parámetros y dos desviaciones del error de cada variable .hi-purple[endogena]).
+
+---
+
+--
+
+### Modelo en forma estructural
+
+--
+
+`$$Y_{t}= \beta_{10} - \beta_{11} X_{t} + \gamma_{11} Y_{t-1}+\gamma_{12} X_{t-1}+ \epsilon_{yt}$$`
+`$$X_{t}= \beta_{20} - \beta_{21} Y_{t} + \gamma_{21} Y_{t-1}+\gamma_{22} X_{t-1}+ \epsilon_{xt}$$`
+
+--
+
+Tenemos que:
+
+--
+
+- `\(\beta_{11}\)` es el .hi[efecto contemporáneo] de una unidad de cambio de `\(R_t\)` sobre `\(Y_t\)`
+- `\(\beta_{21}\)` es el .hi[efecto contemporáneo] de una unidad de cambio de `\(Y_t\)`  sobre `\(R_t\)`
+- `\(\gamma_{12}\)`  y `\(\gamma_{12}\)` son los .hi-purple[efectos de los rezagos] de `\(Y_t\)` y `\(R_t\)` sobre `\(Y_t\)` 
+- `\(\gamma_{21}\)`  y `\(\gamma_{22}\)` son los .hi-purple[efectos de los rezagos] de `\(Y_t\)` y `\(R_t\)` sobre `\(R_t\)`
+
+--
+
+Si `\(\beta_{11}\)` no es cero, `\(\varepsilon_{rt}\)` tiene un efecto contemporáneo indirecto sobre `\(Y_t\)`. Es decir, un choque en `\(R_t\)` afecta a `\(Y_t\)`.
+
+--
+
+Las ecuaciones del sistema no se pueden estimar por .hi-purple[MCO] debido a la existencia de esos efectos contemporáneos `\(\beta_{11}\)` y `\(\beta_{21}\)` que generan .hi[endegoneidad] por doble causalidad, lo que lleva a estimar estimadores sesgados.
+
+---
+
+--
+
+## VAR en forma matricial
+
+--
+
+`$$\underbrace{\begin{pmatrix}
+1 &amp; \beta_{12} \\ 
+\beta_{21} &amp; 1 
+\end{pmatrix}}_{B}
+\underbrace{\begin{pmatrix}
+Y_t\\ 
+X_t
+\end{pmatrix}}_{X_t}
+=
+\underbrace{\begin{pmatrix}
+\beta_{10}\\ 
+\beta_{20}
+\end{pmatrix}}_{G_0}
++
+\underbrace{\begin{pmatrix}
+\gamma_{11} &amp; \gamma_{12} \\ 
+\gamma_{21} &amp; \gamma_{22} 
+\end{pmatrix}}_{G_1}
+\underbrace{\begin{pmatrix}
+Y_{t-1}\\ 
+X_{t-1}
+\end{pmatrix}}_{X_{t-1}}
++
+\underbrace{\begin{pmatrix}
+\varepsilon_{yt}\\ 
+\varepsilon_{xt}
+\end{pmatrix}}_{\varepsilon_t}$$`
+
+--
+
+Desde luego podemos imponer un modelo ecuacional de tal forma que:
+
+--
+
+`$$BX_t=G_0+G_1X_{t-1}+\varepsilon_{t}$$`
+
+--
+
+La forma estructural da para .hi-purple[10] parámetros, lo que es 8 coeficientes y dos varianzas de los errores `\(\sigma_{\varepsilon y}\)` y `\(\sigma_{\varepsilon x}\)`
+
+--
+
+Note que la diagonal de la matriz de covarianza es igual a (1), la razón es que se normalizó - *es un criterio que se impone*
+
+---
+
+--
+
+## Prueba VAR representación matricial:
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 640 512" style="height:1em;width:1.25em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M160 24c0-13.3 10.7-24 24-24H296c13.3 0 24 10.7 24 24s-10.7 24-24 24H280L384 192H500.4c7.7 0 15.3 1.4 22.5 4.1L625 234.4c9 3.4 15 12 15 21.6s-6 18.2-15 21.6L522.9 315.9c-7.2 2.7-14.8 4.1-22.5 4.1H384L280 464h16c13.3 0 24 10.7 24 24s-10.7 24-24 24H184c-13.3 0-24-10.7-24-24s10.7-24 24-24h8V320H160l-54.6 54.6c-6 6-14.1 9.4-22.6 9.4H64c-17.7 0-32-14.3-32-32V288c-17.7 0-32-14.3-32-32s14.3-32 32-32V160c0-17.7 14.3-32 32-32H82.7c8.5 0 16.6 3.4 22.6 9.4L160 192h32V48h-8c-13.3 0-24-10.7-24-24zM80 240c-8.8 0-16 7.2-16 16s7.2 16 16 16h64c8.8 0 16-7.2 16-16s-7.2-16-16-16H80z"/></svg> *En algunas ocasiones* puede preguntarse como puedo demostrar que en realidad es un modelo VAR.
+
+--
+
+`$$\begin{pmatrix}
+1 &amp; \beta_{12} \\ 
+\beta_{21} &amp; 1 
+\end{pmatrix}\begin{pmatrix}
+Y_t\\ 
+X_t
+\end{pmatrix}=\begin{pmatrix}
+1\times Y_t + \beta_{12}X_{t} \\ 
+\beta_{21} Y_t + 1\times X_{t} 
+\end{pmatrix} \longrightarrow \; \begin{align*}
+Y_t &amp;=- \beta_{12}X_t \\ 
+X_t &amp;=- \beta_{21}Y_t 
+\end{align*}$$`
+
+--
+
+Desde luego tenemos para la siguiente parte:
+
+--
+
+`$$\begin{pmatrix}
+\gamma_{11} &amp; \gamma_{12} \\ 
+\gamma_{21} &amp; \gamma_{22} 
+\end{pmatrix}\begin{pmatrix}
+Y_{t-1}\\ 
+X_{t-1}
+\end{pmatrix}=\begin{pmatrix}
+\gamma_{11} Y_{t-1} + \gamma_{12}X_{t-1} \\ 
+\gamma_{21} Y_{t-1} + \gamma_{22}X_{t-1} 
+\end{pmatrix}$$`
+
+
+---
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M512 256c0 .9 0 1.8 0 2.7c-.4 36.5-33.6 61.3-70.1 61.3H344c-26.5 0-48 21.5-48 48c0 3.4 .4 6.7 1 9.9c2.1 10.2 6.5 20 10.8 29.9c6.1 13.8 12.1 27.5 12.1 42c0 31.8-21.6 60.7-53.4 62c-3.5 .1-7 .2-10.6 .2C114.6 512 0 397.4 0 256S114.6 0 256 0S512 114.6 512 256zM128 288a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm0-96a32 32 0 1 0 0-64 32 32 0 1 0 0 64zM288 96a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm96 96a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></svg> A partir de la forma estructural del VAR cuya ecuación viene siendo: `\(BX_t=G=+G_1X_{t-1}+\varepsilon_{t}\)`, se puede estimar una forma .hi[reducida], para ello se **premultiplica** la matriz `\(B^{-1}\)` (matriz inversa) en ambos lados de la ecuación, de tal forma que:
+
+--
+
+`$$\underbrace{B^{-1} B}_{I}X_t=\underbrace{B^{-1}G_0}_{A_0}+\underbrace{B^{-1}G_1}_{A_1} X_{t-1}+\underbrace{B^{-1}\varepsilon_{t}}_{e_t}$$`
+
+--
+
+De esta manera se obtiene una forma .hi[reducida] de tal forma que: `\(X_t=A_0+A_1X_{t-1}+e_t\)`, donde `\(e_t\)` es el error .hi-purple[reducido] y cumple con:
+
+--
+
+- `\(E[e_t]=0\)`
+- `\(E[e_t, e_t']=\Sigma\)`
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg> La matriz `\(\Sigma\)` no es mas que la matriz de varianzas y covarianzas para esta forma reducida con tres (3) parámetros `\((\sigma_y^2, \sigma_x^2, \sigma_{yx}^2)\)`
+
+--
+
+Lo que es: 
+`$$\Sigma=\begin{pmatrix}
+ \sigma_{y}^{2}&amp;\sigma_{yx}^{2} \\ 
+ \sigma_{yx}^{2}&amp;\sigma_{x}^{2} 
+\end{pmatrix}$$`
+
+---
+
+--
+
+La forma reducida del VAR `\(X_t=A_0+A_1X_{t-1}+e_t\)`, tambien puede verse como:
+
+`$$X_t=\begin{Bmatrix}
+Y_t\\ 
+X_t
+\end{Bmatrix},
+A_0=\begin{Bmatrix}
+a_{10}\\ 
+a_{20}
+\end{Bmatrix},
+A_1=\begin{Bmatrix}
+a_{11}&amp;a_{12}\\ 
+a_{21}&amp;a_{22}
+\end{Bmatrix},
+e_t=\begin{Bmatrix}
+e_y\\ 
+e_x
+\end{Bmatrix}$$`
+
+--
+
+Todas tamaño de `\(n\times 1\)` con exepción de `\(A_1\)`, que viene a ser `\(n\times n\)`. Lo anterior podemos expresarlo como:
+
+--
+
+`$$\begin{aligned}
+Y_t=&amp;a_{10}+a_{11}Y_{t-1}+a_{12}X_{t-1}+e_{yt}\\
+X_t=&amp;a_{20}+a_{21}Y_{t-1}+a_{22}X_{t-1}+e_{xt}
+\end{aligned}$$`
+
+--
+
+De esta forma .hi[reducida], observe que no hay .hi-purple[efectos contemporaneos] directos tal como `\(\beta_{11}\)` y `\(\beta_{21}\)`, sin embargo no estan eliminados, estan dentro del residuo `\(\color{red}{e_t}\)`.
+
+--
+
+En esta forma, solo se cuentan .hi[9] parámetros: seis (6) coeficientes, una (1) covarianza y dos (2) varianzas respectivamente. Los errores en la forma .hi[reducida]
+tienen relación los errores.
+
+---
+
+--
+
+Cuando se tiene la opción reducida del VAR, tenemos un resultado importante:
+
+--
+
+`$$e_t=B^{-1}\varepsilon_t$$`
+
+--
+
+- `\(\varepsilon_t\)` es el error de forma .hi-slate[estructural]
+- `\(e_t\)` es el error de forma .hi-pink[reducida].
+
+--
+
+*Con la forma reducida si se puede vía MCO y ademas se pueden hacer los pronosticos*.
+
+--
+
+De esta forma .hi[reducida] no se modelan las relaciones .hi-slate[contemporaneas] entre variables, esto requiere de los modelos estructurales y de la identificación del VAR.
+
+---
+layout: false
+class: middle, inverse, center
+
+# Identificación del VAR 
+
+---
+layout: true
+# Identificación del VAR
+
+---
+
+--
+
+Cuando se habla de **identificación** del VAR se hace alusión a la imposición de *restricciones* o .hi-purple[condiciones] para poder estimar unos parámetros. 
+Veamos esto con un ejemplo más ilustrativo, olvidemos por un momento que hablamos de VAR. Tenemos una ecuación cualquiera dada por:
+
+--
+
+`$$AX-BY=0$$`
+
+--
+
+Esa es una .hi[relación estructural] y queremos conocer cuanto valen A y B (2 parámetros). 
+
+--
+
+Ahora se despeja `\(Y\)`, al hacerlo se puede hablar de obtener una forma reducida (esto ya es una forma funcional, más que una relación).
+
+--
+
+`\(Y=AX/ B\)` y ademas `\(A/B=C\)`, así la forma reducida queda `\(Y=CX\)`. Si se corriera una regresión, se podría hallar el parámetro C, es decir, un (1) parámetro.
+
+--
+
+Nuestro objetivo inicial era encontrar A y B (2 parámetros), pero con la forma reducida solo encontramos C (1 parámetro).
+
+--
+
+El problema anterior es el mismo que se presenta en VAR, no se pueden encontrar A y B (en forma estructural). Por ello debe ponerse una restricción o condición. Por ejemplo que `\(B=1\)`, Así `\(A/B=C\)`, `\(A/1=C\)`, `\(A=B!\)`
+
+---
+
+--
+
+- La .hi[identificación] del VAR permitirá revelar las relaciones entre las variables y su dinámica, de esto se trata.
+
+--
+
+- En el caso de la relación entre PIB `\((Y_t)\)` y la Tasa de interés `\(X_t)\)`, se sabe que los Bancos centrales modifican la .hi-orange[tasa de interés] ante los datos observados de PIB, de esta manera, si se reporta un dato de **crecimiento negativo** entonces se procede a bajar la tasa de interés. Ahora bien, esa reducción de la tasa de interés no afectará el PIB inmediatamente.
+
+--
+
+- Frente a lo anterior, por un lado se puede concluir que el **PIB** afecta contemporáneamente y con rezagos a la .hi-slate[tasa de interés].
+
+--
+
+Por otro lado, se entiende que solo los rezagos de la tasa de interés afectan al PIB, es decir no hay efecto contemporáneo. 
+
+---
+`$$\underbrace{\begin{pmatrix}
+1 &amp; \beta_{12} \\ 
+\beta_{21} &amp; 1 
+\end{pmatrix}}_{B}
+\underbrace{\begin{pmatrix}
+Y_t\\ 
+X_t
+\end{pmatrix}}_{X_t}
+=
+\underbrace{\begin{pmatrix}
+\beta_{10}\\ 
+\beta_{20}
+\end{pmatrix}}_{G_0}
++
+\underbrace{\begin{pmatrix}
+\gamma_{11} &amp; \gamma_{12} \\ 
+\gamma_{21} &amp; \gamma_{22} 
+\end{pmatrix}}_{G_1}
+\underbrace{\begin{pmatrix}
+Y_{t-1}\\ 
+X_{t-1}
+\end{pmatrix}}_{X_{t-1}}
++
+\underbrace{\begin{pmatrix}
+\varepsilon_{yt}\\ 
+\varepsilon_{xt}
+\end{pmatrix}}_{\varepsilon_t}$$`
+
+--
+
+Si implantamos una restricción en el efecto contemporaneo, entonces vamos a tener
+
+--
+
+`$$\underbrace{\begin{pmatrix}
+1 &amp; \color{red}{0} \\ 
+\beta_{21} &amp; 1 
+\end{pmatrix}}_{B}
+\underbrace{\begin{pmatrix}
+Y_t\\ 
+X_t
+\end{pmatrix}}_{X_t}
+=
+\underbrace{\begin{pmatrix}
+\beta_{10}\\ 
+\beta_{20}
+\end{pmatrix}}_{G_0}
++
+\underbrace{\begin{pmatrix}
+\gamma_{11} &amp; \gamma_{12} \\ 
+\gamma_{21} &amp; \gamma_{22} 
+\end{pmatrix}}_{G_1}
+\underbrace{\begin{pmatrix}
+Y_{t-1}\\ 
+X_{t-1}
+\end{pmatrix}}_{X_{t-1}}
++
+\underbrace{\begin{pmatrix}
+\varepsilon_{yt}\\ 
+\varepsilon_{xt}
+\end{pmatrix}}_{\varepsilon_t}$$`
+
+---
+
+--
+
+Lo que ahora nos da un sistema de tal manera que:
+
+--
+
+`$$\begin{aligned}
+Y_t=&amp;\beta_{10}+\gamma_{11}Y_{t-1}+\gamma_{12}X_{t-1}+\varepsilon_{yt}\\
+X_t=&amp;\beta_{20}-\beta_{21}Y_t+\gamma_{21}Y_{t-1}+\gamma_{22}X_{t-1}+\varepsilon_{xt}
+\end{aligned}$$`
+
+--
+
+Asi, que de forma estructural tendrá (9) parámetros, que es lo mismo con la forma .hi[reducida].
+
+--
+
+Es claro que una matriz con una restricción:
+
+`$$B=\begin{pmatrix}1&amp;\color{red}{0}\\
+\beta_{21} &amp; 1
+\end{pmatrix}$$`
+
+--
+
+También cambiará la estructura de `\(B^{-1}\)` y por ende su forma reducida. La .hi[identificación] permite develar las relaciones entre variables y realizar las impulso respuestas y desde luego descomponer la varianza.
+
+--
+
+Premultiplicando vamos a tener ahora a:
+
+`$$B^{-1}BX_t=B^{-1}G_0+B^{-1}G_1X_{t-1}+B^{-1}\varepsilon_t$$`
+
+--
+
+esto nos lleva a:
+
+---
+
+`$$\begin{equation}
+\begin{pmatrix}
+Y_{t}\\
+X_{t}
+\end{pmatrix}=
+\begin{pmatrix}
+1 &amp; 0 \\ 
+-\beta_{21} &amp; 1 
+\end{pmatrix}
+\begin{pmatrix}
+\beta_{10}\\ 
+\beta_{20}
+\end{pmatrix}+
+\begin{pmatrix}
+1 &amp; 0 \\ 
+-\beta_{21} &amp; 1 
+\end{pmatrix}\begin{pmatrix}
+\gamma_{11} &amp; \gamma_{12}\\ 
+\gamma_{21} &amp; \gamma_{22} 
+\end{pmatrix}\begin{pmatrix}
+Y_{t-1}\\
+X_{t-1}
+\end{pmatrix}
++\begin{pmatrix}
+1 &amp; 0 \\ 
+-\beta_{21} &amp; 1 
+\end{pmatrix}\begin{pmatrix}
+\varepsilon_{yt} \\ 
+\varepsilon_{xt}  
+\end{pmatrix}
+\end{equation}$$`
+
+--
+
+Desde luego simplificando lo anterior -esto es resolviendo cada fila con columna-
+
+--
+
+`$$\begin{equation}
+\begin{pmatrix}
+Y_{t}\\
+X_{t}
+\end{pmatrix}=
+\begin{pmatrix}
+\beta_{10}  \\ 
+-\beta_{21} \beta_{10}+ \beta_{20}  
+\end{pmatrix}
++
+\begin{pmatrix}
+\gamma_{11} &amp; \gamma_{12} \\ 
+-\beta_{21} \gamma_{11}+ \gamma_{21}  &amp; -\beta_{21} \gamma_{12}+ \gamma_{22}  
+\end{pmatrix}\begin{pmatrix}
+Y_{t-1}\\
+X_{t-1}
+\end{pmatrix}+
+\begin{pmatrix}
+\varepsilon_{yt} \\ 
+-\beta_{21}\varepsilon_{yt}+\varepsilon_{xt}  
+\end{pmatrix}
+\end{equation}$$`
+
+--
+
+Ademas que `\(e_t\)` cambia su forma y esto se traduce en:
+
+--
+
+`$$\begin{aligned}
+e_{xt}=&amp;-\beta_{21}e_{yt}+ \varepsilon_{xt}\\
+e_{xt}+&amp;\beta_{21}e_{yt}= \varepsilon_{xt}
+\end{aligned}$$`
+
+--
+
+La relación anterior es clave, pues está mostrando que por medio de una combinación lineal de .hi[choques o errores] de la forma .hi[reducida] `\((e_{xt}\;y \; e_{yt})\)`  y el efecto contemporáneo `\(\beta_{21}\)`, se recuperan los choques estructurales de la tasa de interés `\(\varepsilon_{xt}\)`.
+
+---
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M512 256c0 .9 0 1.8 0 2.7c-.4 36.5-33.6 61.3-70.1 61.3H344c-26.5 0-48 21.5-48 48c0 3.4 .4 6.7 1 9.9c2.1 10.2 6.5 20 10.8 29.9c6.1 13.8 12.1 27.5 12.1 42c0 31.8-21.6 60.7-53.4 62c-3.5 .1-7 .2-10.6 .2C114.6 512 0 397.4 0 256S114.6 0 256 0S512 114.6 512 256zM128 288a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm0-96a32 32 0 1 0 0-64 32 32 0 1 0 0 64zM288 96a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm96 96a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></svg> Estimar un VAR de mayor orden, deben imponerse mas restricciones, por lo cual debe tener en cuenta:
+
+--
+
+1. En un VAR estructural, el numero de elementos en la matriz `\(B\)` es `\(n^2\)`.
+
+--
+
+2. En un VAR reducido, en `\(\Sigma\)` (matriz de covarianza) incorpora efectos contemporaneos que viene a ser `\(\frac{n(n+1)}{2}\)`
+
+--
+
+.attn[Por ejemplo:] ¿cuantas restricciones se requieren para los siguientes VAR, uno con 3 variables y otro con 4?
+
+--
+
+.ex[Restricciones]: `\(\frac{n^2-n}{2}=\frac{3^2-3}{2}=3\)` y para el otro `\(\frac{4^2-4}{2}=6\)` 
+
+--
+
+Al igual que ocurría con los modelos ARIMA, si su parte AR tiene .hi-purple[raíces invertibles] menor a 1, es decir se encuentran **dentro** del .hi-slate[circulo unitario], entonces el sistema es estacionario y estable.
+
+--
+
+En el caso de VAR, se dirá que si la matriz polinómica con operador de rezago A(L) es invertible, el VAR es .hi[estacionario] y .hi[estable].
+
+---
+layout: false
+class: inverse, middle, center
+
+# Continuará...
+---
+# Bibliografía
+
+
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></svg> Rabbi, F., Tareq, S.U., Islam, M.M., Chowdhury, M.A., &amp; Abul Kashem, M. (2020). *A Multivariate Time Series Approach for Forecasting of Electricity Demand in Bangladesh Using ARIMAX Model*. 2020 2nd International Conference on Sustainable Technologies for Industry 4.0 (STI), 1-5.
+
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></svg> Hyndman, R.J., &amp; Athanasopoulos, G. (2021). *Forecasting: principles and practice*, 3rd edition, OTexts: Melbourne, Australia.
+
+<svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></svg> Shumway, R., &amp; Stoffer, D. (2019). *Time series: a data analysis approach using R*. CRC Press.
+
+---
+name: adios
+class: middle
+
+.pull-left[
+# **¡Gracias!**
+&lt;br/&gt;
+## Modelos VAR
+
+### Seguimos aprendiendo
+]
+
+.pull-right[
+.right[
+&lt;img style="border-radius: 50%;"
+src="https://avatars.githubusercontent.com/u/39503983?v=4"
+width="150px" /&gt;
+
+<svg aria-hidden="true" role="img" viewBox="0 0 640 512" style="height:1em;width:1.25em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M579.8 267.7c56.5-56.5 56.5-148 0-204.5c-50-50-128.8-56.5-186.3-15.4l-1.6 1.1c-14.4 10.3-17.7 30.3-7.4 44.6s30.3 17.7 44.6 7.4l1.6-1.1c32.1-22.9 76-19.3 103.8 8.6c31.5 31.5 31.5 82.5 0 114L422.3 334.8c-31.5 31.5-82.5 31.5-114 0c-27.9-27.9-31.5-71.8-8.6-103.8l1.1-1.6c10.3-14.4 6.9-34.4-7.4-44.6s-34.4-6.9-44.6 7.4l-1.1 1.6C206.5 251.2 213 330 263 380c56.5 56.5 148 56.5 204.5 0L579.8 267.7zM60.2 244.3c-56.5 56.5-56.5 148 0 204.5c50 50 128.8 56.5 186.3 15.4l1.6-1.1c14.4-10.3 17.7-30.3 7.4-44.6s-30.3-17.7-44.6-7.4l-1.6 1.1c-32.1 22.9-76 19.3-103.8-8.6C74 372 74 321 105.5 289.5L217.7 177.2c31.5-31.5 82.5-31.5 114 0c27.9 27.9 31.5 71.8 8.6 103.9l-1.1 1.6c-10.3 14.4-6.9 34.4 7.4 44.6s34.4 6.9 44.6-7.4l1.1-1.6C433.5 260.8 427 182 377 132c-56.5-56.5-148-56.5-204.5 0L60.2 244.3z"/></svg> [Syllabus/ Curso](https://pomelo.uninorte.edu.co/pls/prod/bwckctlg.p_disp_course_detail?cat_term_in=202210&amp;subj_code_in=ECO&amp;crse_numb_in=0010)&lt;br/&gt;
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg> [@keynes37](https://twitter.com/keynes37)&lt;br/&gt;
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:currentColor;overflow:visible;position:relative;"><path d="M16.1 260.2c-22.6 12.9-20.5 47.3 3.6 57.3L160 376V479.3c0 18.1 14.6 32.7 32.7 32.7c9.7 0 18.9-4.3 25.1-11.8l62-74.3 123.9 51.6c18.9 7.9 40.8-4.5 43.9-24.7l64-416c1.9-12.1-3.4-24.3-13.5-31.2s-23.3-7.5-34-1.4l-448 256zm52.1 25.5L409.7 90.6 190.1 336l1.2 1L68.2 285.7zM403.3 425.4L236.7 355.9 450.8 116.6 403.3 425.4z"/></svg>[ cayanes@uninorte.edu.co](mailto:cayanes@uninorte.edu.co)
+]
+]
+
+
+
+
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
