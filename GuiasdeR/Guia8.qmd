@@ -1,0 +1,325 @@
+---
+title: "Econometría II: VAR"
+subtitle: "Departamento de Economía"
+author: "Carlos A. Yanes G."
+format: 
+  revealjs:
+    footer: "Universidad del Norte"
+    theme: [simple, ob.scss]
+    logo: micrologouni.png
+    embed-resources: true
+    code-fold: true
+from: markdown+emoji
+editor: visual
+date: last-modified
+bibliography: refs.bib
+---
+
+## Paquetes con que se trabaja la sesión
+
+```{r, setup}
+#| include: false
+#| echo: false
+
+library(pacman)
+p_load(TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, tseries, fpp2, fontawesome, vars, BVAR, lmtest)
+```
+
+Los paquetes que se van a utilizar en la sesión de hoy son:
+
+::: callout-note
+Para trabajar en esta ocasión vamos a usar los paquetes de `r fa("r-project", fill="lightblue")`:
+
+``` r
+library(pacman)
+p_load(TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, tseries, fpp2, vars, BVAR, lmtest)
+```
+:::
+
+-   Es importante resaltar los paquetes de `Vars` y `BVAR`, ya que con el estimaremos los modelos y criterios. Algo de lo que está explicado acá tiene mucho del libro [@lutkepohl2004applied] y adicionalmente de un gran texto como [@hamilton2020time]
+
+# Preambulo {{< fa bug >}}
+
+## Modelo VAR
+
+::: fragment
+::: callout-note
+## Definición
+
+Un modelo VAR (Vector Autoregression) es un [modelo de ecuaciones]{.bg style="--col: #FFFF00"} simultáneas formado por un sistema de ecuaciones de forma **reducida**. Es un modelo muy útil cuando existe evidencia de *simultaneidad* entre un grupo de [variables ]{.bg style="--col: #e64173"}, y que sus relaciones se transmiten a lo largo de un determinado número de períodos.
+:::
+:::
+
+::: fragment
+::: incremental
+-   $$B^{-1}BX_t=B^{-1}G_0+B^{-1}G_1X_{t-1}+B^{-1}\varepsilon_t$$
+-   $$\begin{aligned}
+e_{xt}=&-\beta_{21}e_{yt}+ \varepsilon_{xt}\\
+e_{xt}+&\beta_{21}e_{yt}= \varepsilon_{xt}
+\end{aligned}$$
+:::
+:::
+
+## Datos
+
+::: callout-tip
+## Investigación de Engle y Granger del mercado laboral
+- $e$ = log del índice de empleo
+- $Prod$ = **Productividad laboral** $\rightarrow$ Diferencia de los logaritmos de e y el PIB
+- $U$ = Tasa de desempleo
+- $rw$ = Salario real - Log del indice de salario real
+- Frecuencia Trimestral
+- Primer trimestre de 1980
+:::
+
+## Datos a trabajar
+
+::: panel-tabset
+## Base de datos
+```{r}
+#| echo: true
+data(Canada) # Viene con el paquete vars
+Datos=Canada
+head(Datos)
+```
+## Gráfico
+```{r}
+#| echo: true
+plot(Datos, nc = 2, xlab = "")
+```
+:::
+
+# Pruebas {{< fa gear >}}
+
+## Estacionariedad 
+
+::: panel-tabset
+## Empleo
+```{r}
+#| echo: true
+#"e"
+adf.test(Datos[,1], alternative="stationary")
+```
+## Productividad
+```{r}
+#| echo: true
+#"prod"
+adf.test(Datos[,2], alternative="stationary")
+```
+## Desempleo
+```{r}
+# "U"
+adf.test(Datos[,3], alternative="stationary")
+```
+## Salarios
+```{r}
+# "rw"
+adf.test(Datos[,4], alternative="stationary")
+```
+:::
+
+## Sobre estacionariedad
+
+- Note que ninguna serie logró ser **estacionaria**. Debemos entonces aplicar o recurrir a la primera diferencia e intentar corregir y volver a realizar las pruebas concernientes a ella.
+
+- Si el VAR no es estacionario tendremos problemas en la estimación
+
+# Corrección {{< fa laptop >}}
+
+## Primera Diferencia
+::: panel-tabset
+## Empleo
+```{r}
+#| echo: true
+# Datos diferenciados
+DatosD=diff(Datos,differences=1)
+#"e"
+adf.test(DatosD[,1], alternative="stationary")
+```
+## Productividad
+```{r}
+#"prod"
+adf.test(DatosD[,2], alternative="stationary")
+```
+## Desempleo
+```{r}
+# "U"
+adf.test(DatosD[,3], alternative="stationary")
+```
+## Salarios
+```{r}
+# "rw"
+adf.test(DatosD[,4], alternative="stationary")
+```
+:::
+
+# Selección de orden {{< fa hammer >}}
+
+## Selección de orden de VAR
+
+::: panel-tabset
+## Clave
+
+- El modelo debe ser elegido de acuerdo a un conjunto de criterios entre ellos
+los tradicionales o ya conocidos `AIC`, `BIC`, se añaden los de Función de pronostico de error `FP` y el de Hannan and Quin `HQ`
+
+- Como siempre, aquel modelo con **mejor grupo de criterios** es el modelo a elegir. Sin embargo se puede optar por un solo criterio o competencia. P.e solo escoger quien mejor criterio [Akaike]{.bg style="--col: #00FFFF"} tenga.
+
+## Selección
+```{r}
+#| echo: true
+Seleccion=VARselect(DatosD, lag.max = 5, type = "none")
+Seleccion$criteria
+```
+## Elección
+```{r}
+#| echo: true
+Seleccion$selection
+```
+:::
+
+# De forma MCO {{< fa flag >}}
+
+## Modelo "a mano"
+
+:::panel-tabset
+## MCO
+```{r}
+#| echo: true
+t=2:nrow(DatosD)
+ma1=lm(DatosD[t,"e"]~-1+DatosD[(t-1),"e"]+DatosD[(t-1),"prod"]+DatosD[(t-1),"U"]+DatosD[(t-1),"rw"])
+ma2=lm(DatosD[t,"prod"]~-1+DatosD[(t-1),"e"]+DatosD[(t-1),"prod"]+DatosD[(t-1),"U"]+DatosD[(t-1),"rw"])
+ma3=lm(DatosD[t,"U"]~-1+DatosD[(t-1),"e"]+DatosD[(t-1),"prod"]+DatosD[(t-1),"U"]+DatosD[(t-1),"rw"])
+ma4=lm(DatosD[t,"rw"]~-1+DatosD[(t-1),"e"]+DatosD[(t-1),"prod"]+DatosD[(t-1),"U"]+DatosD[(t-1),"rw"])
+```
+## Mod 1
+```{r}
+#| echo: true
+summary(ma1)
+```
+## Mod 2
+```{r}
+#| echo: true
+summary(ma2)
+```
+## Mod 3
+```{r}
+#| echo: true
+summary(ma3)
+```
+## Mod 4
+```{r}
+#| echo: true
+summary(ma4)
+```
+:::
+
+# Estimación Directa {{< fa ship >}}
+
+## Modelo VAR (1)
+```{r}
+#| echo: true
+m1 = VAR(DatosD[,c("e","prod","U","rw")], p = 1, type = "none")
+summary(m1)
+```
+
+## Modelo VAR(1) testeo
+::: panel-tabset
+## Empleo
+```{r}
+#| echo: true
+plot(m1, names = "e")
+```
+## Productividad
+```{r}
+#| echo: true
+plot(m1, names = "prod")
+```
+## Desempleo
+```{r}
+#| echo: true
+plot(m1, names = "U")
+```
+## Salarios
+```{r}
+#| echo: true
+plot(m1, names = "rw")
+```
+:::
+
+## Test de fuerza
+:::panel-tabset
+## Pormaunteau
+```{r}
+#| echo: true
+ser=serial.test(m1, lags.pt = 16, type = "PT.asymptotic")
+ser
+```
+## JB
+```{r}
+#| echo: true
+nor=normality.test(m1)
+nor$jb.mul
+```
+## Estabilidad
+```{r}
+#| echo: true
+stability(m1)
+plot(stability(m1), nc = 2)
+```
+## ARCH
+```{r}
+#| echo: true
+arch1 = arch.test(m1, lags.multi = 6)
+arch1$arch.mul
+```
+## G
+```{r}
+#| echo: true
+plot(arch1, names = "rw")
+```
+:::
+
+## Raices de Polinomio
+```{r}
+#| echo: true
+roots(m1)
+```
+
+
+# Pronostico {{< fa seedling >}}
+
+## Pronostico de variables
+```{r}
+forecast(m1, h=12) %>% autoplot() + xlab("Años") 
+```
+
+# Impulso respuesta {{< fa truck >}}
+
+## Función Impulso-Respuesta
+```{r}
+#| echo: true
+irf.emp <- vars::irf(m1, impulse = "prod", response = "U",n.ahead = 20, boot = TRUE)
+plot(irf.emp) 
+```
+
+- Por un choque positivo de un 1% en la productividad el desempleo se reduce hasta en un 8% en el primer periodo
+
+# Descomposición de Varianza {{< fa truck >}}
+
+## Descomposición
+
+```{r}
+#| echo: true
+des.varmod <- vars::fevd(m1, n.ahead = 10)
+plot(des.varmod, nc=2)
+```
+
+
+# Gracias por su atención!! {background-color="#cc0000"}
+
+## Referencias
+
+::: {#refs}
+:::
+
