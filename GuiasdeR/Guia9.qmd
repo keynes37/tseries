@@ -1,0 +1,234 @@
+---
+title: "Econometría II: Causalidad de Granger"
+subtitle: "Departamento de Economía"
+author: "Carlos A. Yanes G."
+format: 
+  revealjs:
+    footer: "Universidad del Norte"
+    theme: [simple, ob.scss]
+    logo: micrologouni.png
+    embed-resources: true
+    code-fold: true
+from: markdown+emoji
+editor: visual
+date: last-modified
+bibliography: refs.bib
+---
+
+## Paquetes con que se trabaja la sesión
+
+```{r, setup}
+#| include: false
+#| echo: false
+
+library(pacman)
+p_load(TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, tseries, fpp2, fontawesome, vars, BVAR, lmtest)
+```
+
+Los paquetes que se van a utilizar en la sesión de hoy son:
+
+::: callout-note
+Para trabajar en esta ocasión vamos a usar los paquetes de `r fa("r-project", fill="lightblue")`:
+
+``` r
+library(pacman)
+p_load(TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, tseries, fpp2, vars, BVAR, lmtest)
+```
+:::
+
+-   Es importante resaltar el paquete `Vars`, `lmtest` ya que con el estimaremos los modelos y criterios como Granger Causality Test. Algo de lo que está explicado acá tiene mucho del libro [@lutkepohl2004applied] y adicionalmente de un gran texto como [@hamilton2020time]
+
+# Preambulo {{< fa bug >}}
+
+## Funciones Impulso-Respuestas {.smaller}
+
+::: incremental
+- En Macroeconomía siempre se hacen preguntas de como *reacciona* una [variable]{.fg style="--col: #FF0000"} ante la variación de otra variable, a partir de esto, nace la parte del análisis **impulso respuesta** (IMR).
+- Una función **IMR** nos dirá cual es el efecto de una innovación  o choque de una variable sobre otra.
+- Como los modelos [VAR]{.fg style="--col: #FF0000"}, pueden representarse como una *sucesión* de choques podemos entonces encontrar un modelo MA o VMA si por ejemplo:
+$$\tag1 X_t= \mu+\sum\limits_{i=0}^{\infty} \varphi_i e_{t-i}$$
+- Los errores que se usan son los de la forma [reducida]{.fg style="--col: #FF8000"} $e_t$. Se debe recordar que estos contienen los [efectos contemporáneos]{.bg style="--col: #FFFF00"} de variables como $-b_{21}$ que era el efecto del PIB sobre la tasa de interés.
+:::
+
+## Funciones Impulso-Respuestas {.smaller}
+
+::: incremental
+- Requerimos de los errores [estructurales]{.fg style="--col: #FF0000"}, ya que estos no estan correlacionados, es decir, los $(\varepsilon_t)$.
+- Como no podemos usar los reducidos, entonces recurrimos a:
+$$\tag2 e_t=B^{-1}\varepsilon_t$$
+- Reemplazamos (2) en la ecuación (1).
+- Vamos a tener:
+$$X_t= \mu+\sum\limits_{i=0}^{\infty} \varphi_i B^{-1} \varepsilon_{t-i}$$
+- Para dar mas simpleza a esto, vamos a reemplazar $\varphi_i B^{-1}= \emptyset_i$
+- Recuerde que necesitamos es choques "limpios", aquellos que no tengan relación con efectos contemporáneos 
+:::
+
+## Funciones Impulso-Respuestas {.smaller}
+
+::: incremental
+- Vamos a suponer que tenemos un modelo de [PIB]{.fg style="--col: #FF0000"}, [inflación]{.fg style="--col: #FF8000"} y [Tasa de interés]{.fg style="--col: #FF0000"}
+y traemos nuestra ecuación:
+$$X_t= \mu+\sum\limits_{i=0}^{\infty} \emptyset_i \varepsilon_{t-i}$$
+- Matricialmente es
+$$\begin{bmatrix}
+Y_t \\ X_t \\ Z_t 
+\end{bmatrix}=\begin{bmatrix}
+\bar{Y}_t \\ \bar{X}_t \\ \bar{Z}_t 
+\end{bmatrix}+\sum_{i=0}^{\infty}\begin{bmatrix}
+\emptyset_{i_{1,1}} &\emptyset_{i_{1,2}}  &\emptyset_{i_{1,3}} \\ 
+ \emptyset_{i_{2,1}}&\emptyset_{i_{2,2}}  &\emptyset_{i_{2,3}} \\ 
+ \emptyset_{i_{3,1}}&\emptyset_{i_{3,2}}  &\emptyset_{i_{3,3}} 
+\end{bmatrix}
+\begin{bmatrix}
+\varepsilon_{yt-i}\\ 
+\varepsilon_{xt-i}\\ 
+\varepsilon_{zt-i}
+\end{bmatrix}$$
+:::
+
+## Funciones Impulso-Respuestas {.smaller}
+::: incremental
+- Las funciones **IM** muestran los efectos de choque, se refleja en $t+1$ y así $t+p$.
+- Un choque entonces de PIB sobre tasa de interés viene a ser:
+$$\emptyset_{i_{3,1}}=\frac{\partial Z_{t+1}}{\partial\varepsilon_{yt}}$$
+- La ecuación del PIB esta dada por:
+$$Y_t= \bar{Y}_t+ \emptyset_{i_{1,1}}\varepsilon_{yt}+\emptyset_{i_{1,2}}\varepsilon_{xt}+\emptyset_{i_{1,3}}\varepsilon_{zt}$$
+:::
+
+# Causalidad de Granger {{< fa truck >}}
+
+## Causalidad
+
+::: fragment
+::: callout-note
+## Para Granger
+"*Una prueba para la cointegración puede considerarse como una pre-prueba para evitar las situaciones de regresiones espurias.*"
+:::
+:::      
+
+::: fragment      
+Sean dos variables $Y_{t}$ y $X_{t}$, del cual se establece la regresión:
+$$Y_{t}=\alpha_{o}+\alpha_{1}X_{t}+ \varepsilon_{t}$$
+Se dice que si $\varepsilon_t$ es ruido blanco, $(\alpha_{1})$ vendría a ser el parámetro cointegrador.
+:::   
+   
+## Causalidad
+Sean Y y Z dos variables aleatorias.
+
+::: incremental
+- Se dice que Z causa en el sentido de Granger a Y si:
+$$E(Y_{t}| I_{t-1}) \neq E(Y_{t}| J_{t-1})$$
+- Donde el vector (I) contiene toda la información del pasado de Y y de Z y el vector (J) solo contiene el pasado de Y.
+- En palabras sencillas, el criterio de causalidad dice que una vez que se tiene en cuenta todo el pasado de Y, el pasado de Z también ayuda a predecir a Y.
+:::
+
+# Probemos {{< fa seedling >}}
+
+## Espúreo
+:::panel-tabset
+## Simulación
+```{r}
+#| echo: true
+set.seed(1234)
+# Establecer el número de observaciones
+n <- 1000
+# Crear una serie de tiempo x
+x <- ts(data = rep(NA, n), start = 1, frequency = 12)
+# Establecer el primer valor
+x[1] <- 100
+# Generar valores siguiendo un proceso AR(1)
+for (t in 2:n) {
+  x[t] <- x[t - 1] + qnorm(runif(1))
+}
+
+# Lo mismo para y
+y <- ts(data = rep(NA, n), start = 1, frequency = 12)
+# Establecer el primer valor
+y[1] <- 0.5
+# Generar valores siguiendo un proceso AR(1)
+for (t in 2:n) {
+  y[t] <- y[t - 1] + qnorm(runif(1))
+}
+```
+## Gráfico
+```{r}
+#| echo: true
+par(mfrow=c(1,2))
+plot(x,main="Serie X")
+plot(y,main="Serie Y")
+```
+## Modelo
+```{r}
+#| echo: true
+mi_ols<-lm(y~x)
+summary(mi_ols)
+```
+## Test
+```{r}
+#| echo: true
+mi_ols$residuals %>% ggtsdisplay()
+```
+:::
+
+## Espúreo
+
+::: incremental
+- Quizas tenemos un gran [modelo]{.bg style="--col: #FFFF00"}, las variables resultan ser **significativas**, no pasa nada.
+- Pero al analizar los [residuos]{.fg style="--col: #FF0000"}, nos damos cuenta que estan super correlacionados y lo mas probable es que ni siquiera sean **ruido blanco**
+- La única forma de ver esto es desde luego diferenciando, sin antes recordar que el orden de integración es la diferencia que requiere la serie para ser [estacionaria]{.fg style="--col: #e64173"}.
+- Una mirada a la cointegración es si ambas series son cointegradas podremos entonces mirar si tienen o poseen un equilibrio de [largo plazo]{.bg style="--col: #00FFFF"}
+:::
+
+## Muestra
+```{r}
+#| echo: true
+mi_ols2<-lm(diff(y)~diff(x))
+summary(mi_ols2)
+```
+
+## Muestra II
+::: panel-tabset
+## Pregunta
+::: incremental
+- Quien fué primero el **huevo** o la [gallina]{.fg style="--col: #FF0000"}?
+- Vamos a usar la base de datos del trabajo [@thurman1988chickens]
+- El test de granger realiza una prueba o test F de acuerdo al número de rezagos
+- Un ejemplo de modelo es:
+$$Y_t=\alpha_{0}+\alpha_1 Y_{t-1}+\alpha_2 X_{t-1}+\varepsilon_{t}$$
+
+:::
+
+## Alternativo
+:::incremental
+- El modelo alternativo es:
+$$Y_t=\alpha_{0}+\alpha_1 Y_{t-1}+\varepsilon_{t}$$
+- La prueba de hipotesis es:
+$$H_0: \alpha_i=0 \; ; \text{X no causa en el sentido de Granger a Y}$$
+:::
+
+## Granger Y
+```{r}
+#| echo: true
+data(ChickEgg)
+grangertest(chicken ~ egg, order = 3, data = ChickEgg)
+```
+## Granger X
+```{r}
+#| echo: true
+data(ChickEgg)
+grangertest(egg ~ chicken, order = 3, data = ChickEgg)
+```
+
+
+
+
+:::
+
+
+
+# Gracias por su atención!! {background-color="#cc0000"}
+
+## Referencias
+
+::: {#refs}
+:::
