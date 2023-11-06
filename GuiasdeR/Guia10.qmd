@@ -1,0 +1,277 @@
+---
+title: "Econometría II: SVAR"
+subtitle: "Departamento de Economía"
+author: "Carlos A. Yanes G."
+format: 
+  revealjs:
+    footer: "Universidad del Norte"
+    theme: [simple, ob.scss]
+    logo: micrologouni.png
+    embed-resources: true
+    code-fold: true
+from: markdown+emoji
+editor: visual
+date: last-modified
+bibliography: refs.bib
+---
+
+## Paquetes con que se trabaja la sesión
+
+```{r, setup}
+#| include: false
+#| echo: false
+
+library(pacman)
+p_load(TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, tseries, fpp2, fontawesome, vars, readr, lmtest, stargazer)
+```
+
+Los paquetes que se van a utilizar en la sesión de hoy son:
+
+::: callout-note
+Para trabajar en esta ocasión vamos a usar los paquetes de `r fa("r-project", fill="lightblue")`:
+
+``` r
+library(pacman)
+p_load(TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, tseries, fpp2, vars, readr, lmtest)
+```
+:::
+
+-   Es importante resaltar el paquete `vars`, ya que con ellos trabajaremos. Algo de lo que se muestra en está el libro de [@enders2012applied] y desde luego el de [@hamilton2020time]
+
+# Preambulo {{< fa bug >}}
+
+## Investigación en Macroeconomía {.smaller}
+
+::: incremental
+- En macroeconomía el estudio de variables tales como **PIB** y el **Desempleo** se traducen en indicadores de como va la economía de un país.
+- Anteriormente vimos los modelos VAR de forma reducida, a continuación la idea es mirar una parte concerniente a lo propiamente [teórico]{.bg style="--col: #FFFF00"} y con esto estimar los choques contemporáneos.
+- Los modelos [VAR]{.bg style="--col: #e64173"} estructurales o SVAR tienen una apreciación mas completa. 
+- Blanchard y Quah plantearon un ejercicio para evaluar [la dinámica del PIB]{.fg style="--col: #FF8000"} y el [desempleo]{.fg style="--col: #FF8000"} a la luz del *modelo teórico* de oferta y [demanda agregada]{.bg style="--col: #00FFFF"}. En este se establece que los choques de oferta generan efectos permanentes sobre el PIB, mientras que los choques de demanda, asociados al desempleo, solo afectan al producto de manera transitoria.
+:::
+
+## Datos
+
+::: callout-tip
+## Investigación de Blanchard y Quah (1989)
+- $PIB$ = Producto interno Bruto
+- $NACIONAL$ = Tasa de desempleo
+- Frecuencia Anual
+- Enero de 1975
+:::
+
+## Datos a trabajar
+
+::: panel-tabset
+## Base de datos
+```{r}
+#| echo: true
+svardata <- read_csv("svardata.csv")
+head(svardata)
+```
+## Series
+```{r}
+#| echo: true
+pib=ts(svardata$PIB,start = 1975) # Serie de tiempo 1
+td=ts(svardata$NACIONAL,start = 1975) # Serie de tiempo 2
+```
+
+## Gráfico
+```{r}
+#| echo: true
+par(mfrow=c(1,2))
+dlpib=diff(log(pib)) # Diferencia logaritmica del PIB
+plot(dlpib) # Gráfico
+plot(td)
+```
+:::
+
+## Adiciones
+::: panel-tabset
+## Aclaración
+- Tenemos un desempleo con dato (atípico), se sugiere corregir ya que se debe a una crisis como tal en 1999.
+- Solo se hace una regresión y se extrae el **error** o residuo.
+- Utilizamos esa nueva variable y tenemos un modelo VAR original reducido.
+- Eliminamos un dato de la tasa de desempleo (ya que tenemos la diferencia de la otra serie)
+- Seleccionamos el mejor modelo VAR
+
+## Mineria
+```{r}
+#| echo: true
+# Dummy de crisis: 1 para los años entre 1997-2003, 0 en otro caso
+dum_crisis=ifelse(time(td)>=1997&time(td)<=2003,1,0)
+td_nueva=resid(lm(td~dum_crisis)) # regresion de la TD en funcion de dummy
+plot(td_nueva)
+```
+
+## VAR
+```{r}
+#| echo: true
+Y1 = na.omit(cbind(dlpib,td_nueva=td_nueva[-1]))
+# Dummy 1999: 1 para año 1999, 0 en otro caso
+dum_99=ifelse(time(td)==1999,1,0)[-1]
+VARselect(y = Y1,exogen = dum_99,type = "const")
+```
+
+## Estimación
+```{r}
+#| echo: true
+# Estimaci?n VAR en forma reducida
+var1=VAR(y = Y1,exogen = cbind(dum99=dum_99),type = "const")
+summary(var1)
+```
+:::
+
+## Testeo de fuerza
+
+::: panel-tabset
+## Funciones
+```{r}
+#| echo: true
+Portmanteau.var = function(modelo,rezago.max){
+  Estad=c()
+  p.valor=c()
+  Estad.ajus=c()
+  p.valor.=c()
+  for (i in 1:rezago.max) {
+    Estad[i]=serial.test(x = modelo,lags.pt = i,type = "PT.asymptotic")$serial$statistic
+    p.valor[i]=serial.test(x = modelo,lags.pt = i,type = "PT.asymptotic")$serial$p.value
+    Estad.ajus[i]=serial.test(x = modelo,lags.pt = i,type = "PT.adjusted")$serial$statistic
+    p.valor.[i]=serial.test(x = modelo,lags.pt = i,type = "PT.adjusted")$serial$p.value
+  }
+  resultado=cbind(Lag=1:rezago.max,Estad,p.valor,Estad.ajus,p.valor.)
+  print("Prueba Portmanteau")
+  return(resultado)
+}
+
+# LM Breush-Pagan
+
+LMBreush.var = function(modelo,rezago.max){
+  Estadistico=c()
+  p.valor=c()
+  for (i in 1:rezago.max) {
+    Estadistico[i]=serial.test(x = modelo,lags.bg = i,type = "BG")$serial$statistic
+    p.valor[i]=serial.test(x = modelo,lags.bg = i,type = "BG")$serial$p.value
+  }
+  resultado=cbind(Lag=1:rezago.max,Estadistico,p.valor)
+  print("Prueba LM Breush Godfrey")
+  return(resultado)
+}  # crear función
+
+```
+
+## Prueba RB
+```{r}
+#| echo: true
+Portmanteau.var(modelo = var1,rezago.max = 10)
+```
+
+## Prueba BP
+
+```{r}
+#| echo: true
+LMBreush.var(modelo = var1,rezago.max = 10)
+```
+
+## Interpretación
+- Siempre la clave es [NO]{.bg style="--col: #FF0000"} rechazar Ho.
+$$H_0: \varepsilon_t \; \sim (0, \sigma^2)$$
+- Eso lo tenemos con valores P-values mayores a [0.10]{.bg style="--col: #1AA7EC"} para ambas pruebas.
+- Recuerde que para la Portmanteau test se lee a partir del siguiente [rezago]{.bg style="--col: #FFFF00"} del orden del modelo.
+:::
+
+# SVAR {{< fa truck >}}
+
+## Modelo SVAR
+
+::: panel-tabset
+## Generalidad
+- El modelo [Estructural]{.fg style="--col: #e64173"} debe tener su matriz de restricción.
+- Esa matriz hay que crearla.
+- No debe olvidar el algebra de la diapositiva de VAR
+
+## VAR
+```{r}
+#| echo: true
+var1$varresult %>%
+    stargazer(type = "text", no.space = TRUE,
+              column.labels = colnames(Y1),
+              dep.var.labels.include = FALSE)
+```
+
+## Restricciones
+```{r}
+#| echo: true
+B0 <- diag(2)
+diag(B0) <- NA
+B0[2, 1] <- NA
+B0[2, 2] <- NA
+B0
+```
+
+## Estructural
+```{r}
+#| echo: true
+mod_svar <- SVAR(var1, estmethod = "direct", Amat = B0, hessian = TRUE, method = "BFGS")
+summary(mod_svar)
+```
+:::
+
+# Impulso-Respuesta {{< fa flag >}}
+
+## IMR
+
+::: panel-tabset
+## Todas
+```{r}
+#| echo: true
+par(mfrow=c(4,4), cex=.5, mar = c(4,4,2,1))
+mod_svar %>% irf(n.ahead = 40) %>% plot(plot.type = "single")
+```
+
+## Solo a Desempleo
+```{r}
+#| echo: true
+par(mfrow = c(2,2), cex = .5, mar = c(4,4,2,1))
+mod_svar %>% irf(n.ahead = 40, response = "td_nueva") %>% plot(plot.type = "single")
+```
+
+
+## Análisis
+
+- Mire que el desempleo sobre ella misma reduce su nivel hasta llegar a cero en los primeros periodos. Se prevee que si el choque de [demanda]{.bg style="--col: #FFFF00"} aumenta en un 1% se reduzca en los siguientes periodos. El desempleo no es persistente para el caso colombiano.
+
+- Con respecto al PIB note que al principio un incremento de un 1% el desempleo para el periodo (2) llega a su máximo casi un 20% pero luego decae totalmente (tenemos un frente de largo plazo) 
+:::
+
+# Varianza {{< fa flag >}}
+
+## Varianza
+
+::: panel-tabset
+## Descomposición
+```{r}
+#|echo: true 
+#### FEVD ####
+par(mar = c(4,5,2,1))
+mod_fevd <- mod_svar %>% fevd(n.ahead = 40) 
+mod_fevd %>% plot(addbars = 3)
+```
+## Análisis
+
+- Mire como poco o casi nada tiene que ver por lo pronto una con la otra. Todas dependen de si mismas.
+- En los siguientes periodos se nota mas la necesidad de la otra. Se debe revizar otras formas o restricciones.
+
+:::
+
+# Gracias por su atención!! {background-color="#cc0000"}
+
+## Referencias
+
+::: {#refs}
+:::
+
+
+
+
+
+
