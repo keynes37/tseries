@@ -1,0 +1,158 @@
+---
+title: "Capstone Final"
+subtitle: "Modelos Multivariados y ML"
+author: "**Universidad del Norte** Eco 1731: Econometría II"
+date: "<br> **Fecha Límite**: viernes, 24 Noviembre 2023"
+output: 
+  xaringan::moon_reader:
+    css: ['default', 'metropolis', 'metropolis-fonts', 'my-css.css']
+    # self_contained: true
+    nature:
+      ratio: '8.5:11'
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+class: clear
+
+```{R, setup, include = F}
+# Packages
+library(pacman)
+p_load(
+  ggplot2, gridExtra, ggthemes, latex2exp, kableExtra,
+  tidyverse, broom, knitr, magrittr
+)
+# Colors
+red_pink <- "#e64173"
+turquoise <- "#20B2AA"
+grey_light <- "grey70"
+grey_mid <- "grey50"
+grey_dark <- "grey20"
+# Themes
+theme_axes_y <- theme_void() + theme(
+  text = element_text(family = "sans"),
+  axis.title = element_text(size = 11),
+  plot.title = element_text(size = 11, hjust = 0.5),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, -0.2, 0, 0, unit = "lines")),
+  axis.text.y = element_text(
+    size = 10, angle = 0, hjust = 0.9, vjust = 0.5,
+    margin = margin(0, 0.4, 0, 0, unit = "lines")
+  ),
+  axis.line = element_line(
+    color = grey_light,
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.07, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes_x <- theme_void() + theme(
+  text = element_text(family = "sans"),
+  axis.title = element_text(size = 11),
+  plot.title = element_text(size = 11, hjust = 0.5),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, -0.2, 0, 0, unit = "lines")),
+  axis.text.x = element_text(
+    size = 10, angle = 0, hjust = 0.9, vjust = 0.5,
+    margin = margin(0, 0.4, 0, 0, unit = "lines")
+  ),
+  axis.line = element_line(
+    color = grey_light,
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.07, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_set(theme_gray(base_size = 11))
+# Knitr options
+opts_chunk$set(
+  comment = "#>",
+  fig.align = "center",
+  warning = F,
+  message = F
+)
+```
+
+.mono[**ENTREGABLE**]: El proyecto debe ser realizado máximo por cuatro (4) personas. Para las **siguientes** preguntas conteste solo lo que se le pide. **No se acepta** ningún trabajo adicional a la fecha del _viernes 24 _ del presente mes hasta la hora de las 23:59 en la carpeta del brightspace disponible para esto y cuya entrega solo debe hacerla un/a (1) de los integrantes del grupo.
+
+Las entregas debe hacerlas en la [Carpeta Capstone](https://cursos.uninorte.edu.co/d2l/home) respectiva. **Sus entregas pueden ser de dos archivos**: (.hi[1]) Uno donde van los análisis que puede ser un documento pdf con nombre (_p.e._, .hi[yanesramosvargas.pdf]) y en otro archivo (.hi[2]) el script de .mono[R]. Otra alternativa -que es mejor aún- es hacerlo mediante un (.hi[1]) solo archivo tipo **Markdown** donde incluye automáticamente el script y las respuestas del taller.
+
+.mono[**OBJETIVO**]: Esto tiene dos intenciones: (1) los estudiantes muestren que pueden construir teoría con modelos parámetricos de vectores y (2) plantee pronósticos y clasificaciónes dentro del machine learning con .mono[R]
+
+## Problema 1: Modelo VAR
+
+Abra el archivo proporcionado y titulado como: **VAR-VEC.xls**, que muestra algunos datos macroeconómicos historicos de la economía de un país en particular y cuyas variables principales que se describen son: La inversión trimestral (INV) en millones de dolares; El ingreso (ING); y el valor de consumo (CON).
+
+**1a.** Especifique con las variables de la base el siguiente modelo VAR de la economía X:
+$$Y_{i}= \theta_{0}+  \sum_{i=1}^{P}  \theta_{i} x_{t-i} + \epsilon_{t}$$
+Donde $x_{t}$ es el vector que contiene la información de las variables: INV, ING y CON.
+
+**1b.** Haga un análisis gráfico de las series en niveles. Haga por favor los test de estacionariedad y estime el modelo VAR reducido. ¿Qué orden de modelo encuentra?
+
+**1c.** Diagnostique el modelo VAR (Causalidad Granger, estabilidad y normalidad). *Ojo, no haga solo los comandos. Interprete cada resultado*
+
+**1d.** Plantee las impulso respuestas de este modelo. *Interprete cada una de estas*.
+
+**1e.** Pronostique hasta 15 periodos cada una de las variables.
+
+**1f.** Implemente un SVAR con las variables de Consumo e Ingreso solamente.
+
+**1g.** Establezca los choques o impulsos y explique. Diganos en la descomposición de varianza que implica la participación de cada variable sobre la otra?.
+
+---
+class: clear
+
+## Problema 2: Modelo VEC
+
+Si de la implementación del modelo VAR reducido se puede construir un Modelo de corrección del error (VEC) de la forma:
+
+$$\Delta z_{t}=\beta_{1}\left ( y_{t-1}- \gamma z_{t-1}- \gamma x_{t-1} \right ) + \eta_{11} \Delta x_{t-1}+ \eta_{12} \Delta y_{t-1} + \eta_{13} \Delta z_{t-1}  +\epsilon_{1t}$$
+
+$$\Delta y_{t}=\beta_{2}\left ( y_{t-1}- \gamma z_{t-1}- \gamma x_{t-1} \right ) + \eta_{21} \Delta x_{t-1}+ \eta_{22} \Delta y_{t-1} + \eta_{23} \Delta z_{t-1}  +\epsilon_{2t}$$
+
+$$\Delta x_{t}=\beta_{3}\left ( y_{t-1}- \gamma z_{t-1}- \gamma x_{t-1} \right ) + \eta_{31} \Delta x_{t-1}+ \eta_{32} \Delta y_{t-1} + \eta_{33} \Delta z_{t-1}  +\epsilon_{3t}$$
+
+**2a.** Establezca el test de cointegración de Johannsen para estas variables. **Interprete el Test** y establezca los niveles de relación si existen. ¿Qué encuentra? ¿Qué pude concluir?
+
+**2b.** Estime el modelo VEC con esas variables.
+ 
+**2c.** Plantee un diagnostico del modelo.
+
+**2d.** Estime si es posible un pronostico de 10 periodos para ese grupo de variables.
+
+<br/>
+<br/>
+
+## Problema 3: Modelo de Clasificación
+
+En esta ocasión se trabajará con la base de datos *DTF.csv* que hace parte del repositorio de [UCI](https://archive.ics.uci.edu/ml/index.php). Esta contiene un grupo de datos que hacen parte de un banco portugués quien tiene una campaña de marketing, donde le realizan un par de llamadas a varios clientes y les hacen cierta oferta que tiene que ver con la apertura de un DTF a largo plazo. El interés u objeto de la entidad financiera es mirar **que tipo de clientes** tiende a sacar este producto. Responda a partir de esta data lo siguiente:
+
+**3a.** Elabore una descripción de los datos. (Resumen de estructura) e incluso usar la opción del paquete `vis_dat`. *Escriba o mencione algunas características, no muestre solo el resultado*.
+
+**3b.** Existe algun dato perdido en alguna de las variables presente de la base de datos?
+
+**3c.** Cuantos desempleados hacen parte del estudio?. Ademas, muestre en una pequeña tabla los distintos `jobs` en un formato agradable del paquete `gt`. Muestre el número y porcentaje de las distintas categorías.
+
+**3d.** Qué porcentaje de individuos han sacado un DTF últimamente? Dentro del estado civil, cuál es la categoría que mas sobresale?
+
+**3e.** **Entrene datos**: esta parte es muy crucial, vamos a tomar el 80% del total de los datos para repartir entre los *trainings* y los *testing*. *Use una semilla de número 528421* y divida los grupos con la función de `initial_split`. En la parte de *prop* use en decimal el 80%. El strata debe ser (y) que hace referencia a:
+
+$$Y=\begin{cases}
+  \displaystyle 0 & \text{es}\quad\text{No toma el deposito} \\
+  \displaystyle 1 & \text{es}\quad\text{Toma el CDT} \\
+\end{cases}$$
+
+---
+class: clear
+
+**3f.** Modelos a aplicar: Al igual que la guía se desea que haga distintos modelos entre ellos (regresión logística, random forest, xgboost y vecino cercano). No olvide que debe usar los `recipes` y también `workflow`. Muestre la aplicación.
+
+**3g.** Del modelo logistico muestre por lo menos los betas y haga una breve explicación de eso.
+
+**3h.** Diganos que modelo predice mejor. Que variables fueron lo suficientemente buenas para eso y las conclusiones respectivas. Ayúdese de gráficos y no olvide explicar la matriz de confusión.
+
+**3i.** Dentro del modelo elegido, cómo es la distribución de los datos para el caso? Están poco separados o muy cercanos?. *Explique*.  
+
+**3j.** Plantee algunas recomendaciones de política o estrategia para el objetivo del banco de capturar mas clientes.
