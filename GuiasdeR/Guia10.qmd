@@ -250,7 +250,7 @@ mod_svar %>% irf(n.ahead = 40, response = "td_nueva") %>% plot(plot.type = "sing
 ::: panel-tabset
 ## Descomposición
 ```{r}
-#|echo: true 
+#| echo: true 
 #### FEVD ####
 par(mar = c(4,5,2,1))
 mod_fevd <- mod_svar %>% fevd(n.ahead = 40) 
