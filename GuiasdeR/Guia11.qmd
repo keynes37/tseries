@@ -1,0 +1,312 @@
+---
+title: "Econometría II: VEC"
+subtitle: "Departamento de Economía"
+author: "Carlos A. Yanes G."
+format: 
+  revealjs:
+    footer: "Universidad del Norte"
+    theme: [simple, ob.scss]
+    logo: micrologouni.png
+    embed-resources: true
+    code-fold: true
+from: markdown+emoji
+editor: visual
+date: last-modified
+bibliography: refs.bib
+---
+
+## Paquetes con que se trabaja la sesión
+
+```{r, setup}
+#| include: false
+#| echo: false
+
+library(pacman)
+p_load(TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, tseries, fpp2, fontawesome, vars, readr, lmtest, stargazer)
+```
+
+Los paquetes que se van a utilizar en la sesión de hoy son:
+
+::: callout-note
+Para trabajar en esta ocasión vamos a usar los paquetes de `r fa("r-project", fill="lightblue")`:
+
+``` r
+library(pacman)
+p_load(TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, tseries, fpp2, vars, stargazer, lmtest, tsDyn)
+```
+:::
+
+-   Es importante resaltar el paquete `vars`, ya que con ellos trabajaremos. Algo de lo que se muestra en está el libro de [@enders2012applied] y desde luego el de [@hamilton2020time]
+
+# Preambulo {{< fa bug >}}
+
+## Introducción: Modelos VEC {.smaller}
+
+::: fragment
+::: incremental
+- Respecto a las especificaciones multivariadas en series de tiempo, hasta el momento se ha hablado de **modelos de regresión** que requieren la [exogeneidad]{.bg style="--col: #FFFF00"} y [estacionariedad]{.bg style="--col: #FFFF00"} de las variables, además de modelos VAR que permiten observar las relaciones dinámicas entre variables que presentan doble causalidad
+
+- Una evolución de una serie como:
+:::
+:::
+
+::: fragment
+```{r echo=FALSE, out.width="60%"}
+# Create dummy data
+data <- data.frame(
+  x=seq(10,100),
+  y=seq(10,100)/2+rnorm(90)
+)
+# Make the plot
+ggplot(data, aes(x=x, y=y)) +
+  geom_line() 
+```
+:::
+
+## Introducción: Modelos VEC {.smaller}
+
+::: incremental
+- En general una combinación lineal de variables I(1), también es I(1). Sin embargo, en algunas situaciones esa combinación puede ser I(0), es decir estacionaria. Si existe al menos una [combinación lineal]{.fg style="--col: #e64173"} de este tipo, se dice que hay una ecuación o relación [cointegración]{.bg style="--col: #FFFF00"}, o que las 
+variables se "mueven a la vez", es decir, están ligadas.
+
+- Así, existe cointegración cuando una combinación lineal tiene un orden de integración menor al de las variables!
+
+$$\beta_1y_{1t}+\beta_2y_{2t}+\cdots+\beta_py_{tp}=\varepsilon_t$$
+
+- Lo que explica lo anterior es que en el caso de dos *variables* I(1), las [tendencias estocásticas]{.fg style="--col: #e64173"} se parecerán mucho y al combinarlas se eliminará el error no estacionario (esto es cointegración)
+:::
+
+## Introducción: Modelos VEC {.smaller}
+
+::: incremental
+- Los modelos VEC permiten entre otras cosas, poner a prueba teorías económicas como:
+1.   Teoría Cuantitativa del dinero $Log(M)= v + log(p)+log(y)$
+2.   Función de producción  $Log\;Y = \alpha\; log\;K+(1-\alpha)\;log\,L$
+3.   Hipótesis de Fischer: $i = r+\pi$
+4.   El poder de paridad de compra (PPP) 
+5.   La tasa de cambio Neutral (NATREX)
+6.   La hipótesis de la forward rate insesgada  
+- También resultan útiles para analizar fenómenos como el cambio climático en donde se involucran variables como la temperatura de la tierra y el mar, además de la radiación solar, CO2 o aerosol volcánico
+:::
+
+## Introducción: Modelos VEC {.smaller} 
+
+::: incremental
+- Si se tiene
+$$Y_{t}=\beta_{0}+\beta_{1}X_{t}+\epsilon_{t}$$
+Entonces si $Y_{t}$ y $X_{t}$ no son estacionarias pero $\epsilon_{t}$
+
+- Si, existe una relación de cointegración, dada por:
+$$\epsilon_{t}=Y_{t} -\beta_{0}-\beta_{1}X_{t}$$
+:::
+
+## Para que sirven los VEC?
+
+- Los VAR no son estacionarios.
+- Existe después de una estimación tipo M.C.O un error estacionario, ya sea en niveles o en diferencias de las variables $\Delta Y_{t}$.
+- Sirven para hacer pronósticos.
+
+## Test de cointegración de Johansen's 
+
+::: incremental
+- Primero especifique un modelo [VAR]{.bg style="--col: #e64173"} para $Y_t$ (en niveles, no en diferencias)
+- Determine el número de vectores de cointegración usando [la traza]{.fg style="--col: #FF8000"} y el test del [eigenvector]{.fg style="--col: #FF8000"}
+- Estime el VEC (vector de corrección del error)
+:::
+
+## VEC en sí {.smaller}
+
+::: incremental
+- Parta de un modelo VAR(1) tal como: $y_t=A_1y_{t-1}+ \varepsilon_t$ o lo que es:
+$$y_{1,t}= a_{11}y_{1,t-1}+a_{12}y_{2,t-1}+\varepsilon_{1,t}$$
+$$y_{2,t}= a_{21}y_{1,t-1}+a_{22}y_{2,t-1}+\varepsilon_{2,t}$$
+- Debemos sustraer $y_{i,t-1}$ de la ecuación $i$ para obtener $\Delta y_t= \Pi y_{t-1}+ \varepsilon_t$, donde $\Pi=-(I-A_1)$.
+- Luego de un gran juego de algebra vamos a tener:
+$$\Delta y_{1,t}= \alpha_1(y_{1, t-1}+ \beta_2 y_{2,t-1})+\varepsilon_{1,t}$$
+$$\Delta y_{2,t}= \alpha_2(y_{1, t-1}+ \beta_2 y_{2,t-1})+\varepsilon_{2,t}$$
+:::
+
+# VEC {{< fa truck >}}
+
+## Datos
+
+::: callout-tip
+## Investigación de relación de largo plazo
+- `Ingreso` medido en miles de millones de pesos
+- `Riqueza`
+- `Consumo`
+- Frecuencia Trimestral
+- Primer trimestre de 1945
+:::
+
+## Datos a trabajar
+
+::: panel-tabset
+## Base de datos
+```{r}
+#| echo: true
+library(readxl)
+data1 = read_excel("EjerciciosVEC.xlsx",sheet = "Ejemplo 1")
+attach(data1)
+Datos = ts(cbind(CONSUMO,INGRESO,RIQUEZA),start = 1945,frequency = 4)
+head(Datos)
+```
+
+## Gráfico
+```{r}
+#| echo: true
+plot(Datos)
+```
+
+## En Logaritmos
+
+```{r}
+#| echo: true
+plot(log(Datos))
+```
+:::
+
+# Primer paso {{< fa bullhorn >}}
+
+## Estimar VAR
+::: panel-tabset
+## Muestra
+```{r}
+#| echo: true
+periodo.muestra = time(Datos)>=1960 & time(Datos)<2008
+log_Datos = ts(log(Datos[periodo.muestra,]),start = 1960,frequency = 4)
+```
+
+## Gráfico
+```{r}
+#| echo: true
+plot(log_Datos)
+```
+
+
+## VAR
+```{r}
+#| echo: true
+print(VARselect(log_Datos,type = "const"),digits = 3)
+```
+
+## MCO
+```{r}
+#| echo: true
+modelo.MCO = lm(log(CONSUMO)~log(INGRESO)+log(RIQUEZA))
+summary(modelo.MCO)
+```
+:::
+
+# Cointegración {{< fa check-square >}}
+
+## Mecanismo de Cointegración
+
+::: panel-tabset
+## Residuos
+```{r}
+#| echo: true
+residuos.MCO = ts(resid(modelo.MCO)[-(1:4)],start = c(1951,4),frequency = 4)
+plot(residuos.MCO,type="l",main="Residuos de MCO"); abline(h=0)
+```
+
+## Raíz
+```{r}
+#| echo: true
+pp.test(residuos.MCO) # Se rechaza raiz
+```
+
+## Cointegración
+```{r}
+#| echo: true
+summary(ca.jo(x = log_Datos,K = 2,ecdet = "const",type = "trace",spec = "longrun"))
+```
+
+## Análisis
+- Al parecer por Johansen tenemos mas de una relación de cointegración
+- La prueba se hace con la referencia $lag+1$. En este caso no se modifica el $K$ orden del VAR original
+- Existen 3 restricciones adicionales a *"const"* en `ca.jo` tienen que ver con tendencia
+- Hay que saber no rechazar los rangos. Siempre se rechaza si el valor [calculado]{.bg style="--col: #00FFFF"} es mayor al [valor crítico]{.bg style="--col: #FFFF00"} de la prueba de rango $\Pi$.
+:::
+
+# Segundo paso {{< fa bullhorn >}}
+
+## Estimación VEC
+
+::: panel-tabset
+## Modelo 
+```{r}
+#| echo: true
+VEC = ca.jo(x = log_Datos,K = 2,ecdet = "none",type = "trace",spec = "longrun") #urca
+summary(VEC)
+```
+
+## Coef VAR
+```{r}
+#| echo: true
+cajorls(VEC) # mostrar coeficientes parte VAR
+```
+
+## Coef Beta
+```{r}
+#| echo: true
+summary(cajorls(VEC,r = 1)$rlm)
+```
+:::
+
+## Restricciones
+
+::: panel-tabset
+## Ingreso
+```{r}
+#| echo: true
+H0.B1 = matrix(c(1,0,0,0,0,1),ncol = 2);H0.B1 # restriccion para el ingreso
+summary(blrtest(z = VEC,H=H0.B1,r = 1))
+```
+
+## Riqueza
+```{r}
+#| echo: true
+H0.B2 = matrix(c(1,0,0,0,1,0),ncol = 2);H0.B2 # restriccion para la riqueza
+summary(blrtest(z = VEC,H=H0.B2,r = 1))
+```
+:::
+
+# Tercer paso {{< fa bullhorn >}}
+
+## Pronostico y Varianza
+
+::: panel-tabset
+## IMR
+```{r}
+#| echo: true
+irf(vec2var(VEC),response = "CONSUMO",boot = T) # VEC debe ser expresado
+```
+
+## Gráfico
+```{r}
+#| echo: true
+plot(irf(vec2var(VEC),response = "CONSUMO",boot = T))
+```
+
+## Varianza del error
+```{r}
+#| echo: true
+fevd(x = vec2var(VEC),n.ahead = 20)$CONSUMO
+```
+
+## Pron
+```{r}
+#| echo: true
+pronostico=predict(vec2var(VEC), n.ahead = 10)
+plot(pronostico)
+```
+:::
+
+# Gracias por su atención!! {background-color="#cc0000"}
+
+## Referencias
+
+::: {#refs}
+:::
+
