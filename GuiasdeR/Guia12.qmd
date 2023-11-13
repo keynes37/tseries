@@ -1,0 +1,658 @@
+---
+title: "Econometría II: Logit Probit"
+subtitle: "Departamento de Economía"
+author: "Carlos A. Yanes G."
+format: 
+  revealjs:
+    footer: "Universidad del Norte"
+    theme: [simple, ob.scss]
+    logo: micrologouni.png
+    embed-resources: true
+    code-fold: true
+from: markdown+emoji
+editor: visual
+date: last-modified
+bibliography: refs.bib
+---
+
+## Paquetes con que se trabaja la sesión
+
+```{r, setup}
+#| include: false
+#| echo: false
+library(pacman)
+p_load(broom, tidyverse, latex2exp, ggplot2, ggthemes, ggforce, viridis, extrafont, gridExtra, ggdag, dagitty, ggthemes, ggridges, wooldridge, kableExtra, snakecase, janitor, data.table, dplyr, estimatr, lubridate, knitr, parallel, emoGG, here, magrittr, fontawesome, shiny, babynames, sjmisc, descr, scales, xtable, ggmosaic, stargazer, summarytools, sjPlot
+)
+# Define pink color
+red_pink <- "#e64173"
+turquoise <- "#20B2AA"
+orange <- "#FFA500"
+red <- "#fb6107"
+blue <- "#2b59c3"
+green <- "#8bb174"
+grey_light <- "grey70"
+grey_mid <- "grey50"
+grey_dark <- "grey20"
+purple <- "#6A5ACD"
+slate <- "#314f4f"
+met_slate <- "#272822"
+# Dark slate grey: #314f4f
+# Opciones
+opts_chunk$set(
+  comment = "#>",
+  fig.align = "center",
+  fig.height = 7,
+  fig.width = 10.5,
+  warning = F,
+  message = F
+)
+opts_chunk$set(dev = "svg")
+options(device = function(file, width, height) {
+  svg(tempfile(), width = width, height = height)
+})
+options(crayon.enabled = F)
+options(knitr.table.format = "html")
+# A blank theme para ggplot
+theme_empty <- theme_bw() + theme(
+  line = element_blank(),
+  rect = element_blank(),
+  strip.text = element_blank(),
+  axis.text = element_blank(),
+  plot.title = element_blank(),
+  axis.title = element_blank(),
+  plot.margin = structure(c(0, 0, -0.5, -1), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_simple <- theme_bw() + theme(
+  line = element_blank(),
+  panel.grid = element_blank(),
+  rect = element_blank(),
+  strip.text = element_blank(),
+  axis.text.x = element_text(size = 18, family = "STIXGeneral"),
+  axis.text.y = element_blank(),
+  axis.ticks = element_blank(),
+  plot.title = element_blank(),
+  axis.title = element_blank(),
+  # plot.margin = structure(c(0, 0, -1, -1), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes_math <- theme_void() + theme(
+  text = element_text(family = "MathJax_Math"),
+  axis.title = element_text(size = 22),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, 0.15, 0, 0, unit = "lines")),
+  axis.line = element_line(
+    color = "grey70",
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.15, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes_serif <- theme_void() + theme(
+  text = element_text(family = "MathJax_Main"),
+  axis.title = element_text(size = 22),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, 0.15, 0, 0, unit = "lines")),
+  axis.line = element_line(
+    color = "grey70",
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.15, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes <- theme_void() + theme(
+  text = element_text(family = "Fira Sans Book"),
+  axis.title = element_text(size = 18),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, 0.15, 0, 0, unit = "lines")),
+  axis.line = element_line(
+    color = grey_light,
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.15, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_set(theme_gray(base_size = 20))
+
+opts_chunk$set(dev = "svg")
+options(device = function(file, width, height) {
+  svg(tempfile(), width = width, height = height)
+})
+# Pendiente de ed
+options(crayon.enabled = F)
+options(knitr.table.format = "html")
+# Column names for regression results
+reg_columns <- c("Term", "Est.", "S.E.", "t stat.", "p-Value")
+# Function for formatting p values
+format_pvi <- function(pv) {
+  return(ifelse(
+    pv < 0.0001,
+    "<0.0001",
+    round(pv, 4) %>% format(scientific = F)
+  ))
+}
+format_pv <- function(pvs) lapply(X = pvs, FUN = format_pvi) %>% unlist()
+# Tidy regression results table
+tidy_table <- function(x, terms, highlight_row = 1, highlight_color = "black", highlight_bold = T, digits = c(NA, 3, 3, 2, 5)) {
+  x %>%
+    tidy() %>%
+    select(1:5) %>%
+    mutate(
+      term = terms,
+      p.value = p.value %>% format_pv()
+    ) %>%
+    kable(
+      col.names = reg_columns,
+      escape = F,
+      digits = digits
+    ) %>%
+    kable_styling(font_size = 20) %>%
+    row_spec(1:nrow(tidy(x)), background = "white") %>%
+    row_spec(highlight_row, bold = highlight_bold, color = highlight_color)
+}
+# A few extras
+xaringanExtra::use_xaringan_extra(c("tile_view", "fit_screen"))
+```
+
+Los paquetes que se van a utilizar en la sesión de hoy son:
+
+::: callout-note
+Para trabajar en esta ocasión vamos a usar los paquetes de `r fa("r-project", fill="lightblue")`:
+
+``` r
+library(pacman)
+p_load(tidyverse, summarytools, sjPlot)
+```
+:::
+
+-   Paquetes a usa como nuevos `summarytools`, `sjPlot` ya que con ellos trabajaremos. Algo de lo que se muestra aquí está en el libro de [@heiss2022nonparametric] y regresamos a [@stock2015introduction]
+
+# Preambulo {{< fa bug >}}
+
+## Recordemos {.smaller}
+
+::: fragment
+::: incremental
+-   [Hipótesis nula (H~0~)]{.fg style="--col: #20B2AA"}: $\widehat{\beta} = \beta$
+
+-   [Hipótesis alternativa (H~1~)]{.fg style="--col: #20B2AA"}: $\widehat{\beta} \neq \beta$
+:::
+:::
+
+::: fragment
+Hay **cuatro** posibles [resultados]{.bg style="--col: #FFFF00"} de nuestra prueba:
+:::
+
+::: fragment
+1.  No **rechazamos** la hipótesis nula y la nula es cierta.
+2.  **Rechazamos** la hipótesis nula y la nula es falsa.
+3.  **Rechazamos** la hipótesis nula, pero la nula es realmente cierta (**error de tipo I**).
+4.  No **rechazamos** la hipótesis nula, pero la nula es realmente falsa (**error de tipo II**).
+:::
+
+## Recordemos {.smaller}
+
+### Errores
+
+::: fragment
+No **rechazamos** la hipótesis nula y la nula es cierta.
+:::
+
+::: fragment
+::: incremental
+-   El acusado fue condenado, ¡pero no cometió el delito!
+-   Error **tipo I** (también conocido como [*falsos positivos*]{.fg style="--col: #FF0000"}*)*
+:::
+:::
+
+::: fragment
+No **rechazamos** la hipótesis nula, pero en realidad la nula es falsa.
+:::
+
+::: fragment
+::: incremental
+-   El acusado fue absuelto, ¡pero cometió el delito!
+-   Error de **tipo II** (también conocido como [*falso negativo*]{.fg style="--col: #0000FF"})
+:::
+:::
+
+# Introducción modelos logísticos {{< fa check-square >}}
+
+## Variables dependientes dicotómicas {.smaller}
+
+### Definición de Variables (recordeis)
+
+::: incremental
+-   Discretas (con rango finito de valores):
+    -   Dicotómicas
+    -   Politómicas
+-   Continuas:
+    -   Un rango (teóricamente) infinito de valores.
+-   NOIR: Nominal, Ordinal, Intervalos, Razón
+:::
+
+## Variables dependientes dicotómicas {.smaller}
+
+### Definición de Variables (recordeis)
+
+::: fragment
+|   **Tipo**   |         **Características**         | **Propiedad de números** |   **Ejemplo**   |
+|:-------------:|:------------------------:|:---------------:|:-------------:|
+|  *Nominal*   | Uso de números en lugar de palabras |        Identidad         |  Nacionalidad   |
+|  *Ordinal*   | Números se usan para ordenar series |         ranking          | Nivel educativo |
+| *Intervalos* |  Intervalos iguales entre números   |         igualdad         |   Temperatura   |
+|   *Razón*    |              Cero real              |        aditividad        |    Distancia    |
+:::
+
+## Clasificación {.smaller}
+
+::: incremental
+-   [Nominal]{.fg style="--col: #20B2AA"}: Números empleados como etiquetas (ej. sexo, raza)
+-   [Ordinales]{.fg style="--col: #20B2AA"}: Distintas categorías puede sen ordenados en serie. Posición, no distancia. *P.e.*(cargos en una empresa)
+-   [Intervalares]{.fg style="--col: #20B2AA"}: Escalas de unidades iguales. Diferencia entre dos números consecutivos que refleja un diferencia. *P.e.* (Horas del día)
+-   [Razón]{.fg style="--col: #20B2AA"}: caracterizados por la presencia de un cero absoluto. (ej. frecuencias de eventos)
+:::
+
+## Clasificación {.smaller}
+
+```{r, echo=F}
+Tab1_ <- tibble(
+  col1 = c("Categórica", "Continua"),
+  col2 = c("Análisis de tabla de Contigencia, Ji-2", "Regresión Logística"),
+  col3 = c("Análisis de Varianza ANOVA, Pruebas T", "Correlación / Regresión Lineal")
+  ) %>% 
+  kable(
+  escape = F,
+  col.names = c("Variable (X)", "Variable Dependiente Categórica", "Variable Dependiente Continua "),
+  align = c("c", "l", "l")
+) %>% 
+  column_spec(1, color = "red", bold = T, italic = T, extra_css = "vertical-align:top;") %>% 
+  column_spec(2, color = "orange", italic = T) %>%
+  column_spec(3, color = "purple", italic = T) 
+Tab1_
+```
+
+## Modelo Logistico {background-color="orange" background-image="images/titanic-1.jpg" background-size="600px"}
+
+## Titanic {.smaller}
+
+```{r, out.width="50%"}
+#| echo: true
+load("dattitan.Rdata")
+base_t <- tt %>% select(survived,sex,age )  
+print(dfSummary(base_t, headings = FALSE), method = "render") #Summarytools
+```
+
+## Titanic {.smaller}
+
+```{r, echo=TRUE, fig.height=5}
+graph01 <-ggplot(tt, 
+     aes(survived, fill=survived)) + 
+  geom_bar() + 
+  geom_text(
+     aes(label = scales::percent((..count..)/sum(..count..))),
+     stat='count',size=10, vjust = 3) +
+  labs(title = "Sobrevivientes", x = "Si/no", y = "Porcentaje (%)") +
+  theme(plot.title = element_text(size = 14, face = "bold"),
+        axis.title = element_text(size = 12))+
+  theme(legend.position="none", 
+        text = element_text(size = 30),
+        axis.title=element_blank())
+graph01
+```
+
+## Análisis {.smaller}
+
+::: fragment
+-   En el barco de "El Titanic" habían mas [Hombres]{.fg style="--col: #fd8181"} que [Mujeres]{.fg style="--col: #3ED9D4"}.
+:::
+
+::: fragment
+```{r, echo=T, fig.height=5}
+(ggplot(tt, aes(sex, fill=sex))
+ + geom_bar()
+ + geom_text(
+     aes(label = scales::percent((..count..)/sum(..count..))),
+     stat='count',
+      size=10,
+    vjust = 3)+
+  labs(title = "Genero al Nacer", x = "", y = "")+ 
+  theme(plot.title = element_text(size = 14, face = "bold"),
+        axis.title = element_text(size = 12),
+        axis.text.y = element_text(angle = 90, hjust = 1))+
+  theme(legend.position="none", text = element_text(size = 30),axis.title=element_blank())
+)
+```
+:::
+
+## Análisis {.smaller}
+
+::: fragment
+-   Qué ocurre si combinamos [supervivencia]{.bg style="--col: #00FFFF"} con [Hombres]{.fg style="--col: #fd8181"} y [Mujeres]{.fg style="--col: #3ED9D4"}?.
+:::
+
+::: fragment
+```{r, echo=TRUE, fig.height=5}
+ggplot(data = tt) +
+  geom_mosaic(aes(x = product(survived,sex), fill=survived)) + 
+  labs(title='Porcentajes de Supervivencia')
+```
+:::
+
+## Resultado {background-color="orange"}
+
+::: columns
+::: {.column width="40%"}
+-   El 75% de las mujeres sobrevive, mientras que el 25% no lo hace.
+:::
+
+::: {.column width="60%"}
+![Elephant](images/rosewith.png){width="80%"}
+:::
+:::
+
+# Fué el género un determinante de la supervivencia? {background-color="orange"}
+
+## Con regresión {.smaller}
+
+::: fragment
+```{r warning=T, echo=TRUE}
+str(tt$sex)
+reg_tit=lm(survived ~ sex, data= tt)
+```
+:::
+
+::: fragment
+Advertencia de [ **R** ]{style="color:lightblue"}. Nos dice que nuestra variable [dependiente]{.fg style="--col: #FF0000"} será tratada como continua -*cuando en realidad es un factor (cualitativo)!!, o no?*-
+:::
+
+## MCO con Variables Cualitativas {.smaller}
+
+::: columns
+::: {.column width="40%"}
+::: fragment
+``` r
+tt <- tt %>% mutate(survived_n=recode(survived,
+"No sobrevive"=0, "Sobrevive"=1))
+str(tt$survived_n)
+reg_tit=lm(survived_n ~ sex, data=tt)
+summary(reg_tit)
+```
+:::
+:::
+
+::: {.column width="60%"}
+::: fragment
+```{r, echo=FALSE, include=FALSE}
+tt <- tt %>% mutate(survived_n=recode(survived,
+"No sobrevive"=0, "Sobrevive"=1))
+str(tt$survived_n)
+reg_tit=lm(survived_n ~ sex, data=tt)
+```
+
+```{r results='asis', echo=F}
+sjPlot::tab_model(reg_tit,
+        show.se=TRUE,
+        show.ci=FALSE,
+        digits=3,
+        p.style = "stars",
+        dv.labels = c("Modelo MPL"),
+        string.pred = "Predictores",
+        string.est = "β")
+```
+:::
+
+::: fragment
+* El valor del intercepto $\widehat{\beta}_0$=0.205, es el valor "predicho" para la categoría de referencia en genero conocido como [Hombres]{.fg style="--col: #fd8181"}.
+* El $\widehat{\beta}_1$ del género/sex (mujer) =0.547 sumado al intercepto nos brinda el porcentaje de supervivencia de [Mujeres]{.fg style="--col: #3ED9D4"}
+:::
+
+:::
+:::
+
+# Funciona por lo pronto
+
+## Límitaciones MCO
+
+```{r echo=FALSE,fig.height=6}
+ggplot(data = tt, aes(x = as.numeric(sex), y = survived_n)) +
+  geom_point(aes(color = as.factor(survived_n)), shape = 1) +
+  geom_smooth(method = "lm", color = "gray20", se = FALSE) +
+  theme_bw()  +
+  labs(title = "Regresión lineal MCO con Factor",
+       y = "Sobrevive") +
+  theme(legend.position = "none", text = element_text(size = 20))
+```
+
+## Límitaciones MCO
+
+```{r echo=FALSE, fig.height=6}
+ggplot(data = tt, aes(x = age, y = survived_n)) +
+  geom_point(aes(color = as.factor(survived_n)), shape = 1) +
+  geom_smooth(method = "lm", color = "gray20", se = FALSE) +
+  theme_bw()  +
+  labs(title = "Regresión lineal MCO con Númerica",
+       y = "Sobrevive") +
+  theme(legend.position = "none", text = element_text(size = 20))
+```
+
+## Límitaciones MCO
+
+::: incremental
+- Veamos **SI** hubieran sobrevivido los menores de 20 años y muerto todos los mayores de 40 años
+- El código para hacerlo es
+```r 
+tt$survived_n2 <-tt$survived_n
+tt$survived_n2[tt$age>40]<-0
+tt$survived_n2[tt$age<20]<-1
+```
+:::
+
+## Límitaciones MCO
+
+```{r echo=FALSE, fig.height=6}
+tt$survived_n2 <-tt$survived_n
+tt$survived_n2[tt$age>40]<-0
+tt$survived_n2[tt$age<20]<-1
+ggplot(data = tt, aes(x = age, y = survived_n2)) +
+  geom_point(aes(color = as.factor(survived_n2)), shape = 1) +
+  geom_smooth(method = "lm", color = "gray20", se = FALSE) +
+  theme_bw()  +
+  labs(title = "Regresión lineal por MCO con Mayores y Menores",
+       y = "Sobrevive") +
+theme(legend.position = "none", text = element_text(size = 20))
+```
+
+# Tenemos problemas {{< fa star >}} 
+
+## Y entonces
+
+{{< video https://www.youtube.com/embed/LLuE6KKIivc width="850" height="475" >}}
+
+- Eventuales predicciones [fuera]{.fg style="--col: #FF0000"} del rango de probabilidades posibles
+
+## Por ende {background-color="orange"}
+
+### La [regresión logística]{.fg style="--col: #0000FF"} ofrece una solución a los problemas del rango de predicciones y de ajuste a los datos del modelo de probabilidad lineal :grimacing:
+
+### Se logra mediante una _transformación_ de lo(s) coeficientes beta'(s)  a [coeficientes LOGIT]{.fg style="--col: #FF0000"}
+
+## Regresión Logistica
+
+```{r echo=FALSE, fig.height=6}
+ggplot(data = tt, aes(x = age, y = survived_n2)) +
+  geom_point(aes(color = as.factor(survived_n2)), shape = 1) +
+  stat_function(fun = function(x){predict(modelo_logistico2,
+                                          newdata = data.frame(age = x),
+                                          type = "response")}) +
+  theme_bw() +
+  labs(title = "Regresión logística",
+       y = "Probabilidad sobrevivir") +
+  theme(legend.position = "none", text = element_text(size = 20))
+
+```
+
+## Regresión Logistica
+
+```{r echo=FALSE, fig.height=6}
+modelo_logistico2 <- glm(survived_n2 ~ age, data = tt, family = "binomial")
+ggplot(data = tt, aes(x = age, y = survived_n2)) +
+  geom_point(aes(color = as.factor(survived_n2)), shape = 1) +
+  stat_function(fun = function(x){predict(modelo_logistico2,
+                                          newdata = data.frame(age = x),
+                                          type = "response")}) +
+  theme_bw() +
+  labs(title = "Regresión logística",
+       y = "Probabilidad sobrevivir") +
+  theme(legend.position = "none", text = element_text(size = 20))
+
+```
+
+# Definamos {{< fa seedling >}}
+
+## Definición de modelo Logit
+
+::: incremental
+- `r fa("fighter-jet", fill="blue")` Es el logaritmo de los (odds)
+- `r fa("fighter-jet", fill="blue")`... qué rayos son los odds?
+- `r fa("fighter-jet", fill="blue")` Una razón de *probabilidades*
+- `r fa("fighter-jet", fill="blue")` Para llegar hasta **regresión logística**, hay que pasar por los odds (chances), y los odds-ratio (proporción de chances)
+:::
+
+## Definición de modelo Logit {.smaller}
+
+::: fragment
+::: callout-tip
+## Odds (chances)
+probabilidad de que algo ocurra dividido por la probabilidad de que no ocurra
+:::
+:::
+
+:::fragment
+$$Odds=\frac{p}{1-p}$$
+:::
+
+::: fragment
+Ejemplo
+: Ej. con lo del Titanic: 
+427 sobrevivientes (41%), 619 muertos (59%)
+
+  
+$$Odds_{sobrevivir}=\frac{427}{619} \Rightarrow \frac{0.41}{0.59}=0.69$$
+:::
+
+::: fragment
+**Es decir, las chances de sobrevivir es de 0.69**
+:::
+
+## Definición de modelo Logit {.smaller}
+
+::: fragment
+::: callout-caution
+## Odds
+- Odds de 1 significan chances iguales (cero relación), menores a 1 son relaciones negativas y mayores a uno (1) son positivas
+:::
+:::
+
+::: fragment
+Propiedad simétrica
+: Un $Odd=4$, es una asociación positiva proporcional a la asociación negativa de $Odd=1/4=0.25$
+:::
+
+## Odds titanics {.smaller}
+
+:::: columns
+::: {.column width="50%"}
+```{r}
+#| echo: true
+table(tt$survived,tt$sex)
+round(prop.table(table(tt$survived,tt$sex),2),2)
+```
+:::
+
+::: {.column width="50%"}
+:::incremental
+- El 21% de los hombres sobrevive mientras el 79% no sobrevive.
+- $$Odds_{hombres}=\frac{0.21}{0.79}=0.27$$
+- *La probabilidad de sobrevivencia en los hombres es 0.27 veces a la no sobrevivencia* o en otros términos:
+*Hay 27 hombres que sobreviven por cada 100 hombres que no sobreviven*
+:::
+:::
+::::
+
+## Odds titanics {.smaller}
+
+:::: columns
+::: {.column width="50%"}
+```{r}
+#| echo: true
+table(tt$survived,tt$sex)
+round(prop.table(table(tt$survived,tt$sex),2),2)
+```
+:::
+
+::: {.column width="50%"}
+:::incremental
+- El 75% de las mujeres sobrevive mientras el 25% no sobrevive.
+- $$Odds_{mujeres}=\frac{0.75}{0.25}=3$$
+- *La probabilidad de sobrevivencia en las mujeres es 3 veces a la no sobrevivencia* o en otros términos
+*Hay 300 mujeres que sobreviven por cada 100 mujeres que no sobreviven*
+
+:::
+:::
+::::
+
+## Odds ratio (OR) {.smaller}
+
+:::: columns
+::: {.column width="50%"}
+Los odds-ratio (o razón de chances) permiten reflejar la asociación entre las chances de dos variables dicotómicas
+**¿Tienen las mujeres más chances de sobrevivir que los hombres?**
+::: 
+
+::: {.column width="50%"}
+```{r, echo=TRUE}
+sjt.xtab(tt$survived, tt$sex,
+        show.col.prc=TRUE,
+        show.summary=FALSE
+)
+```
+:::
+::::
+
+## Odds ratio (OR) {.smaller}
+
+::: fragment
+**¿Cuantas más chances de sobrevivir tienen las mujeres respecto de los hombres?**
+:::
+
+::: fragment
+- $$OR=\frac{p_{m}/(1-p_{m})}{p_{h}/(1-p_{h})}=\frac{0.753/(1-0.753)}{0.205/(1-0.205)}=\frac{3.032}{0.257}=11.78$$
+- OR supervivencia mujeres / OR supervivencia hombres
+:::
+
+::: fragment
+- Las chances de sobrevivir de las mujeres son **11.78** veces más que las de los hombres.
+:::
+
+::: fragment
+`r fa("sketch", fill="blue")` El Odds-Ratio (OR) nos permiten expresar **en un número** la relación entre dos variables categóricas que nos interesan
+:::
+
+::: fragment
+`r fa("sketch", fill="blue")` Por lo tanto, es una versión del $\beta$ para dependientes categóricas
+:::
+
+::: fragment
+`r fa("sketch", fill="blue")` Pero ... el **OR** tiene algunas limitaciones que requieren una transformación adicional
+:::
+
+# Gracias por su atención!! {background-color="#cc0000"}
+
+## Referencias
+
+::: {#refs}
+:::
