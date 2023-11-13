@@ -21,7 +21,7 @@ bibliography: refs.bib
 #| include: false
 #| echo: false
 library(pacman)
-p_load(broom, tidyverse, latex2exp, ggplot2, ggthemes, ggforce, viridis, extrafont, gridExtra, ggdag, dagitty, ggthemes, ggridges, wooldridge, kableExtra, snakecase, janitor, data.table, dplyr, estimatr, lubridate, knitr, parallel, emoGG, here, magrittr, fontawesome, shiny, babynames, sjmisc, descr, scales, xtable, ggmosaic, stargazer, summarytools, sjPlot
+p_load(broom, tidyverse, latex2exp, ggplot2, ggthemes, ggforce, viridis, extrafont, gridExtra, ggdag, dagitty, ggthemes, ggridges, wooldridge, kableExtra, snakecase, janitor, data.table, dplyr, estimatr, lubridate, knitr, parallel, emoGG, here, magrittr, fontawesome, shiny, babynames, sjmisc, descr, scales, xtable, ggmosaic, stargazer, summarytools, sjPlot, flextable
 )
 # Define pink color
 red_pink <- "#e64173"
@@ -164,7 +164,7 @@ Para trabajar en esta ocasión vamos a usar los paquetes de `r fa("r-project", f
 
 ``` r
 library(pacman)
-p_load(tidyverse, summarytools, sjPlot)
+p_load(tidyverse, summarytools, sjPlot, flextable)
 ```
 :::
 
@@ -474,6 +474,51 @@ theme(legend.position = "none", text = element_text(size = 20))
 
 - Eventuales predicciones [fuera]{.fg style="--col: #FF0000"} del rango de probabilidades posibles
 
+## Qué pasa con todo ese cuento de la regresión?{.smaller}
+
+::: fragment
+Los métodos de [regresión]{.fg style="--col: #e64173"} no son buenos cuando se tienen múltiples categorías.
+:::
+
+::: fragment
+Considere que tenemos tres elecciones para ir de un sitio a otro $(A\rightarrow B)$ y estos son *Avíon*, *Carro*, *Bus-intermunicipal*. Cómo podríamos entonces manejar eso en una [regresión]{.fg style="--col: #e64173"} que trabaja con variables numéricas?
+:::
+
+::: fragment
+:::: columns
+::: {.column width="30%"}
+- Opción 1
+$$Y=\begin{cases}
+  \displaystyle 1 & \text{si }\color{#e64173}{\text{ Avión}} \\
+  \displaystyle 2 & \text{si }\color{#6A5ACD}{\text{ Carro}} \\
+  \displaystyle 3 & \text{si }\color{#FFA500}{\text{ Bus}} \\
+\end{cases}$$
+:::
+
+::: {.column width="30%"}
+- Opción 2
+$$Y=\begin{cases}
+  \displaystyle 1 & \text{si }\color{#6A5ACD}{\text{ Carro}} \\
+  \displaystyle 2 & \text{si }\color{#e64173}{\text{ Avión}} \\
+  \displaystyle 3 & \text{si }\color{#FFA500}{\text{ Bus}} \\
+\end{cases}$$
+:::
+
+::: {.column width="30%"}
+- Opción 3
+$$Y=\begin{cases}
+  \displaystyle 1 & \text{si }\color{#FFA500}{\text{ Bus}} \\
+  \displaystyle 2 & \text{si }\color{#e64173}{\text{ Avión}} \\
+  \displaystyle 3 & \text{si }\color{#6A5ACD}{\text{ Carro}} \\
+\end{cases}$$
+:::
+::::
+:::
+
+::: fragment
+[Houston!!]{.fg style="--col: #0000FF"} we have a problem 🚀. La predicción será muy sensible debido a que no es clara el input de datos y el [orden]{.fg style="--col: #FF0000"} de estas puede afectar los [resultados]{.fg style="--col: #FF0000"}.
+:::
+
 ## Por ende {background-color="orange"}
 
 ### La [regresión logística]{.fg style="--col: #0000FF"} ofrece una solución a los problemas del rango de predicciones y de ajuste a los datos del modelo de probabilidad lineal :grimacing:
@@ -649,6 +694,311 @@ sjt.xtab(tt$survived, tt$sex,
 ::: fragment
 `r fa("sketch", fill="blue")` Pero ... el **OR** tiene algunas limitaciones que requieren una transformación adicional
 :::
+
+## Transformación {.smaller}
+
+::: fragment
+:::: {.columns}
+::: {.column width="50%"}
+- Modelo de Regresión Lineal
+$$\begin{align}
+  p(X) = \beta_0 + \beta_1 X
+\end{align}$$
+:::
+
+::: {.column width="50%"}
+- Modelo logístico: 
+transformación de predictores del [logit]{.fg style="--col: #FF0000"} 
+$$\begin{align}
+  p(X) = \dfrac{e^{\beta_0 + \beta_1 X}}{1 + e^{\beta_0 + \beta_1 X}}
+\end{align}$$
+:::
+::::
+:::
+
+::: fragment
+Que es eso de ***función logit*** $\left(\frac{e^x}{1+e^x}\right)$?
+:::
+
+::: fragment
+::: incremental
+- Asegura que estemos en el intervalo 0 $(x\rightarrow-\infty)$ hasta 1 $(x\rightarrow\infty)$
+- Nos permite tener la curva (s) de nuestra variable no lineal que se ajusta a los datos.
+:::
+:::
+
+## Transformación {.smaller}
+
+::: fragment
+Un poco de matemáticas es:
+$$\begin{align}
+  p(X) = \dfrac{e^{\beta_0 + \beta_1 X}}{1 + e^{\beta_0 + \beta_1 X}} \implies \color{#e64173}{\log \left( \dfrac{p(X)}{1-p(X)}\right)} = \color{#6A5ACD}{\beta_0 + \beta_1 X}
+\end{align}$$
+:::
+
+::: fragment
+Recuerde que la [definición]{.bg style="--col: #808080"} de los [log odds]{.fg style="--col: #e64173"}: son conocidos como los verdaderos [logit]{.fg style="--col: #FF0000"}. Si este valor es mayor a (1), nos indica que su relación es mas fuerte con respeto a la variable resultado.
+:::
+
+## Transformación {.smaller}
+
+::: fragment
+$$\begin{align}
+  \color{#e64173}{\log \left( \dfrac{p(X)}{1-p(X)}\right)} = \color{#6A5ACD}{\beta_0 + \beta_1 X}
+\end{align}$$
+:::
+
+::: fragment
+::: incremental
+- $\color{#6A5ACD}{\beta_j}$ nos dice como $x_j$ afecta a los [log odds]{.fg style="--col: #e64173"}
+- El odds $= \dfrac{p(X)}{1-p(X)}$.
+:::
+:::
+
+::: fragment
+::: incremental
+- Si $p(X) > 0.5$, entonces el ratio es $>1$ y [log odds]{.fg style="--col: #e64173"} $> 0$.
+- Queremos escoger $\color{#6A5ACD}{\beta_j}$ tal que
+- [log odds]{.fg style="--col: #e64173"} son superiores a cero para las observaciones en las que $y_i=1$
+- [log odds]{.fg style="--col: #e64173"} serán aún mayores para las zonas de $x_j$ donde la observación $i$s nos brinda $y_i=1$
+:::
+:::
+
+## Un poco más de la formalidad {.smaller}
+
+::: fragment
+La regresión logística o [the likelihood function]{.bg style="--col: #FFFF00"} nos permite manejar el comportamiento categórico. De alguna manera todo lo hace mejor con los estimadores.
+:::
+
+::: fragment
+$$\begin{align}
+  \mathop{\ell}(\beta_0,\beta_1) = \prod_{i:y_i=1} \mathop{p}(x_i) \prod_{i:y_i=0} (1-\mathop{p}(x_i))
+\end{align}$$
+:::
+
+::: fragment
+- La función de probabilidad se maximiza de tal manera que: 
+  + Haciendo la $p(x_i)$ mas grande para individuos con $y_i = 1$
+  + Haciendo la $p(x_i)$ mas pequeña para individuos con $y_i = 0$
+:::
+
+::: fragment
+*Mas simple*: La máxima verosimilitud, maximiza un rendimiento predictivo, condicionado al modelo que hemos establecido.
+:::
+
+# Modelo Probit {{< fa check-square >}}
+
+## Modelo Normit o Probit {.smaller}
+
+::: fragment
+::: callout-tip
+Es un algoritmo "hermano" del [logit]{.fg style="--col: #FF0000"}. No varian ni siquiera mucho sus resultados, solo que se asume que el residuo $e\sim N(0, \sigma^2)$.
+:::
+:::
+
+::: fragment
+El modelo [Probit]{.fg style="--col: #0000FF"} usa la **función acumulada de distribución** de la distribución normal $\Phi$ para especificar la probabilidad y usar la parte de $0\leq \Phi \leq 1$.
+:::
+
+::: fragment
+$$\tag{1}
+\begin{align}
+  p(X) = \Phi(\beta_0 + \beta_1 x_1) \implies \color{#e64173}{\int_{-\infty}^{\beta_0+\beta_1x_1}} \; \frac{1}{\sqrt{2\pi}}e^{-\frac{z^2}{2}}dz 
+\end{align}$$
+:::
+
+::: fragment
+Ahora [ML]{.fg style="--col: #FF0000"} busca encontrar los estimadores $\beta's$ 
+$$\tag{2}
+\begin{align}
+\widehat{\beta}= \text{argmax}\; \text{log} \left(\prod_i^n f_i\right)= \sum_i^n\; \text{log}(f_i)
+\end{align}$$
+:::
+
+## Modelo Normit o Probit {.smaller}
+
+::: fragment
+Tomamos la ecuación (2) y proponemos la aplicación de la propiedad de logaritmo y entonces tenemos:
+:::
+
+::: fragment
+$$\tag{3}
+\begin{align}
+\sum_i^n\; \text{log} \left( p_i^{y_i}(1-p_i)^{1-y_i} \right)
+\end{align}$$
+:::
+
+::: fragment
+Solo nos queda bajar los exponentes 😅
+:::
+
+::: fragment
+$$\tag{4}
+\begin{align}
+\sum_i^n\; \text{log} \left[ \color{#ffa500}{y_i} log(p_i)+\color{#ffa500}{1-y_i}log(1-p_i) \right]
+\end{align}$$
+:::
+
+## Por ende el modelo Probit {.smaller}
+
+::: fragment
+$$\begin{align}
+  \mathop{\text{Pr}}(Y=1|X_1,X_2)= \Phi(\beta_0+\beta_1X_1+\beta_2X_2)
+\end{align}$$
+:::
+
+::: fragment
+Suponga que los betas fueron obtenidos y la variable $X_1=0.4$ y la variable $X_2=1$, entonces la probabilidad de que ocurra lo anterior es:
+:::
+
+::: fragment
+$$\begin{align}
+  \mathop{\text{Pr}}(Y=1|X_1,X_2)= \Phi(-1.6+2\color{#e64173}{(0.4)}+0.5\color{#6A5ACD}{(1)})
+\end{align}$$
+:::
+
+::: fragment
+$$\begin{align}
+\text{valor z}=-1.6+2\color{#e64173}{(0.4)}+0.5\color{#6A5ACD}{(1)}=-0.3
+\end{align}$$
+:::
+
+[Busque ese valor en la tabla de la normal y encontrará que la probabilidad es de 38%]{.fg style="--col: #0000FF"}
+
+# Todo lo anterior ahora en {{< fa brands r-project >}}
+
+## Modelo Logit {.smaller}
+
+::: fragment
+$$Logit=ln(Odd)=ln(\frac{p}{1-p})$$
+:::
+
+::: fragment
+::::{.columns}
+::: {.column width="40%"}
+```r
+modelo_titanic <-
+glm(survived ~ sex,
+data = tt,
+family = "binomial")
+
+## resultados
+mlogit<- as_flextable(modelo_titanic) 
+mlogit<- add_header_lines(mlogit, values = "Tabla #1 Logit")
+mlogit
+```
+:::
+
+::: {.column width="60%"}
+```{r, echo=T}
+modelo_titanic <-
+glm(survived ~ sex,
+data = tt,
+family = "binomial")
+
+## resultados
+mlogit<- as_flextable(modelo_titanic) 
+mlogit<- add_header_lines(mlogit, values = "Tabla #1 Logit")
+mlogit
+```
+:::
+::::
+:::
+
+## Modelo Logit {.smaller}
+
+::: fragment
+::: incremental
+- Coeficiente [logit]{.fg style="--col: #FF0000"} asociado a sexo (mujer) = +2.467 
+- El log-odds de sobrevivencia aumenta para las mujeres en 2.467 en comparación con los hombres. 
+:::
+:::
+
+::: fragment
+- Transformamos 
+$$e^{logit}=Odds_X$$
+- Y luego al aplicar 
+$$e^{2.467}=11.78$$
+:::
+
+::: fragment
+```{r echo=TRUE}
+exp(2.467)
+```
+- Las chances (odds) de sobrevivir siendo mujer son **11.78** veces más que las de un hombre. 
+:::
+
+## De logits a odds {.smaller}
+
+::: fragment
+$$Odds_X=e^{\beta_0 + \beta_jX_j}$$
+:::
+
+::: fragment
+- Predicción para **mujeres**= -1.354 + (2.467 * Sexo=1) = 1.113
+- Predicción para **hombres**= -1.354 + (2.467 * Sexo=0) = -1.354
+:::
+
+::: fragment
+$$Odds_{mujer}=e^{1.113}=3.032$$
+$$Odds_{hombre}=e^{-1.354}=0.257$$
+:::
+
+
+## Transformación a probabilidades predichas
+
+::: fragment
+$$p_{mujeres}=\frac{e^{1.113}}{1+e^{1.113}}=\frac{3.04}{4.04}=0.752$$
+$$p_{hombres}=\frac{e^{-1.354}}{1+e^{-1.354}}=\frac{0.258}{1.258}=0.205$$
+::: 
+
+## Probit Titanic
+
+## Modelo Probit {.smaller}
+
+::: fragment
+$$Probit=ln \left(\frac{p(x)}{1-p(x)}\right)=X \beta$$
+:::
+
+::: fragment
+::::{.columns}
+::: {.column width="40%"}
+```r
+modelo_titanicp <-
+glm(survived ~ sex,
+data = tt,
+family = binomial(link = "probit"))
+
+## resultados
+mprobit<- as_flextable(modelo_titanicp) 
+mprobit<- add_header_lines(mprobit, values = "Tabla #2 Probit")
+mprobit
+```
+:::
+
+::: {.column width="60%"}
+```{r, echo=T}
+modelo_titanicp <-
+glm(survived ~ sex,
+data = tt,
+family = binomial(link = "probit"))
+
+## resultados
+mprobit<- as_flextable(modelo_titanicp) 
+mprobit<- add_header_lines(mprobit, values = "Tabla #2 Probit")
+mprobit
+```
+:::
+::::
+:::
+
+## Modelo Probit {.smaller}
+
+```{r, echo=TRUE}
+prediccion<-predict(modelo_titanicp, newdata = tt, type = "response")
+prediccion
+```
+
 
 # Gracias por su atención!! {background-color="#cc0000"}
 
