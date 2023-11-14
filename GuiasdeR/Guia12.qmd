@@ -417,6 +417,8 @@ sjPlot::tab_model(reg_tit,
 
 ## Límitaciones MCO
 
+- El modelo busca ajustarse dentro de las categorias de la variable y funciona *bien* por lo pronto 
+
 ```{r echo=FALSE,fig.height=6}
 ggplot(data = tt, aes(x = as.numeric(sex), y = survived_n)) +
   geom_point(aes(color = as.factor(survived_n)), shape = 1) +
@@ -428,6 +430,8 @@ ggplot(data = tt, aes(x = as.numeric(sex), y = survived_n)) +
 ```
 
 ## Límitaciones MCO
+
+- Con una variable númerica como la `Edad` se comporta aún mejor y busca tener el ajuste para ellos
 
 ```{r echo=FALSE, fig.height=6}
 ggplot(data = tt, aes(x = age, y = survived_n)) +
@@ -441,17 +445,7 @@ ggplot(data = tt, aes(x = age, y = survived_n)) +
 
 ## Límitaciones MCO
 
-::: incremental
 - Veamos **SI** hubieran sobrevivido los menores de 20 años y muerto todos los mayores de 40 años
-- El código para hacerlo es
-```r 
-tt$survived_n2 <-tt$survived_n
-tt$survived_n2[tt$age>40]<-0
-tt$survived_n2[tt$age<20]<-1
-```
-:::
-
-## Límitaciones MCO
 
 ```{r echo=FALSE, fig.height=6}
 tt$survived_n2 <-tt$survived_n
@@ -468,11 +462,15 @@ theme(legend.position = "none", text = element_text(size = 20))
 
 # Tenemos problemas {{< fa star >}} 
 
-## Y entonces
+## Entonces??
 
-{{< video https://www.youtube.com/embed/LLuE6KKIivc width="850" height="475" >}}
+::: fragment
+{{< video https://www.youtube.com/embed/LLuE6KKIivc width="750" height="425" >}}
+:::
 
+::: fragment
 - Eventuales predicciones [fuera]{.fg style="--col: #FF0000"} del rango de probabilidades posibles
+:::
 
 ## Qué pasa con todo ese cuento de la regresión?{.smaller}
 
@@ -863,7 +861,9 @@ $$\begin{align}
 \end{align}$$
 :::
 
+::: fragment
 [Busque ese valor en la tabla de la normal y encontrará que la probabilidad es de 38%]{.fg style="--col: #0000FF"}
+:::
 
 # Todo lo anterior ahora en {{< fa brands r-project >}}
 
@@ -952,7 +952,7 @@ $$p_{mujeres}=\frac{e^{1.113}}{1+e^{1.113}}=\frac{3.04}{4.04}=0.752$$
 $$p_{hombres}=\frac{e^{-1.354}}{1+e^{-1.354}}=\frac{0.258}{1.258}=0.205$$
 ::: 
 
-## Probit Titanic
+# Probit Titanic {{< fa flask >}}
 
 ## Modelo Probit {.smaller}
 
@@ -998,6 +998,57 @@ mprobit
 prediccion<-predict(modelo_titanicp, newdata = tt, type = "response")
 prediccion
 ```
+
+## Modelo Probit {.smaller}
+
+```{r, echo=TRUE}
+attach(tt)
+new<-cbind(sex, prediccion)
+head(new, 15)
+```
+
+## Con mas variables {.smaller}
+
+::: fragment
+Lo primero desde luego es adherirlas al algoritmo 
+:::
+
+::: fragment
+```{r, echo=T}
+modelo_titanic_m <-
+glm(survived ~ sex + age + pclass,
+data = tt,
+family = binomial(link = "logit"))
+
+## resultados
+mlog2<- as_flextable(modelo_titanic_m) 
+mlog2<- add_header_lines(mlog2, values = "Tabla #3 Logit múltiple")
+mlog2
+```
+:::
+
+## Con mas variables {.smaller}
+
+::: fragment
+- Predicción con múltiples x
+:::
+
+::: fragment
+```{r}
+prediccion_comp<-predict(modelo_titanic_m, newdata = tt, type = "response")
+newa<-cbind(sex, age, pclass, prediccion_comp)
+head(newa, 15)
+```
+
+:::
+
+::: fragment
+::: callout-caution
+## Devianza
+La devianza nos indica cuánto se han reducido los residuos a medida que se introducen parámetros al modelo. Por eso también se conoce como devianza residual.
+:::
+:::
+
 
 
 # Gracias por su atención!! {background-color="#cc0000"}
