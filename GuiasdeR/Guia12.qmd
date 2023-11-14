@@ -1034,7 +1034,7 @@ mlog2
 :::
 
 ::: fragment
-```{r}
+```{r, echo=TRUE}
 prediccion_comp<-predict(modelo_titanic_m, newdata = tt, type = "response")
 newa<-cbind(sex, age, pclass, prediccion_comp)
 head(newa, 15)
