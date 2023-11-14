@@ -1,0 +1,763 @@
+---
+title: "Machine Learning"
+format:
+  html:
+    toc: true
+    html-math-method: katex
+    css: styles.css
+    theme: darkly
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE) ## Warning not
+knitr::opts_chunk$set(message = FALSE) 
+knitr::opts_chunk$set(echo    = TRUE)
+options(htmltools.dir.version = FALSE)
+options(scipen = 999)
+library(pacman)
+p_load(tidyverse, modeldata, skimr, janitor, tidymodels, magrittr, data.table, here, fastverse, gt, stringr, visdat, ggmap, GGally, vip,kknn)
+```
+
+Usaremos en esta ocasión la guia del Profesor Jan Kirenz quien ha abordado ampliamente el uso del paquete de `tidymodels` para la técnica de **Machine Learning**.
+
+### Algunos paquetes para esta parte
+
+Los paquetes que deben tener presente para que funcione la programación son los siguientes -*no olvide que debe usar `install.package("")`*-:
+
+```r
+library(tidyverse)
+library(gt)
+library(GGally)
+library(ggmap)
+library(tidymodels)
+library(janitor)
+library(stringr)
+library(visdat)
+library(xgboost)
+library(kknn)
+library(ranger)
+library(vip)
+```
+
+# Introducción 
+
+Vamos a intentar a partir de una base de datos de la zona de california conocer de sus respectivos precios. Como el tema es de <span style="color:red">clasificación</span> la idea entonces es mirar si dada ciertas características de la casa, su **precio** esta por <span style="color:green">encima</span> o por <span style="color:red">debajo</span> del precio promedio de la zona. Intentaremos usar la métrica de la ***mediana*** como valor mas intermedio para realizar mejor el trabajo y selección.
+
+## Objetivo
+
+A manera de trabajo, nos han contratado para mirar de que manera podemos dar una *categoría* de precios a las distintas casas que tenemos la información. Es imprescindible hacerlo correctamente y una de esa forma o manera es a partir de los modelos de clasificación.
+
+## Conozcamos los datos
+
+Lo primero que siempre se debe hacer es conocer los datos con los que se va a trabajar. Esto se puede hacer de distintas formas y maneras, vamos a importar directamente desde una web amiga:
+
+```{r}
+sitio <- "https://raw.githubusercontent.com/kirenz/datasets/master/housing_unclean.csv"
+datos_casas <- read_csv(sitio)
+datos_casas2 <- read_csv(sitio)
+```
+
+Después de extraídos los datos, podemos mirar entonces su estructura. Para eso miremos un nuevo paquete denominado `gt` el cual es muy similar al `View()` que trae de forma nativa el <span style="color:lightblue"> **R** </span>.
+
+```{r}
+# library(gt)
+datos_casas %>% 
+  slice_head(n = 5) %>% 
+  gt()
+```
+
+Si nos concentramos en los detalles, nos daremos cuenta que algunas variables como *housing_median_age* tiene un carácter no acorde como (years), como también *median_house_value* quien trae el signo de *peso* en una de sus casillas. Procedemos entonces a eliminar este tipo de elementos y por ende limpiar la data.
+
+```{r}
+# library(stringr)
+datos_casas <- 
+  datos_casas %>% 
+  mutate(
+    housing_median_age = str_remove_all(housing_median_age, "[years]"),
+    median_house_value = str_remove_all(median_house_value, "[$]")
+  )
+```
+
+De esta manera hemos hecho un trabajo de limpieza. Es imperioso siempre pensar que este tipo de cosas demandan una gran cantidad de tiempo en las fases iniciales de un proyecto o trabajo.
+
+Utilizamos ahora nuestro amigo `glimpse()`, con el veremos de forma vertical las variables de la base de datos.
+
+```{r}
+datos_casas %>% glimpse()
+```
+
+Ya con los datos de mejor forma y con ciertas formas que nos permiten familiarizarnos mejor, existe una función que nos permite graficar la estructura anterior
+
+```{r}
+# library(visdat)
+datos_casas %>% vis_dat()
+```
+
+De esta manera nos damos cuenta que hay variables que deberían ser numéricas (dbl) como lo es cada una de las mediana tanto de *housing_media_age* y *median_house_value*, como también la variable de *ocean_proximity* que en ves de ser tomada como una cadena (chr) deberia ser tratada como `factor`.
+
+Miremos nuevamente lo siguiente
+
+```{r}
+datos_casas %>% 
+  dplyr::count(ocean_proximity,
+        sort = TRUE)
+```
+
+Desde luego esta variable de próximidad debe ser nuevamente transformada. Para eso, haremos uso de `mutate()` del paquete `dplyr`
+
+```{r}
+# Primera fase con las variables numéricas
+datos_casas <- 
+  datos_casas %>% 
+  mutate(
+    housing_median_age = as.numeric(housing_median_age),
+    median_house_value = as.numeric(median_house_value)
+  )
+
+# Segunda fase vamos por la variable categórica  
+datos_casas <- 
+  datos_casas %>% 
+  mutate(across(where(is.character), as.factor))
+```
+
+### Vamos por los missing values
+
+Desde luego los datos que uno puede tener, contienen valores perdidos o no digitados. En este caso, podemos observarlas de la siguiente forma
+
+```{r}
+vis_miss(datos_casas, sort_miss = TRUE)
+```
+
+La variable de *número de habitaciones* al parecer tiene ciertos valores perdidos. Otra forma de verlo es
+
+```{r}
+is.na(datos_casas) %>% colSums()
+```
+
+Al parecer 207 observaciones no pudieron estar completas para esto.
+
+# EDA 
+
+Hagamos otro análisis para esta parte. Podemos desde luego crear nuevas **métricas** que nos permiten ser mas completos en esto y tener mas info de lo que queremos hallar.
+
+```{r}
+datos_casas <- 
+  datos_casas %>% 
+  mutate(rooms_per_household = total_rooms/households,
+        bedrooms_per_room = total_bedrooms/total_rooms,
+        population_per_household = population/households)
+```
+
+Desde luego intentar tener nuestra variable categórica 
+
+```{r}
+datos_casas <- 
+  datos_casas %>% 
+  mutate(price_category = case_when( 
+    median_house_value < 150000 ~ "debajo",
+    median_house_value >= 150000 ~ "encima",
+    )) %>% 
+  mutate(price_category = as.factor(price_category)) %>% 
+  select(-median_house_value)
+```
+
+No vamos a usar mas una de las variables como lo es *median_house_value*, ya que no se hace necesario. Muchas veces esto es conveniente con el objeto de liberar los datos y no tener variables que no vamos a volver a usar.
+
+```{r}
+datos_casas %>% 
+  dplyr::count(price_category, # Conteo
+        name ="districts_total") %>%  # Nombre de la nueva variable
+  mutate(percent = districts_total/sum(districts_total)) %>%
+  gt() # Para la tabla
+```
+
+Podemos también tener nuevas propuestas de tablas en el análisis de las variables de interés. Observemos lo siguiente:
+
+```{r}
+datos_casas %>% 
+  dplyr::count(price_category, 
+        name ="districts_total") %>%
+  mutate(percent = districts_total/sum(districts_total)*100,
+         percent = round(percent, 2)) %>%
+ gt() %>%
+  tab_header(
+    title = "Precios medios de la vivienda en California",
+    subtitle = "Districtos por encima y por debajo de los 150.000$"
+  ) %>%
+  cols_label(
+    price_category = "Precio",
+    districts_total = "Distritos",
+    percent = "Porcentaje"
+  ) %>% 
+  fmt_number(
+    columns = vars(districts_total),
+    suffixing = TRUE
+  ) 
+```
+
+Es una tabla ya traducida y bastante informativa y al parecer se tiene un gran porcentaje de casas que estan por encima del valor mediano del estado.
+
+Esto también lo podemos hacer por medio de variables que son de tipo categórico
+
+```{r}
+datos_casas %>% 
+  dplyr::count(price_category, ocean_proximity) %>% 
+  dplyr::group_by(price_category) %>% 
+  mutate(percent = n / sum(n) *100,
+         percent = round(percent, 2)) %>% 
+  gt() %>% 
+    tab_header(
+    title = "Precios medios de la vivienda en California",
+    subtitle = "Districtos por encima y por debajo de los 150.000$"
+  ) %>% 
+  cols_label(
+    ocean_proximity = "Proximidad con el Oceano",
+    n = "Distritos",
+    percent = "Porcentaje %"
+  ) %>% 
+  fmt_number(
+    columns = vars(n),
+    suffixing = TRUE
+  ) 
+```
+
+A continuación un gráfico de proporciones
+
+```{r}
+datos_casas %>%
+  ggplot(aes(price_category, ocean_proximity)) +
+  geom_bin2d() +
+  scale_fill_continuous(type = "viridis") 
+```
+
+Ademas de esto, podemos también hacer y tener un multi-gráfica, donde podemos ver algunas distribuciones y estadísticas de fondo
+
+```{r}
+# library(GGally)
+datos_casas %>% 
+  select(
+    housing_median_age, 
+    median_income, bedrooms_per_room, rooms_per_household, 
+    population_per_household, ocean_proximity,
+    price_category) %>% 
+  ggpairs()
+```
+
+Si hay deseo porque se vea en colores, se puede entonces optar por lo siguiente:
+
+```{r}
+datos_casas %>% 
+  select(price_category, median_income, bedrooms_per_room, rooms_per_household, 
+         population_per_household) %>% 
+  ggscatmat(color="price_category", 
+            corMethod = "spearman",
+            alpha=0.2)
+```
+
+
+### Un mapa
+
+Siempre y cuando tengamos ejes de latitud y longitud, podemos también hacer gráficas que muestren un poco de mejor forma como estos precios estan en cierta zona.
+
+```{r}
+# library(ggplot)
+datos_casas %>% 
+  ggplot(aes(x=longitude, y=latitude))+
+  geom_point(color= "cornflowerblue")
+```
+
+Si queremos mejorar y atraer densidad
+
+```{r}
+# library(ggplot)
+datos_casas %>% 
+  ggplot(aes(x=longitude, y=latitude))+
+  geom_point(color= "cornflowerblue", alpha= 0.1)
+```
+
+Un código completo para esta parte es: (se omite por API direct), pero se tendría un mapa muy detallado de las casas
+```r
+# install.packages("bindrcpp")
+# library(ggmap)
+qmplot(x = longitude, 
+       y = latitude, 
+       data = datos_casas, 
+       geom = "point", 
+       color = price_category, 
+       size = population,
+       alpha = 0.4) +
+  scale_alpha(guide = 'none') 
+```
+
+# Modelos
+
+Vamos a preparar los datos. Siempre es bueno tener una copia de los originales -*por si acaso*- y luego si trabajar con ellos.
+
+```{r}
+datos_df <-
+  datos_casas %>% 
+  select( # selección de nuestras variables
+    longitude, latitude, 
+    price_category, 
+    median_income, 
+    ocean_proximity, 
+    bedrooms_per_room, 
+    rooms_per_household, 
+    population_per_household
+         )
+
+glimpse(datos_df)
+```
+
+A continuación podemos comenzar a <span style="color:blue">dividirlos</span> en lo que se denominan los datos de **Entrenamiento** (Train) y también aquellos que son de **Testeo** (Testing). Para eso, se debe hacer lo siguiente:
+
+```{r}
+set.seed(12345)
+data_div <- initial_split(datos_df, # datos
+                           prop = 3/4, 
+                           strata = price_category)
+train_data <- training(data_div) 
+test_data <- testing(data_div)
+```
+
+### Recipe()
+
+Miramos que nuestros **modelos** de alguna manera pueden tener transformaciones, la parte correspondiente a `recipe()` contiene una serie de pasos o `steps`.
+
++ `step_novel()` convierte todas las variables nominales en factores y se encarga de otras cuestiones relacionadas con las variables categóricas.
+
++ `step_log()` transformará los datos en logarítmicos (ya que algunas de nuestras variables numéricas son asimétricas). Tenga en cuenta que este paso no se puede realizar con números negativos.
+
++ `step_normalize()` normaliza (centra y escala) las variables numéricas para que tengan una desviación estándar de uno y una media de cero. (es decir, estandarización z).
+
++ `step_dummy()` convierte nuestra columna de factores ***ocean_proximity*** en variables numéricas binarias (0 y 1).
+
+
+```{r}
+casas_rec <-
+  recipe(price_category ~ .,
+         data = train_data) %>%
+  update_role(longitude, latitude, 
+              new_role = "ID") %>% 
+  step_log(
+    median_income,
+    bedrooms_per_room, rooms_per_household, 
+    population_per_household
+    ) %>% 
+  step_naomit(everything(), skip = TRUE) %>% 
+  step_novel(all_nominal(), -all_outcomes()) %>%
+  step_normalize(all_numeric(), -all_outcomes(), 
+                 -longitude, -latitude) %>% 
+  step_dummy(all_nominal(), -all_outcomes()) %>%
+  step_zv(all_numeric(), -all_outcomes()) %>%
+  step_corr(all_predictors(), threshold = 0.7, method = "spearman") 
+```
+
+Ver en algun orden este proceso, nos lleva a:
+
+```{r}
+summary(casas_rec)
+```
+
+Después de todo este **Pre-proceso** llega la hora de mirar que tienen por dentro
+
+```{r}
+prepped_data <- 
+  casas_rec %>% # Objeto de recipe()
+  prep() %>% # Fundamental
+  juice() # Para extraer el data frame
+
+prepped_data %>% glimpse()
+```
+
+Si se quiere observar numéricamente, se puede hacer en algunos eventos:
+
+```{r}
+prepped_data %>% 
+  select(price_category, 
+         median_income, 
+         rooms_per_household, 
+         population_per_household) %>% 
+  ggscatmat(corMethod = "spearman",
+            alpha=0.2)
+```
+
+Por consiguiente podemos entonces empezar a construir los `folds`. En esto nos podemos demorar un poco
+
+```{r}
+set.seed(200)
+cv_folds <-
+ vfold_cv(train_data, 
+          v = 5, 
+          strata = price_category) # Dependiente
+```
+
+### Llegó la hora de los modelos
+
+Después de organizar nuestros primeros pasos llega la hora de estimar modelos.
+
+Estos son algunos pasos para especificar modelos:
+
+1. Establecer el `type`
+2. Colocar el `engine`
+3. Por último el modo: `regression` o `classification`
+
+Haremos uso solo de algunos de ellos
+
+
+#### Regresión logistica
+
+```{r}
+log_spec <- # especificacion
+  logistic_reg() %>%  # type
+  set_engine(engine = "glm") %>%  # engine
+  set_mode("classification") # mode
+```
+
+#### Random forest
+
+```{r}
+# library(ranger)
+rf_spec <- 
+  rand_forest() %>% 
+  set_engine("ranger", importance = "impurity") %>% 
+  set_mode("classification")
+```
+
+#### XGBoost
+
+```{r}
+# library(xgboost)
+xgb_spec <- 
+  boost_tree() %>% # type
+  set_engine("xgboost") %>% # engine
+  set_mode("classification") # mode
+```
+
+#### Vecino Cercano (k-nearest)
+
+```{r}
+knn_spec <- 
+  nearest_neighbor(neighbors = 4) %>% # Puede tomar otros vecinos
+  set_engine("kknn") %>% 
+  set_mode("classification") 
+```
+
+# Workout (Workflow)
+
+Combinar casi todo (recipe y especificación) requiere de una nueva función que permita hacer combinaciones y terminar de plasmar el modelo final para luego hacer comparaciones idoneas.
+
+```{r}
+# Modelo logístico
+log_wflow <- # workflow 
+ workflow() %>% # hacer uso de la function
+ add_recipe(casas_rec) %>%   # usar receta (recipe)
+ add_model(log_spec)   # adherir especificacion
+
+# Modelo de Random Forest
+rf_wflow <-
+ workflow() %>%
+ add_recipe(casas_rec) %>% 
+ add_model(rf_spec) 
+
+# Modelo XGBoost
+xgb_wflow <-
+ workflow() %>%
+ add_recipe(casas_rec) %>% 
+ add_model(xgb_spec)
+
+# Modelo de Vecinos
+knn_wflow <-
+ workflow() %>%
+ add_recipe(casas_rec) %>% 
+ add_model(knn_spec)
+```
+
+Acceder a cualquiera de ellos es simplemente hacer lo siguiente
+
+```{r}
+knn_wflow # accedemos a ese objeto
+```
+
+## Evaluación
+
+Ahora si!!, después de tantas opciones, podemos mirar la luz al final del túnel
+
+```{r}
+log_res <- 
+  log_wflow %>% 
+  fit_resamples(
+    resamples = cv_folds, 
+    metrics = metric_set(
+      recall, precision, f_meas, 
+      accuracy, kap,
+      roc_auc, sens, spec),
+    control = control_resamples(
+      save_pred = TRUE)
+    ) 
+
+rf_res <-
+  rf_wflow %>% 
+  fit_resamples(
+    resamples = cv_folds, 
+    metrics = metric_set(
+      recall, precision, f_meas, 
+      accuracy, kap,
+      roc_auc, sens, spec),
+    control = control_resamples(save_pred = TRUE)
+    ) 
+
+xgb_res <- 
+  xgb_wflow %>% 
+  fit_resamples(
+    resamples = cv_folds, 
+    metrics = metric_set(
+      recall, precision, f_meas, 
+      accuracy, kap,
+      roc_auc, sens, spec),
+    control = control_resamples(save_pred = TRUE)
+    ) 
+
+knn_res <- 
+  knn_wflow %>% 
+  fit_resamples(
+    resamples = cv_folds, 
+    metrics = metric_set(
+      recall, precision, f_meas, 
+      accuracy, kap,
+      roc_auc, sens, spec),
+    control = control_resamples(save_pred = TRUE)
+    ) 
+```
+
+Con la combinación y obtención de los indices de cada modelo en la parte de *accuracy*, *precision*, *sensibilidad*, curvas de tipo **ROC** podemos extraer coeficientes. Pero para eso se hace necesario hacer uso de una funcion o formula que nos permita extraer valores de la lista
+
+```{r}
+get_model <- function(x) {
+  pull_workflow_fit(x) %>% tidy()
+}
+
+# LO MISMO DE ANTES!! PERO
+log_res_2 <- 
+  log_wflow %>% 
+  fit_resamples(
+    resamples = cv_folds, 
+    metrics = metric_set(
+      recall, precision, f_meas, 
+      accuracy, kap,
+      roc_auc, sens, spec),
+    control = control_resamples(
+      save_pred = TRUE,
+      extract = get_model) # Acá usamos la función
+    ) 
+```
+
+Vamos a tener entonces lo siguiente:
+
+```{r}
+log_res_2$.extracts[[1]]
+```
+
+Pero aun mas precisos
+
+```{r}
+log_res_2$.extracts[[1]][[1]]
+```
+
+De los distintos modelos, obtenemos el mejor candidato, para la parte de los logísticos. Si a pesar de todo se quiere ser ambicioso(a), llega la hora de extraer de la siguiente forma
+
+```{r}
+todos_coef <- map_dfr(log_res_2$.extracts, ~ .x[[1]][[1]])
+filter(todos_coef, term == "median_income")
+```
+
+Si de igual manera desea mirar y constatar los indicadores o métricas de lo que ha obtenido, una forma de hacerlo es:
+
+```{r}
+log_res %>% collect_metrics(summarize = TRUE)
+```
+
+# Matriz de confusión 
+
+Ahora nos corresponde observar que tan bien predice el modelo. Para eso guardamos los resultados del mejor modelo y predecimos $\hat{y}_i$ 
+
+```{r}
+log_pred <- 
+  log_res %>%
+  collect_predictions()
+log_pred
+```
+
+## Vamos por la matrix
+
+```{r}
+log_pred %>% 
+  conf_mat(price_category, .pred_class) 
+```
+
+Y vemos lo que termina haciendo nuestro modelo. Es de creer que si queremos los estimadores de los otros modelos, debemos repetir el proceso.
+
+```{r}
+log_pred %>% 
+  conf_mat(price_category, .pred_class) %>% 
+  autoplot(type = "mosaic")
+```
+
+Si desea un mapa de calor
+
+```{r}
+log_pred %>% 
+  conf_mat(price_category, .pred_class) %>% 
+  autoplot(type = "heatmap")
+```
+
+### Testeo en ROC
+
+Ahora vamos por la ROC, esta va ser de la siguiente forma
+
+```{r}
+log_pred %>% 
+  group_by(id) %>% # id es quien contiene los folds
+  roc_curve(price_category, .pred_encima) %>% 
+  autoplot()
+```
+
+Recuerda en clases lo de las distribuciones, pues una manera de tenerlas es:
+  
+  ```{r}
+log_pred %>% 
+  ggplot() +
+  geom_density(aes(x = .pred_encima, 
+                   fill = price_category), 
+               alpha = 0.5)
+```
+
+Vemos que hay cierta brecha entre ellas. 
+
+# Comparación definitiva
+
+Tener cada uno de los modelos es tarea titanica. Pero para hacer un gran comparativo, vamos a mirar lo siguiente:
+  
+```{r}
+log_metrics <- 
+  log_res %>% 
+  collect_metrics(summarise = TRUE) %>%
+  mutate(model = "Regresión Logistic") # 
+
+rf_metrics <- 
+  rf_res %>% 
+  collect_metrics(summarise = TRUE) %>%
+  mutate(model = "Random Forest")
+
+xgb_metrics <- 
+  xgb_res %>% 
+  collect_metrics(summarise = TRUE) %>%
+  mutate(model = "XGBoost")
+
+knn_metrics <- 
+  knn_res %>% 
+  collect_metrics(summarise = TRUE) %>%
+  mutate(model = "Knn")
+
+# Dataframe con todos los modelos
+model_compare <- bind_rows(
+  log_metrics,
+  rf_metrics,
+  xgb_metrics,
+  knn_metrics,
+) 
+
+# Cambiar estructura
+model_comp <- 
+  model_compare %>% 
+  select(model, .metric, mean, std_err) %>% 
+  pivot_wider(names_from = .metric, values_from = c(mean, std_err)) 
+
+# Solo uno de los indices
+model_comp %>% 
+  arrange(mean_f_meas) %>% 
+  mutate(model = fct_reorder(model, mean_f_meas)) %>% # orden de resultados
+  ggplot(aes(model, mean_f_meas, fill=model)) +
+  geom_col() +
+  coord_flip() +
+  scale_fill_brewer(palette = "Blues") +
+  geom_text(
+    size = 3,
+    aes(label = round(mean_f_meas, 2), y = mean_f_meas + 0.08),
+    vjust = 1
+  )
+```
+
+Pero si en cuestion de ROC nos queremos quedar
+
+```{r}
+# Media debajo la curva AUC
+model_comp %>% 
+  arrange(mean_roc_auc) %>% # Pendientes acá
+  mutate(model = fct_reorder(model, mean_roc_auc)) %>%
+  ggplot(aes(model, mean_roc_auc, fill=model)) +
+  geom_col() +
+  coord_flip() +
+  scale_fill_brewer(palette = "Blues") + 
+  geom_text(
+    size = 3,
+    aes(label = round(mean_roc_auc, 2), y = mean_roc_auc + 0.08),
+    vjust = 1
+  )
+```
+
+Asumamos que el mejor modelo de todos es <span style="color:blue">Random Forest</span>.
+
+# Importancia de variables
+
+Lo haremos con el paquete `vip`. Pero antes vamos a capturar las predicciones de nuestro gran modelo. Debemos estimarlo
+
+```{r}
+perfect_fit_rf <- last_fit(rf_wflow, 
+                           split = data_div,
+                           metrics = metric_set(
+                             recall, precision, f_meas, 
+                             accuracy, kap,
+                             roc_auc, sens, spec)
+)
+perfect_fit_rf %>% 
+  collect_metrics()
+```
+
+Miramos cual variable es mas importante para ayudarlo a predecir
+
+```{r}
+perfect_fit_rf %>% 
+  pluck(".workflow", 1) %>%   
+  pull_workflow_fit() %>% 
+  vip(num_features = 10)
+```
+
+Desde luego tenemos dos variables que permiten o inciden muchisimo para decir que el precio de la vivienda este por encima del precio promedio.
+
+Acá su matriz de confusión
+```{r}
+perfect_fit_rf %>%
+  collect_predictions() %>% 
+  conf_mat(price_category, .pred_class) %>% 
+  autoplot(type = "heatmap")
+```
+
+Desde luego no podemos dejar atrás su ROC
+
+```{r}
+perfect_fit_rf %>% 
+  collect_predictions() %>% 
+  roc_curve(price_category, .pred_encima) %>% 
+  autoplot()
+```
+
+# Agradecimientos
+
+Todo el material expuesto acá es del Profesor [Jan Kirenz](https://www.kirenz.com/contact/). Gracias a su contenido, se pudo exponer esta parte. 
+
+# Bibliografía
+
+Un libro que contiene de esto y mucho mas es [Tidybook(Tidymodels)](https://www.tmwr.org/)
+
+
