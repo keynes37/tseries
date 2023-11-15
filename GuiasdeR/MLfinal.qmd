@@ -1,5 +1,8 @@
 ---
 title: "Machine Learning"
+subtitle: "Econometría 2"
+subject: "Universidad del Norte"
+author: "Carlos Yanes Guerra"
 format:
   html:
     toc: true
