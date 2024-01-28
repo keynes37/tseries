@@ -1,8 +1,8 @@
 # tseries
-Comp of times series in Uninorte v1.33
+Comp of times series in Uninorte v0.1
 
 
-[Now](https://raw.githack.com/keynes37/tseries/main/clases/Clase07.html)
+[Now](https://raw.githack.com/keynes37/tseries/main/clases/Clase01.html)
 
 [Guide](https://raw.githack.com/keynes37/tseries/main/GuiasdeR/Guia12.html)
 

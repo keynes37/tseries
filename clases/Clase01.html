@@ -4,7 +4,7 @@
     <title>Econometría II</title>
     <meta charset="utf-8" />
     <meta name="author" content="Carlos A. Yanes Guerra" />
-    <script src="libs/header-attrs-2.22/header-attrs.js"></script>
+    <script src="libs/header-attrs-2.25/header-attrs.js"></script>
     <link href="libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
     <script src="libs/tile-view-0.2.6/tile-view.js"></script>
     <script src="libs/xaringanExtra_fit-screen-0.2.6/fit-screen.js"></script>
@@ -37,7 +37,7 @@ background-size: cover
 ## **&lt;br/&gt; Introducción**
 
 ### Carlos A. Yanes Guerra
-### 2023-II
+### 2024-I
 
 
 
@@ -47,7 +47,7 @@ name: admin
 
 .hi-slate[Para la clase]
 
-- .note[Course website:] [Carlos Yanes](https://carlosyanes.netlify.app)
+- .note[Course website:] [https://carlosyanes.netlify.app](https://carlosyanes.netlify.app)
 - [Syllabus](https://carlosyanes.netlify.app/contenidoc/SyllabusEconometriaME.pdf) (on the website)
 - En Persona?
 .hi-slate[.mono[Departamento Economía Oficina D-215]]
@@ -70,7 +70,7 @@ name: admin
 | Parcial 1        | Hasta la semana 5 de clases          | 20%        |
 | Parcial 2        | Hasta la semana 9 de clases          | 20%        |
 | Capstone Project | Todo el semestre                     | 20%        |
-| Participación    | Podcast final                        | 10%        |
+| Participación    | Poster final                        | 10%        |
 | Examen final     | Registro académico                   | 30%        |
 
 ---
@@ -90,7 +90,7 @@ name: admin
 
 + Interactuar con el *syllabus*, leer temas aparte de lo que se da en clases.
 + No puede solo quedarse con lo que se da en .hi[clases], debe interesarse por fuera.
-+ Recuerde usar el **discord** de la clase para todo.
++ Recuerde usar el **discord** de la clase para todo. Link en: https://discord.gg/FBtHTW4f
 + Las clases son o deben ser totalmente .hi[participativas]. Si en la semana no ha hecho alguna pregunta al profesor entonces se catalogará como posición insuficiente.
 
 ---
@@ -104,11 +104,7 @@ name: admin
 
 + Los trabajos a entregar son compensatorios por lo visto en clases. Pueden ser 3 o 4 en todo el .hi[semestre]
 
-+ Lo del .hi[podcast] es totalmente obligatorio. Cada estudiante tiene un rol y de acuerdo a eso se le calificará. Los Grupos para este pueden ser conformados hasta por cuatro (4) estudiantes.
-
-    + Desde luego deben tener una propuesta
-    + Debe haber un guíon 
-    + Formato mp4 o Mpeg de buena calidad (no tiene que necesariamente ser HD)
++ Lo del .hi[poster] es totalmente obligatorio. Se entrega al final del semestre.
 
 
 
@@ -647,6 +643,19 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
     deleted = true;
   });
 })();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
 (function() {
   "use strict"
   // Replace <script> tags in slides area to make them executable
