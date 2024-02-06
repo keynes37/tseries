@@ -38,10 +38,10 @@ Vamos a instalar o cargar un par de [Paquetes]{.fg style="--col: #0098DB"} de {{
 ::: callout-note
 ## R libraries
 
-Los paquetes para el análisis de [Tendencia]{.bg style="--col: #FFC7A2"} son los siguientes
+Los paquetes para el análisis de [Rezagos]{.bg style="--col: #FFC7A2"} y regresión dinámica son los siguientes
 
 ``` r
-install.packages(c("pacman", "modelsummary", "tseries", "tidyverse", "KableExtra"))
+install.packages(c("pacman", "modelsummary", "tseries", "tidyverse", "KableExtra", "pdftools"))
 ```
 :::
 
@@ -89,7 +89,7 @@ p_load(modelsummary, tseries, readxl, rstatix, tidyverse, KableExtra)
 [{{< fa triangle-exclamation >}}]{.bg style="--col: #f8e900"} Se [solicita]{.fg style="--col: #0098DB"} lo siguiente:
 
 1.  Un vistazo general a la base para familiarizarse con las variables.
-2.  Trabajar con la **tendencia** y escoger la mejor especificación
+2.  Trabajar con un grupo de variables explicativas incluyendo logaritmos y rezagos y escoger la mejor especificación del modelo
 3.  Hacer una lectura general con rezagos e intentar construir un modelo de *rezagos distribuidos*.
 
 # Solución en {{< fa brands r-project >}} {background-color="#40666e"}
@@ -308,8 +308,7 @@ mdf2<-feols(log(HOUS)~log(DPI)+log(PRELHOUS), data=dt1)
 library(fixest)
 setFixest_etable(markdown = TRUE, drop = "Constant")
 setFixest_dict(dict)
-
-etable(mdf1, mdf2)
+fixest::etable(mdf1, mdf2)
 ```
 
 ## Caso 1
@@ -623,35 +622,6 @@ lm(log(HOUS)~log(DPI)+FDPI1+FDPI2+log(PRELHOUS)+FPRELHOUS1+FPRELHOUS2, data=mfin
     digits = c(0, 3, 3, 2, 3)
   )
 ```
-
-# Modelo de Tendencia :ghost: {background-color="#40666e"}
-
-## Tendencia
-
-### De acuerdo a sus formas funcionales
-
-```{r}
-#| echo: true
-#| label: fig-pares
-#| fig-cap: "Tendencia lineal" 
-#| fig-asp: 1
-#| output-location: column
-
-# Graficar serie de tiempo con tendencia
-ggplot(bsd1, aes(x = DATE, y = HOUS)) +
-  geom_line() +  # Serie
-  geom_smooth(method = "lm", 
-              se = FALSE, color = "red") +
-  labs(x = "Fecha", y = "Gasto en Hogar", 
-       title = "Serie de Tiempo con Tendencia") +
-  theme_minimal()
-```
-
-## Tendencia
-
-### De acuerdo a sus formas funcionales
-
-Vamos a tener distintas de acuerdo al "ajuste de datos"
 
 # Gracias por su atención!! {background-color="#cc0000"}
 
