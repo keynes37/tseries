@@ -6,3 +6,4 @@ Comp of times series in Uninorte v0.1
 
 [Guide 01](https://raw.githack.com/keynes37/tseries/main/GuiasdeR/GuiasdeR.html)
 
+[Class 02](https://raw.githack.com/keynes37/tseries/main/clases/Clase02.html)
