@@ -291,11 +291,11 @@ huxreg(m1,m2,m3,m4,m5, statistics=c("Observaciones" = "nobs", "R2 Ajustado" = "a
 
 # Primer pronostico :astonished: {background-color="#40666e"}
 
-## Primer pronostico
+## Primer pronostico {.smaller}
 
-### Con el mejor modelo de tendencia
+### Imaginemos un modelo de tendencia polinomica
 
--   Se toma desde luego la ecuación y se [reemplaza]{.bg style="--col: #FFFF00"} en el último valor o periodo. P.e:
+-   Se toma la ecuación del modelo (3) y se [reemplaza]{.bg style="--col: #FFFF00"} en el último valor o periodo tendencial. P.e:
 
 $$\begin{aligned}
 Cartera_t=& \; \alpha_0+\alpha_1 T_t+\alpha_2 T_t^2+\alpha_3 T_t^3+u_t\\
@@ -303,6 +303,21 @@ Cartera_t=& \; \alpha_0+\alpha_1 T_t+\alpha_2 T_t^2+\alpha_3 T_t^3+u_t\\
 =& \; 373580.083+14398.756 (97)+1537.276 (97)^2+167.452 (97)^3\\
 =& \; 169'063,408
 \end{aligned}$$ La [Cartera]{.fg style="--col: #FF0000"} de Febrero de 2024 va ser de 169 mil millones.
+
+## Primer pronostico {.smaller}
+
+### Igual ahora con el modelo de tendencia cuadratica
+
+-   Tomamos la ecuación del modelo (2) y se [reemplaza]{.bg style="--col: #FFFF00"} en el último valor o periodo tendencial. P.e:
+
+$$\begin{aligned}
+Cartera_t=& \; \alpha_0+\alpha_1 T_t+\alpha_2 T_t^2+u_t\\
+=& \; 378280.9633+7663.445 T_t+ 3588.569 T_t^2\\
+=& \; 378280.9633+7663.445 (97)+ 3588.569 (97)^2\\
+=& \; 34'886.480
+\end{aligned}$$ La [Cartera]{.fg style="--col: #FF0000"} de Febrero de 2024 va ser de 34 mil millones.
+
+
 
 ## Pronosticos con tendencia
 
