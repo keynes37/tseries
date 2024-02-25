@@ -23,7 +23,7 @@ bibliography: refs.bib
 Los paquetes que vamos a utilizar y que se deben [instalar]{.bg style="--col: #FFC7A2"} para ser usados en clase son:
 
 ``` r
-install.packages(c("pacman","TSstudio", "urca", "forecast", "devtools"))
+install.packages(c("pacman","TSstudio", "urca", "forecast", "devtools", "zoo"))
 
 # Si tiene problemas con TSstudio podemos mirar entonces en Github
 devtools::install_github("RamiKrispin/TSstudio")
@@ -37,7 +37,7 @@ No olvide que debe desde luego tener presente en su documento de *R Markdown* ca
 
 ``` r
 library(pacman)
-p_load(dynlm, fpp2, tidyverse, TSstudio, urca, forecast)
+p_load(dynlm, fpp2, tidyverse, TSstudio, urca, forecast, zoo)
 ```
 :::
 
@@ -611,11 +611,9 @@ MA07
 ::: panel-tabset
 ## Sobre
 
-::: incremental
 -   El paquete `forecast` contiene la función de `ses`. Con esta podemos entonces trabajar el resto de modelos no paramétricos. Lo aprenderemos a usar a continuación.
 
--   El paquete puede incluso usted cambiar los parámetros como el $\alpha$ a su comodidad. Pero recuerde que eso no es [recomendable]{.alert}
-:::
+-   El paquete puede incluso usted cambiar los parámetros como el $(\color{red}{\alpha})$ a su comodidad. Pero recuerde que eso no es [recomendable]{.alert}. Debe tener en cuenta que pesa mas, si el pasado o presente de la serie.
 
 ## Pro
 
@@ -647,12 +645,20 @@ expcar
 expcar2 <- ses(cartera, alpha = 0.001, h=12)
 expcar2$model
 ```
+
+## Gra
+
+```{r}
+#| echo: true
+# Plot 
+plot_forecast(expcar2)
+```
 :::
 
 ## Holt Winters
 
 ::: panel-tabset
-## Holt Winters
+## Modelos
 
 ```{r}
 #| echo: true
@@ -666,21 +672,21 @@ HWa$model
 
 ```{r}
 #| echo: true
-plot_forecast(HWa)
+plot_forecast(HWa) # Estacional Aditivo
 ```
 
 ## P M
 
 ```{r}
 #| echo: true
-plot_forecast(HWm)
+plot_forecast(HWm) # Estacional Multiplicativo
 ```
 
 ## DAMPED
 
 ```{r}
 #| echo: true
-plot_forecast(HWd)
+plot_forecast(HWd) # Con tendencia amortiguada
 ```
 :::
 

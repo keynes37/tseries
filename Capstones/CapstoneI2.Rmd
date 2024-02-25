@@ -1,0 +1,149 @@
+---
+title: "Capstone 1"
+subtitle: "Descomposición de series de tiempo"
+author: "**Universidad del Norte** Eco 1731: Econometría II"
+date: "<br> **Fecha Límite**: viernes, 8 marzo 2024"
+output: 
+  xaringan::moon_reader:
+    css: ['default', 'metropolis', 'metropolis-fonts', 'my-css.css']
+    # self_contained: true
+    nature:
+      ratio: '8.5:11'
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+class: clear
+
+```{R, setup, include = F}
+# Packages
+library(pacman)
+p_load(
+  ggplot2, gridExtra, ggthemes, latex2exp, kableExtra,
+  tidyverse, broom, knitr, magrittr
+)
+# Colors
+red_pink <- "#e64173"
+turquoise <- "#20B2AA"
+grey_light <- "grey70"
+grey_mid <- "grey50"
+grey_dark <- "grey20"
+# Themes
+theme_axes_y <- theme_void() + theme(
+  text = element_text(family = "sans"),
+  axis.title = element_text(size = 11),
+  plot.title = element_text(size = 11, hjust = 0.5),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, -0.2, 0, 0, unit = "lines")),
+  axis.text.y = element_text(
+    size = 10, angle = 0, hjust = 0.9, vjust = 0.5,
+    margin = margin(0, 0.4, 0, 0, unit = "lines")
+  ),
+  axis.line = element_line(
+    color = grey_light,
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.07, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes_x <- theme_void() + theme(
+  text = element_text(family = "sans"),
+  axis.title = element_text(size = 11),
+  plot.title = element_text(size = 11, hjust = 0.5),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, -0.2, 0, 0, unit = "lines")),
+  axis.text.x = element_text(
+    size = 10, angle = 0, hjust = 0.9, vjust = 0.5,
+    margin = margin(0, 0.4, 0, 0, unit = "lines")
+  ),
+  axis.line = element_line(
+    color = grey_light,
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.07, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_set(theme_gray(base_size = 11))
+# Knitr options
+opts_chunk$set(
+  comment = "#>",
+  fig.align = "center",
+  warning = F,
+  message = F
+)
+```
+
+.mono[**ENTREGABLE**]: El proyecto debe ser realizado máximo por tres (3) personas. Para las **siguientes** preguntas conteste solo lo que se le pide. **No se acepta** ningún trabajo adicional a la fecha del _viernes 8 _ de marzo hasta la hora de las 23:59 en la carpeta del brightspace disponible para esto y cuya entrega solo debe hacerla un/a (1) de los integrantes del grupo.
+
+Las entregas debe hacerlas en la [Carpeta Capstone](https://cursos.uninorte.edu.co/d2l/home) respectiva. **Sus entregas pueden ser de dos archivos**: (.hi[1]) Uno donde van los análisis que puede ser un documento pdf con apellidos (_p.e._, .hi[yanesramosvargas.pdf]) y en otro archivo (.hi[2]) el script de .mono[R]. Otra alternativa -que es mejor aún- es hacerlo mediante un (.hi[1]) solo archivo tipo **Markdown** donde incluye automáticamente el script y las respuestas que se solicitan del taller.
+
+.mono[**OBJETIVO**]: Esto tiene tres intenciones: (1) re-forzar lo visto en clases; (2) Usted aprenda a preparar un informe con las herramientas de .mono[R];  y  ademas (3) ver que tan hábil es para resolver problemas con series de tiempo.
+
+## Problema 1: Regresión en Series de Tiempo
+
+**1a.** Tome los datos de emisión de C02 para Colombia de [Emisiones CO2](https://datosmacro.expansion.com/energia-y-medio-ambiente/emisiones-co2/colombia#:~:text=Colombia%20sube%20sus%20emisiones%20de%20CO2&text=En%20la%20tabla%20vemos%20que,1%2C53%20toneladas%20por%20habitante.). Tome como referencia 1990 hasta 2021. Eso da un total de $n>30$ de información. Por otro lado, tome dos series de la pagina de [UPME](https://www1.upme.gov.co/simco/Cifras-Sectoriales/Paginas/Informacion-estadistica-minera.aspx) y escoja ahora dos productos *p.e (Carbón y Oro)*, busque de alguna manera que se formen con la misma periodicidad de las emisiones de C02.
+
+**1a.** Cree una estructura de datos con tres (3) variables y conviertala en formato de serie de tiempo (ts). Muestre el encabezado con `head()`.
+
+**1b.** Haga un breve análisis estadístico de las tres series. Mencione media, varianza, valores máximos y mínimos. *Explique e interprete*
+
+**1c.** Cree un modelo estático (muestre la ecuación), establezca los resultados e interprete la salida del modelo. *Recomendable hacerlo como tibble o si lo prefiere con* `huxreg`.
+
+**1d.** Genere un grupo de modelos dinámicos, pueden ser cinco (5) y arme una tabla. Si considera que debe hacerse una corrección por diferencia en sus lags, hágalo y muestre en una tabla con `huxtable` por si existe algún problema de multicolinealidad con los rezagos. Mencione que encuentra y si valía la pena corregir el problema. Plantee las diferencias entre modelos.
+
+## Problema 2: Media y Varianza de series
+
+Sea los siguientes procesos:
+
+| F(x) | 0.22 | 0.17 | 0.10 | 0.05 | 0.02 | 0.36 |0.08|
+|------|------|------|------|------|------|------|----|
+| X    | 26   | -14  | 9    | 3    | 15   | -8   | 15 |
+
+| F(y) | 0.12 | 0.15 | 0.10 | 0.19 | 0.30 | 0.10 |0.05|
+|------|------|------|------|------|------|------|----|
+| Y    | 4.2  | 4.6  | 5.6  | -2.8 | 3.6  | 9.2  | 4.2|
+
+
+**2a.** Establezca el valor esperado o media $E(X)$ y $E(Y)$, ademas de la varianza $var(X)$, $var(Y)$ y $Cov(X,Y)$ para cada una de las anteriores series.
+
+---
+class: clear
+
+**2b.** Para las siguientes ecuaciones de serie de tiempo encuentre la media y la varianza:
+
+- $Y_{t}=1+0.44Y_{t-1}+\epsilon_{t}$ donde $\epsilon_{t} \sim (0, 25)$.  
+- $Y_{t}=1+0.85Y_{t-1}+\epsilon_{t}$ donde $\epsilon_{t} \sim (2, 8)$.
+
+## Problema 3: Crecimiento de Series
+
+**3a.** Tome nuevamente solo una de las series del punto 1, puede ser la de producción mineral (p.e: oro o carbón) que ha escogido inicialmente. Cree dos nuevas series de tiempo usando lo siguiente:
+
+$$\text{Crecimiento de variable}=\dfrac{X_{t}}{X_{t-1}}-1 \quad \text{ademas} \; Log(X_t)- Log(X_{t-1}) \approx \; \text{Crecimiento}$$
+
+**3b.** Cuál de las dos series creadas, explica mejor el crecimiento de la producción del mineral de elección?
+
+**3c.** Intente mirar ahora el ciclo de cada una de las nuevas series. Puede ayudarse de las funciones de `autoplot` con la opción de `autolayer`. Intente explicar lo que ocurre con las dos series de crecimiento nuevas que tiene de la producción mineral. Qué diferencia nota con el ciclo de la variable en niveles (original) sin hacer transformación alguna a tasas de crecimiento.
+
+## Problema 4: Análisis de tendencia
+
+Tome la otra serie que ha elegido del punto 1 para lo siguiente. Recuerde que debe tener presente que si hace uso de una de ellas en el punto (3) le corresponde ahora escoger la siguiente serie de tiempo de ese punto <br/>
+
+**4a.** Revise la estacionalidad de la serie. Observa algún patrón particular de la serie en cierto año? Se tuvo algún indicio de cambio anormal de su comportamiento particular?. Justifique
+
+**4b.** Muestre que función de tendencia (convencionales y no convencionales) o ajuste se puede tener de su serie objetivo. Mencione su criterio de escogencia. 
+
+**4c.** Plantee ahora una tendencia de tipo Box-Cox con un lambda de 0.87. Se parece o es similar en la optimización de su lambda $(\lambda)$. Explique lo que encuentra.  
+
+## Problema 5: Trabajo Poster
+
+En conformidad con cada grupo de trabajo las series que vayan a presentar para el poster final deben:
+
+**5a.** Establecer una descripción de la serie de tiempo y mencionar la motivación que lo/a llevó a elegir dicha serie.
+
+**5b.** Hacer una descomposición de la serie a partir de lo estacional y/o tendencial. Muestre los gráficos de eso.
+
+**5c.** Si por tendencia se tratara intente de retirarle la tendencia. Qué ocurre con su serie? plantee su gráfico respectivo.
+
+**5d.** Halle la predicción de los próximos 3 periodos a acontecer. Aplique las técnicas de media móvil, Box-Cox y Holt-winters. *Cuál predice mejor?* (Puede crear una tabla y hacer comparativos).
