@@ -186,6 +186,24 @@ Finalmente, el test queda como:
 ```
 
 ---
+## Performance de modelos
+
+--
+
+```r
+beer3 &lt;- window(ausbeer, start=2008)
+accuracy(beerfit1, beer3) # Modelo Promedio
+accuracy(beerfit2, beer3) # Naive
+accuracy(beerfit3, beer3) # Naive Estacional
+```
+
+--
+
+La función `accuracy` nos muestra el resumen de cada uno de los modelos utilizando los criterios anteriores.
+
+
+
+---
 
 --
 
@@ -236,6 +254,10 @@ L^{2}y_{t}=y_{t-2}&amp; &amp;L^{k}L^{j}=L^{k+j}\\
 --
 
 Ahora uno como `\(y_{t}=\phi y_{t-1} + \phi y_{t-7}+ \epsilon_{t}\)`
+
+--
+
+**R./** `$$y_{t}=\phi_1 L y_{t} + \phi_7 L^{7}y_t + \epsilon_{t}$$`
 
 ---
 
@@ -289,7 +311,7 @@ Si `\(|\phi|&lt;1\)`, entonces `\((1-\phi L)^{-1}\)` existe por eso de:
 
 --
 
-`$$(1-\phi L)^{-1}= \frac{1}{(1-\phi L)}=1+\phi L+\phi^2 L+\phi^3 L^3=\sum\limits_{i=1}^{\infty}\phi^i L^i$$`
+`$$(1-\phi L)^{-1}= \frac{1}{(1-\phi L)}=1+\phi L+\phi^2 L^2+\phi^3 L^3=\sum\limits_{i=1}^{\infty}\phi^i L^i$$`
 
 --
 
@@ -297,7 +319,7 @@ Si `\(|\phi|&lt;1\)`, entonces `\((1-\phi L)^{-1}\)` existe por eso de:
 y_t-\phi Ly_{t}=&amp; \epsilon_t\\
 y_t(1-\phi L)=&amp; \epsilon_t\\
 y_t=(1-\phi L)^{-1}&amp;\epsilon_t\\
-y_t=(1+\phi L+\phi^2 L+&amp;\phi^3 L^3+\cdots)\epsilon_t\\
+y_t=(1+\phi L+\phi^2 L^2+&amp;\phi^3 L^3+\cdots)\epsilon_t\\
 y_t=\epsilon_t+\phi \epsilon_{t-1}+\phi^2 \epsilon_{t-2}+&amp;\phi^3 \epsilon_{t-3}+\cdots
 \end{aligned}$$`
 
