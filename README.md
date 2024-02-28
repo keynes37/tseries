@@ -13,4 +13,6 @@ Comp of times series in Uninorte v0.3
 
 [Guide 03](https://raw.githack.com/keynes37/tseries/main/GuiasdeR/Guia3.html)
 
+[Class 04](https://raw.githack.com/keynes37/tseries/main/clases/Clase03.html)
+
 ### Segundo corte
