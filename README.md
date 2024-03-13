@@ -1,5 +1,5 @@
 # tseries
-Comp of times series in Uninorte v0.4
+Comp of times series in Uninorte v0.5
 
 ### Primer corte
 
@@ -16,3 +16,5 @@ Comp of times series in Uninorte v0.4
 [Class 04](https://raw.githack.com/keynes37/tseries/main/clases/Clase03.html)
 
 ### Segundo corte
+
+[Guide 04](https://raw.githack.com/keynes37/tseries/main/GuiasdeR/Guia6.html) 
