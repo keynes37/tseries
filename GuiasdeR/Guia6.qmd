@@ -14,6 +14,7 @@ editor: visual
 date: last-modified
 bibliography: refs.bib
 ---
+
 ## Paquetes con que se trabaja la sesión
 
 ```{r, setup}
@@ -23,6 +24,7 @@ bibliography: refs.bib
 library(pacman)
 p_load(readxl, TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, tseries, fpp2, fontawesome)
 ```
+
 Los paquetes que vamos a utilizar en la sesión de hoy son:
 
 ::: callout-note
@@ -45,7 +47,7 @@ p_load(readxl, TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, t
 
 -   Son modelos que terminan siendo una [combinación]{.blut} entre paramétricos y aquellos que no lo son, es algo como un método tipo ("fusión").
 
-- Mas allá de los `auto.arima`, son algoritmos que también minimizan la composición del RMSE de cada modelo que se estima y combina
+- Son algoritmos que también minimizan la composición del RMSE de cada modelo que se estima y combina varios estamentos
 :::
 
 ## Concepto técnico
@@ -53,7 +55,6 @@ p_load(readxl, TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, t
 ::: callout-note
 La familia de modelos **ETS** se definen como métodos y parámetros para los componentes (error, tendencia y estacionalidad) en una serie de tiempo, por eso se les conoce como ETS. Si se especifica más de un método dentro de la función, **ETS** considerará todas las combinaciones de los modelos especificados y seleccionará el modelo que mejor se ajuste a los datos (minimizando AICc).
 :::
-
 
 ## Especificación
 
@@ -81,24 +82,25 @@ tabla
 ## Significado
 
 ::: incremental
-- **(N, N)**: Hace referencia a un modelo de suavizado [simple]{.oranger}
-- **(A, N)**: Referencia a un modelo Holt winters [lineal]{.oranger}
-- **($A_d$, N)**: Referencia a un modelo de tendencia [armónica]{.oranger}
-- **(A, A)**: Referencia a un modelo Holt winters [aditivo]{.blut}
-- **(A, M)**: Referencia a un modelo Holt winters [multiplicativo]{.alert}
-- **($A_d$, M)**: Referencia a un modelo Holt winters [multiplicativo armónico]{.blut}
+-   **(N, N)**: Hace referencia a un modelo de suavizado [simple]{.oranger}
+-   **(A, N)**: Referencia a un modelo Holt winters [lineal]{.oranger}
+-   **(**$A_d$, N): Referencia a un modelo de tendencia [armónica]{.oranger}
+-   **(A, A)**: Referencia a un modelo Holt winters [aditivo]{.blut}
+-   **(A, M)**: Referencia a un modelo Holt winters [multiplicativo]{.alert}
+-   **(**$A_d$, M): Referencia a un modelo Holt winters [multiplicativo armónico]{.blut}
 :::
 
-## Especificación{.smaller}
+## Especificación {.smaller}
 
 ::: incremental
-- Cada modelo tiene una ecuación o parte que se [observa]{.alert} y también una parte que denominaremos *transición*, una para cada estado de (nivel, tendencia, y parte estacional), es decir, modelos en conformidad de espacio de estado.
+-   Cada modelo tiene una ecuación o parte que se [observa]{.alert} y también una parte que denominaremos *transición*, una para cada estado de (nivel, tendencia, y parte estacional), es decir, modelos en conformidad de espacio de estado.
 
-- Para este propósito vamos a suponer que tenemos dos modelos para cada [método]{.blut}: uno con errores aditivos y otro con errores multiplicativos, es decir, en total mas o menos en conformidad da unos 18 modelos.
-   * ETS(Error,Tendencia,Estacional):
-      * Error $=\{A,M\}$
-      * Tendencia $=\{N,A,A_d\}$
-      * Estacional $=\{N,A,M\}$.
+-   Para este propósito vamos a suponer que tenemos dos modelos para cada [método]{.blut}: uno con errores aditivos y otro con errores multiplicativos, es decir, en total mas o menos en conformidad da unos 18 modelos.
+
+    -   ETS(Error,Tendencia,Estacional):
+        -   Error $=\{A,M\}$
+        -   Tendencia $=\{N,A,A_d\}$
+        -   Estacional $=\{N,A,M\}$.
 :::
 
 ## Modelo ETS y SS (Space-State)
@@ -107,9 +109,9 @@ tabla
 
 **Modelos Espacio-Estado**:
 
-- Generan las mismas [previsiones puntuales]{.alert} pero también pueden generar intervalos de previsión.
-- Un proceso estocástico (o aleatorio) de generación de datos que puede generar una [distribución de previsión]{.blut} completa.
-- Permiten una selección "adecuada" del modelo.
+-   Generan las mismas [previsiones puntuales]{.alert} pero también pueden generar intervalos de previsión.
+-   Un proceso estocástico (o aleatorio) de generación de datos que puede generar una [distribución de previsión]{.blut} completa.
+-   Permiten una selección "adecuada" del modelo.
 
 ## Grupo de modelos aditivos
 
@@ -151,28 +153,25 @@ tabla3 <- knitr::kable(df3,
 tabla3
 ```
 
-
 ## Aplicando a los ETS lo SS
 
-- **(A,N,N)**: Simple exponential smoothing con errores aditivos
-- **(A,A,N)**: Método lineal de Holt Winters con errores aditivos
-- **(M,A,M)**: Multiplicativo de Holt-Winters con errores multiplicativos
+-   **(A,N,N)**: Simple exponential smoothing con errores aditivos
+-   **(A,A,N)**: Método lineal de Holt Winters con errores aditivos
+-   **(M,A,M)**: Multiplicativo de Holt-Winters con errores multiplicativos
 
-## Aplicando a los ETS lo SS{.smaller}
+## Aplicando a los ETS lo SS {.smaller}
 
 ::: {.callout-note icon="false"}
 ## Predicción
 
-Este [método]{.alert} incorpora la  [especificación mas sencilla]{.bg style="--col: #FFFF00"} y nos dice que:
+Este [método]{.alert} incorpora la [especificación mas sencilla]{.bg style="--col: #FFFF00"} y nos dice que:
 :::
 
 $Y_{t+h|t}=F_{t}$ que conoceremos como ecuación de pronostico.
 
-$$F_t=\alpha y_t+ (1-\alpha)F_{t-1}$$
-Tenemos un error de pronostico y es:
+$$F_t=\alpha y_t+ (1-\alpha)F_{t-1}$$ Tenemos un error de pronostico y es:
 
-$$e_t=y_t- y_{t|t-1}=y_t - F_{t-1}$$
-Y planteamos la corrección:
+$$e_t=y_t- y_{t|t-1}=y_t - F_{t-1}$$ Y planteamos la corrección:
 
 $$\begin{aligned}
 y_t&=F_{t-1}+ e_t\\
@@ -180,16 +179,15 @@ F_t&=F_{t-1}+ \alpha(y_t- F_{t-1})\\
 &=F_{t-1}+ \alpha e_t
 \end{aligned}$$
 
-## Un ejemplo de ETS(A,N,N){.smaller}
+## Un ejemplo de ETS(A,N,N) {.smaller}
 
-> Ecuación de medida $y_t=F_{t-1}+\epsilon_t$
-> Ecuación de estado $F_t=F_{t-1}+ \alpha \epsilon_t$
+> Ecuación de medida $y_t=F_{t-1}+\epsilon_t$ Ecuación de estado $F_t=F_{t-1}+ \alpha \epsilon_t$
 
 Donde $\epsilon_t\sim (0, \sigma^2)$
 
-- La innovación o simple fuerza del [error]{.alert} 
-- La ecuación de medida contiene la relación entre observaciones y estado
-- Hay que tener presente la ecuación de **transición**
+-   La innovación o simple fuerza del [error]{.alert}
+-   La ecuación de medida contiene la relación entre observaciones y estado
+-   Hay que tener presente la ecuación de **transición**
 
 # Nuevamente lo práctico
 
@@ -198,7 +196,7 @@ Donde $\epsilon_t\sim (0, \sigma^2)$
 ::: callout-tip
 ## Cartera comercial de bancos
 
--   Enero de 2016 hasta Abril 2023
+-   Enero de 2016 hasta Enero 2024
 -   Web site de [Superintendencia Financiera](https://www.superfinanciera.gov.co/inicio/informes-y-cifras/cifras/establecimientos-de-credito/informacion-periodica/mensual/evolucion-cartera-de-creditos-60950)
 -   Frecuencia Mensual
 :::
@@ -229,27 +227,23 @@ cartera %>% decompose() %>% plot()
 ets(cartera)
 ```
 
-## Qué significa lo anterior{.smaller}
+## Qué significa lo anterior {.smaller}
 
-- Un modelo **Holt-Winters** con errores multiplicativos.
-- Asuma por ende que $\frac{y_t-(F_{t-1}+b_{t-1})}{(F_{t-1}-b_{t-1})}$
-- La ecuación entonces es:
-$$\begin{aligned}
-y_t&=(F_{t-1}+b_{t-1})(1+ e_t)\\
-F_t&=(F_{t-1}+b_{t-1})(1+ \alpha e_t)\\
-b_t&=b_{t-1}+ \beta (F_{t-1}+b_{t-1})e_t
-\end{aligned}$$
-- Donde los parámetros $\beta=\alpha \beta$ y $e_t\sim (0, \sigma^2)$
-- La ecuacion de AICc viene dada por:
-$$AICc= AIC+ \frac{2(k+1)(k+2)}{T-k}$$
-
+-   Un modelo **Holt-Winters** con errores multiplicativos.
+-   Asuma por ende que $\frac{y_t-(F_{t-1}+b_{t-1})}{(F_{t-1}-b_{t-1})}$
+-   La ecuación entonces es: $$\begin{aligned}
+    y_t&=(F_{t-1}+b_{t-1})(1+ e_t)\\
+    F_t&=(F_{t-1}+b_{t-1})(1+ \alpha e_t)\\
+    b_t&=b_{t-1}+ \beta (F_{t-1}+b_{t-1})e_t
+    \end{aligned}$$
+-   Donde los parámetros $\beta=\alpha \beta$ y $e_t\sim (0, \sigma^2)$
+-   La ecuacion de AICc viene dada por: $$AICc= AIC+ \frac{2(k+1)(k+2)}{T-k}$$
 
 ## Estimación manual
 
 ```{r, echo=TRUE}
 ets(cartera, model="AAA", damped=FALSE)
 ```
-
 
 ## Mirando ajuste
 
@@ -271,6 +265,13 @@ cartera %>% ets() %>% autoplot
 
 ```{r, echo=TRUE}
 cartera %>% ets() %>% forecast() %>% autoplot
+```
+
+## Ahora el Pronostico
+
+```{r, echo=TRUE}
+bf<-cartera %>% ets() %>% forecast()
+bf
 ```
 
 # Gracias por su atención!! {background-color="#cc0000"}
