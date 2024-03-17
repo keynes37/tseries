@@ -17,4 +17,6 @@ Comp of times series in Uninorte v0.5
 
 ### Segundo corte
 
-[Guide 04](https://raw.githack.com/keynes37/tseries/main/GuiasdeR/Guia6.html) 
+Modelo ETS [Guide 04](https://raw.githack.com/keynes37/tseries/main/GuiasdeR/Guia6.html) 
+
+Modelo Arima [Class 05](https://raw.githack.com/keynes37/tseries/main/clases/Clase04.html)
