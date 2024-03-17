@@ -3,7 +3,7 @@ title: "Econometría II"
 subtitle: "<br/> ARIMA"
 author: "Carlos A. Yanes Guerra"
 institute: "Universidad del Norte"
-date: "2023-II"
+date: "2024-I"
 output:
   xaringan::moon_reader:
     css: 
@@ -353,7 +353,7 @@ $$Z_{1}=2 \quad Z_{2}=-4$$
 
 --
 
-**Ambas** raíces quedan por fuera del circulo unitario (lo teórico), por ende el proceso es estacionario.
+**Ambas** raíces quedan por fuera del circulo unitario (lo teórico), por ende el proceso es estacionario. En algunas partes hablan de la inversa del circulo unitario
 
 ---
 
