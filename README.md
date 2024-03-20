@@ -20,3 +20,5 @@ Comp of times series in Uninorte v0.5
 Modelo ETS [Guide 04](https://raw.githack.com/keynes37/tseries/main/GuiasdeR/Guia6.html) 
 
 Modelo Arima [Class 05](https://raw.githack.com/keynes37/tseries/main/clases/Clase04.html)
+
+Aplicación Arima [Guide 05](https://raw.githack.com/keynes37/tseries/main/GuiasdeR/Guia4.html)
