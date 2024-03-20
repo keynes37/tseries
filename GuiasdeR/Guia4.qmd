@@ -58,7 +58,7 @@ p_load(tidyverse, TSstudio, tseries, urca, forecast)
 ::: callout-tip
 ## Cartera comercial de bancos
 
--   Enero de 2016 hasta Abril 2023
+-   Enero de 2016 hasta enero de 2024
 -   Web site de [Superintendencia Financiera](https://www.superfinanciera.gov.co/inicio/informes-y-cifras/cifras/establecimientos-de-credito/informacion-periodica/mensual/evolucion-cartera-de-creditos-60950)
 -   Frecuencia Mensual
 :::
@@ -262,25 +262,51 @@ arima_1
 arima_2 <- arima(cartera, order = c(2,1,0))
 arima_2
 ```
+
+## Modelo 3
+
+```{r}
+#| echo: true
+arima_3 <- arima(cartera, order = c(3,1,0))
+arima_3
+```
+
 :::
 
 # Tenemos modelo!!
 
 ## Test de Ruido Blanco
+#### Opción Modelo Arima (3 1 0)
+```{r}
+#| echo: true
+forecast::checkresiduals(arima(cartera, order = c(3, 1, 0), include.mean = FALSE))
+```
 
+## Test de Ruido Blanco
+#### Opción Modelo Arima (1 1 0)
 ```{r}
 #| echo: true
 forecast::checkresiduals(arima(cartera, order = c(1, 1, 0), include.mean = FALSE))
 ```
+
+## Test de Ruido Blanco
+#### Lectura
+
+- La prueba de correlación serial de nuestros modelos no esta pasando el test. Se **requiere** que esta siempre no rechace la hipotesis nula.
+
+- Este paso es vital. Si nuestro modelo no aprueba el ruido blanco vamos a tener problemas en el futuro.
+
+- Debe existir un modelo que nos ayude a establecer que realmente es [ruido blanco]{.alert}
+
 
 ## Pronostico de cartera
 
 ```{r}
 #| echo: true
 
-arima_fc <- forecast(arima_1, h = 12)
+arima_fc <- forecast(arima_3, h = 12)
 plot_forecast(arima_fc,
- title = "Pronostico modelo AR(1)", 
+ title = "Pronostico modelo AR(3)", 
  Ytitle = "Valores",
  Xtitle = "Años")
 
