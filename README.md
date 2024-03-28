@@ -22,3 +22,5 @@ Modelo ETS [Guide 04](https://raw.githack.com/keynes37/tseries/main/GuiasdeR/Gui
 Modelo Arima [Class 05](https://raw.githack.com/keynes37/tseries/main/clases/Clase04.html)
 
 Aplicación Arima [Guide 05](https://raw.githack.com/keynes37/tseries/main/GuiasdeR/Guia4.html)
+
+Modelo Sarima [Class 06](https://raw.githack.com/keynes37/tseries/main/clases/Clase05.html)
