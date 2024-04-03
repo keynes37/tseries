@@ -45,7 +45,7 @@ p_load(readxl, TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, t
 ::: callout-tip
 ## Cartera comercial de bancos
 
--   Enero de 2016 hasta Abril 2023
+-   Enero de 2016 hasta Enero 2024
 -   Web site de [Superintendencia Financiera](https://www.superfinanciera.gov.co/inicio/informes-y-cifras/cifras/establecimientos-de-credito/informacion-periodica/mensual/evolucion-cartera-de-creditos-60950)
 -   Frecuencia Mensual
 :::
@@ -95,7 +95,7 @@ pind<- ts(bd2, frequency=12, start=c(1992,1))
 ```
 :::
 
-##  {background-color="white"}
+##  {.smaller}
 
 ::: panel-tabset
 ## Estacional
@@ -116,11 +116,20 @@ cartera %>% diff() %>%
 
 -   Este modelo ya diferenciado [estacionalmente]{.alert} y -*resumido (vamos paso adelante)*- nos dice que el [ACF]{.alert} cae lentamente y tenemos dos picos uno de AR y uno de MA en el lag 12 de la función de [PACF]{.blut}. Esta parte nos indica en conformidad un ARIMA (1,1,1) para ambos correlogramas. Sin embargo los candidatos pueden ser los siguientes:
 
--   Los modelos que pueden ser candidatos son:
+-   Los modelos que pueden ser candidatos son: 
 
-    -   SARIMA $(1,1,0)(0,1,1)_{12}$
-    -   SARIMA $(1,1,0)(1,1,1)_{12}$
-    -   SARIMA $(1,1,1)(1,1,1)_{12}$ *(opcional)*
+$$\begin{equation}
+(1,1,0)(0,1,1)_{12}
+\end{equation}
+$$ 
+
+$$
+(1,1,0)(1,1,1)_{12}
+$$ 
+
+$$
+(1,1,1)(1,1,1)_{12}
+$$ *(opcional)*
 :::
 
 ## Test de Raices Unitarias
