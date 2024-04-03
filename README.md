@@ -1,5 +1,5 @@
 # tseries
-Comp of times series in Uninorte v0.5
+Comp of times series in Uninorte v0.51
 
 ### Primer corte
 
