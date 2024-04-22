@@ -26,3 +26,7 @@ Aplicación Arima [Guide 05](https://raw.githack.com/keynes37/tseries/main/Guias
 Modelo Sarima [Class 06](https://raw.githack.com/keynes37/tseries/main/clases/Clase05.html)
 
 Aplicación Sarima [Guide06](https://raw.githack.com/keynes37/tseries/main/GuiasdeR/Guia5.html)
+
+### Tercer corte
+
+Modelo Arch [Class 07](https://raw.githack.com/keynes37/tseries/main/GuiasdeR/Guia7.html)
