@@ -85,7 +85,7 @@ Son modelos utilizados para modelar la media condicional de una serie y con esto
 ::: callout-tip
 ## Cartera comercial de bancos (pero en crecimiento)
 
--   Enero de 2016 hasta Abril 2023
+-   Enero de 2016 hasta enero de 2024
 -   Web site de [Superintendencia Financiera](https://www.superfinanciera.gov.co/inicio/informes-y-cifras/cifras/establecimientos-de-credito/informacion-periodica/mensual/evolucion-cartera-de-creditos-60950)
 -   Frecuencia Mensual
 :::
@@ -136,8 +136,7 @@ summary(tcartera.prom )
 ::: incremental
 -   A continuación lo que requerimos es tener el comportamiento del [residuo]{.bg style="--col: #FFFF00"}
 -   Las noticias son las que **alimentan** la volatilidad de la serie.
--   Una vez estimado el modelo en media (solo con constante), procedemos aplicar el [Test de Lagrange]{.fg style="--col: #FF0000"} $$(T-q)R^2 \sim \chi^2_{(1-\alpha, q)}$$
-Siendo $H_0:\gamma_i=\gamma_j=0$.
+-   Una vez estimado el modelo en media (solo con constante), procedemos aplicar el [Test de Lagrange]{.fg style="--col: #FF0000"} $$(T-q)R^2 \sim \chi^2_{(1-\alpha, q)}$$ Siendo $H_0:\gamma_i=\gamma_j=0$.
 -   El cual contrasta a: $$H_a: \gamma_1\neq\gamma_2\neq0$$
 -   Al estimar vamos a tener la siguiente [ecuación]{.bg style="--col: #FFFF00"} $$\varepsilon_t^2=\gamma_0+\gamma_1\varepsilon_{t-1}^2$$
 :::
@@ -165,7 +164,7 @@ alpha <- 0.05
 Chicr <- qchisq(1-alpha, q)
 ```
 
-Lo cual nos arroja un valor de `r LM` < `r round(Chicr, 4)`, que es prácticamente **cero** -*Note la notación científica*-. En este caso nuestra serie no tiene efectos [autoregresivos]{.bg style="--col: #FFFF00"} o ARCH.
+Lo cual nos arroja un valor de `r LM` \< `r round(Chicr, 4)`, que es prácticamente **cero** -A veces este valor viene en notación cientifica-. En este caso nuestra serie no tiene efectos [autoregresivos]{.bg style="--col: #FFFF00"} o ARCH.
 
 Para decir que nuestra serie posee efectos [ARCH]{.fg style="--col: #FF0000"} este valor o test de Lagrange debe ser siempre **mayor** al estadístico crítico de la distribución $\chi^2$.
 
