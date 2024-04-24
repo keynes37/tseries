@@ -4,7 +4,7 @@
     <title>Econometría II</title>
     <meta charset="utf-8" />
     <meta name="author" content="Carlos A. Yanes Guerra" />
-    <script src="libs/header-attrs-2.22/header-attrs.js"></script>
+    <script src="libs/header-attrs-2.25/header-attrs.js"></script>
     <link href="libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
     <script src="libs/tile-view-0.2.6/tile-view.js"></script>
     <script src="libs/xaringanExtra_fit-screen-0.2.6/fit-screen.js"></script>
@@ -17,13 +17,13 @@
     <link href="libs/xaringanExtra-shareagain-0.2.6/shareagain.css" rel="stylesheet" />
     <script src="libs/xaringanExtra-shareagain-0.2.6/shareagain.js"></script>
     <script src="libs/htmlwidgets-1.6.2/htmlwidgets.js"></script>
-    <script src="libs/plotly-binding-4.10.0/plotly.js"></script>
+    <script src="libs/plotly-binding-4.10.3/plotly.js"></script>
     <script src="libs/typedarray-0.1/typedarray.min.js"></script>
     <script src="libs/jquery-3.5.1/jquery.min.js"></script>
     <link href="libs/crosstalk-1.2.0/css/crosstalk.min.css" rel="stylesheet" />
     <script src="libs/crosstalk-1.2.0/js/crosstalk.min.js"></script>
-    <link href="libs/plotly-htmlwidgets-css-2.5.1/plotly-htmlwidgets.css" rel="stylesheet" />
-    <script src="libs/plotly-main-2.5.1/plotly-latest.min.js"></script>
+    <link href="libs/plotly-htmlwidgets-css-2.11.1/plotly-htmlwidgets.css" rel="stylesheet" />
+    <script src="libs/plotly-main-2.11.1/plotly-latest.min.js"></script>
     <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
     <link rel="stylesheet" href="new-css.css" type="text/css" />
   </head>
@@ -52,6 +52,85 @@ background-size: cover
 class: inverse, middle, center
 
 # Preguntas de las sesiones anteriores?
+
+---
+layout: true
+# Modelo ARCH
+
+---
+
+--
+&lt;cy-blockquote&gt;
+Por sus siglas hace referencia a **Autoregressive conditional heteroskedasticity**, modelos que involucran en una *estimación* comportamientos *volátiles* y que merecen ser tenidos en cuenta. La naturaleza de este tipo de series se encuentran en las .hi[financieras] y las .hi[macroeconómicas].
+&lt;/cy-blockquote&gt;
+
+--
+
+&lt;img src="Clase06_files/figure-html/unnamed-chunk-1-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+--
+
+Los modelos ARCH van en la medida al análisis de los retornos financieros que tienen las acciones o bonos públicos y privados.
+
+--
+
+### A tener en cuenta
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:blue;overflow:visible;position:relative;"><path d="M88 0C74.7 0 64 10.7 64 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C120.5 112.3 128 119.9 128 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C119.5 47.7 112 40.1 112 24c0-13.3-10.7-24-24-24zM32 192c-17.7 0-32 14.3-32 32V416c0 53 43 96 96 96H288c53 0 96-43 96-96h16c61.9 0 112-50.1 112-112s-50.1-112-112-112H352 32zm352 64h16c26.5 0 48 21.5 48 48s-21.5 48-48 48H384V256zM224 24c0-13.3-10.7-24-24-24s-24 10.7-24 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C232.5 112.3 240 119.9 240 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C231.5 47.7 224 40.1 224 24z"/></svg> .hi-purple[Heterocedasticidad] Ahora no es solo un problema de .hi[corte transversal]. Tambien hay que mirarlo acá en series de tiempo.
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:blue;overflow:visible;position:relative;"><path d="M88 0C74.7 0 64 10.7 64 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C120.5 112.3 128 119.9 128 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C119.5 47.7 112 40.1 112 24c0-13.3-10.7-24-24-24zM32 192c-17.7 0-32 14.3-32 32V416c0 53 43 96 96 96H288c53 0 96-43 96-96h16c61.9 0 112-50.1 112-112s-50.1-112-112-112H352 32zm352 64h16c26.5 0 48 21.5 48 48s-21.5 48-48 48H384V256zM224 24c0-13.3-10.7-24-24-24s-24 10.7-24 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C232.5 112.3 240 119.9 240 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C231.5 47.7 224 40.1 224 24z"/></svg> Para que mis residuos sean **homocedasticos**:
+
+--
+
+`$$\sigma^{2}_{\epsilon}=\sigma^{2}_{1}=\sigma^{2}_{2}=\sigma^{2}_{3}$$`
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:blue;overflow:visible;position:relative;"><path d="M88 0C74.7 0 64 10.7 64 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C120.5 112.3 128 119.9 128 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C119.5 47.7 112 40.1 112 24c0-13.3-10.7-24-24-24zM32 192c-17.7 0-32 14.3-32 32V416c0 53 43 96 96 96H288c53 0 96-43 96-96h16c61.9 0 112-50.1 112-112s-50.1-112-112-112H352 32zm352 64h16c26.5 0 48 21.5 48 48s-21.5 48-48 48H384V256zM224 24c0-13.3-10.7-24-24-24s-24 10.7-24 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C232.5 112.3 240 119.9 240 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C231.5 47.7 224 40.1 224 24z"/></svg> En este caso puede existir **cierta** .hi[autocorrelación] en la varianza de la serie.
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:blue;overflow:visible;position:relative;"><path d="M88 0C74.7 0 64 10.7 64 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C120.5 112.3 128 119.9 128 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C119.5 47.7 112 40.1 112 24c0-13.3-10.7-24-24-24zM32 192c-17.7 0-32 14.3-32 32V416c0 53 43 96 96 96H288c53 0 96-43 96-96h16c61.9 0 112-50.1 112-112s-50.1-112-112-112H352 32zm352 64h16c26.5 0 48 21.5 48 48s-21.5 48-48 48H384V256zM224 24c0-13.3-10.7-24-24-24s-24 10.7-24 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C232.5 112.3 240 119.9 240 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C231.5 47.7 224 40.1 224 24z"/></svg> La volatilidad puede ser capturada como:
+
+--
+
+`$$\begin{aligned}
+Y_{t}=&amp;\beta_{0} + \beta_{1}X_{t}+ \epsilon_{t}\\
+\sigma^{2}_{t}=&amp;Var (\epsilon_{t}|\epsilon_{t-\rho})\\ \sigma^{2}_{t}=&amp; E(Y_{t}-\beta_{0}-\beta_{1}X_{t})
+\end{aligned}$$`
+---
+
+--
+
+.attn[La idea:]
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg> Modelar `\(\sigma^{2}_{t}\)` ya sea como un proceso AR o MA.
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg> Recuerde que la **volatilidad** puede no ser constante. Ej: Periodos de .b[alta] volatilidad como de .hi[baja].
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg> La volatilidad no es directamente observable. (Su naturaleza es latente).
+
+--
+
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg> Los efectos de nueva información: Una .b[alta] volatilidad es observada antes de que se hagan .hi[anuncios].
+
+---
+layout: false
+class: inverse, middle, center
+
+# Hasta aquí.... esto de univariados
 
 ---
 layout: true
@@ -159,7 +238,7 @@ layout: false
 
 --
 
-&lt;img src="Clase06_files/figure-html/unnamed-chunk-1-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="Clase06_files/figure-html/unnamed-chunk-2-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 layout: true
@@ -233,8 +312,8 @@ layout: true
 
 --
 
-<div class="plotly html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-d3df942f46a7b1e09137" style="width:756px;height:504px;"></div>
-<script type="application/json" data-for="htmlwidget-d3df942f46a7b1e09137">{"x":{"data":[{"x":[0],"y":[0.99999999999999989],"type":"bar","marker":{"color":"black","line":{"color":"rgba(31,119,180,1)"}},"width":0.10000000000000001,"name":"Lag-Zero","legendgroup":"lagzero","showlegend":false,"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[4,8,12,16,20],"y":[0.14401974158217148,-0.11672952116462632,-0.067106323725105874,0.051069513460358963,-0.011047750469569278],"type":"bar","marker":{"color":"red","line":{"color":"rgba(255,127,14,1)"}},"width":[0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001],"legendgroup":"seasonal","name":"Seasonal Lag 4","error_y":{"color":"rgba(255,127,14,1)"},"error_x":{"color":"rgba(255,127,14,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[1,2,3,5,6,7,9,10,11,13,14,15,17,18,19],"y":[0.34992120347443517,0.31397022997731977,0.33385182833054594,0.078610769313965434,0.073949290928396721,-0.0077840292041916693,-0.041963137808417074,-0.043039164690182853,-0.033582304595138564,-0.0063232722578321814,-0.098234551865359343,-0.037619186155897641,-0.048104251846139319,-0.010277893886910231,-0.00080308737348067886],"type":"bar","marker":{"color":"#00526d","line":{"color":"rgba(44,160,44,1)"}},"width":[0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001],"legendgroup":"nonseasonal","name":"Non-Seasonal","error_y":{"color":"rgba(44,160,44,1)"},"error_x":{"color":"rgba(44,160,44,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0,20],"y":[0.1433267614176475,0.1433267614176475],"type":"scatter","mode":"lines","line":{"color":"green","dash":"dash"},"legendgroup":"ci","showlegend":false,"name":"CI Upper Bound","marker":{"color":"rgba(214,39,40,1)","line":{"color":"rgba(214,39,40,1)"}},"error_y":{"color":"rgba(214,39,40,1)"},"error_x":{"color":"rgba(214,39,40,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0,20],"y":[-0.1433267614176475,-0.1433267614176475],"type":"scatter","mode":"lines","line":{"color":"green","dash":"dash"},"legendgroup":"ci","showlegend":false,"name":"CI Lower Bound","marker":{"color":"rgba(148,103,189,1)","line":{"color":"rgba(148,103,189,1)"}},"error_y":{"color":"rgba(148,103,189,1)"},"error_x":{"color":"rgba(148,103,189,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[4,8,12,16,20],"y":[-0.068805360369531596,-0.13351132771455632,-0.069851931426272273,0.087102708100357695,0.0076763084975037307],"type":"bar","marker":{"color":"red","line":{"color":"rgba(140,86,75,1)"}},"width":[0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001],"legendgroup":"seasonal","showlegend":false,"name":"Seasonal Lag 4","error_y":{"color":"rgba(140,86,75,1)"},"error_x":{"color":"rgba(140,86,75,1)"},"xaxis":"x","yaxis":"y2","frame":null},{"x":[1,2,3,5,6,7,9,10,11,13,14,15,17,18,19],"y":[0.34992120347443501,0.21824882577433685,0.20531731926320429,-0.074718539886262134,-0.010270549249851848,-0.039991007269246655,0.024977908570316246,0.042227102190761409,0.056917224285089871,0.024619789583653837,-0.10367257851227968,0.024669782319064106,-0.043150467297154146,-0.0083284229427663965,-0.015649353591767196],"type":"bar","marker":{"color":"#00526d","line":{"color":"rgba(227,119,194,1)"}},"width":[0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001],"legendgroup":"nonseasonal","showlegend":false,"name":"Non-Seasonal","error_y":{"color":"rgba(227,119,194,1)"},"error_x":{"color":"rgba(227,119,194,1)"},"xaxis":"x","yaxis":"y2","frame":null},{"x":[1,20],"y":[0.1433267614176475,0.1433267614176475],"type":"scatter","mode":"lines","line":{"color":"green","dash":"dash"},"legendgroup":"ci","showlegend":false,"name":"CI Upper Bound","marker":{"color":"rgba(127,127,127,1)","line":{"color":"rgba(127,127,127,1)"}},"error_y":{"color":"rgba(127,127,127,1)"},"error_x":{"color":"rgba(127,127,127,1)"},"xaxis":"x","yaxis":"y2","frame":null},{"x":[1,20],"y":[-0.1433267614176475,-0.1433267614176475],"type":"scatter","mode":"lines","line":{"color":"green","dash":"dash"},"legendgroup":"ci","showlegend":false,"name":"CI Lower Bound","marker":{"color":"rgba(188,189,34,1)","line":{"color":"rgba(188,189,34,1)"}},"error_y":{"color":"rgba(188,189,34,1)"},"error_x":{"color":"rgba(188,189,34,1)"},"xaxis":"x","yaxis":"y2","frame":null}],"layout":{"xaxis":{"domain":[0,1],"automargin":true,"dtick":4,"title":"Lag","anchor":"y2"},"yaxis2":{"domain":[0,0.47999999999999998],"automargin":true,"title":"PACF","anchor":"x"},"yaxis":{"domain":[0.52000000000000002,1],"automargin":true,"title":"ACF","anchor":"x"},"annotations":[],"shapes":[],"images":[],"margin":{"b":40,"l":60,"t":25,"r":10},"hovermode":"compare","showlegend":true,"title":"uschange[, 1] ACF and PACF Plots"},"attrs":{"176a035da80cd":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],"y":[0.99999999999999989,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"type":"bar","marker":{"color":"black"},"width":0.10000000000000001,"name":"Lag-Zero","legendgroup":"lagzero","showlegend":false,"inherit":true},"176a035da80cd.1":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],"y":[null,null,null,null,0.14401974158217148,null,null,null,-0.11672952116462632,null,null,null,-0.067106323725105874,null,null,null,0.051069513460358963,null,null,null,-0.011047750469569278],"type":"bar","marker":{"color":"red"},"width":0.10000000000000001,"legendgroup":"seasonal","name":"Seasonal Lag 4","inherit":true},"176a035da80cd.2":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],"y":[null,0.34992120347443517,0.31397022997731977,0.33385182833054594,null,0.078610769313965434,0.073949290928396721,-0.0077840292041916693,null,-0.041963137808417074,-0.043039164690182853,-0.033582304595138564,null,-0.0063232722578321814,-0.098234551865359343,-0.037619186155897641,null,-0.048104251846139319,-0.010277893886910231,-0.00080308737348067886,null],"type":"bar","marker":{"color":"#00526d"},"width":0.10000000000000001,"legendgroup":"nonseasonal","name":"Non-Seasonal","inherit":true},"176a035da80cd.3":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":0,"y":0.1433267614176475,"xend":20,"yend":0.1433267614176475,"type":"scatter","mode":"lines","line":{"color":"green","dash":"dash"},"legendgroup":"ci","showlegend":false,"name":"CI Upper Bound","inherit":true},"176a035da80cd.4":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":0,"y":-0.1433267614176475,"xend":20,"yend":-0.1433267614176475,"type":"scatter","mode":"lines","line":{"color":"green","dash":"dash"},"legendgroup":"ci","showlegend":false,"name":"CI Lower Bound","inherit":true},"176a01c3e2e5a":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],"y":[null,null,null,-0.068805360369531596,null,null,null,-0.13351132771455632,null,null,null,-0.069851931426272273,null,null,null,0.087102708100357695,null,null,null,0.0076763084975037307],"type":"bar","marker":{"color":"red"},"width":0.10000000000000001,"legendgroup":"seasonal","showlegend":false,"name":"Seasonal Lag 4","inherit":true},"176a01c3e2e5a.1":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],"y":[0.34992120347443501,0.21824882577433685,0.20531731926320429,null,-0.074718539886262134,-0.010270549249851848,-0.039991007269246655,null,0.024977908570316246,0.042227102190761409,0.056917224285089871,null,0.024619789583653837,-0.10367257851227968,0.024669782319064106,null,-0.043150467297154146,-0.0083284229427663965,-0.015649353591767196,null],"type":"bar","marker":{"color":"#00526d"},"width":0.10000000000000001,"legendgroup":"nonseasonal","showlegend":false,"name":"Non-Seasonal","inherit":true},"176a01c3e2e5a.2":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":1,"y":0.1433267614176475,"xend":20,"yend":0.1433267614176475,"type":"scatter","mode":"lines","line":{"color":"green","dash":"dash"},"legendgroup":"ci","showlegend":false,"name":"CI Upper Bound","inherit":true},"176a01c3e2e5a.3":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":1,"y":-0.1433267614176475,"xend":20,"yend":-0.1433267614176475,"type":"scatter","mode":"lines","line":{"color":"green","dash":"dash"},"legendgroup":"ci","showlegend":false,"name":"CI Lower Bound","inherit":true}},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"subplot":true,"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<div class="plotly html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-b57ddd15dbb9441b5399" style="width:756px;height:504px;"></div>
+<script type="application/json" data-for="htmlwidget-b57ddd15dbb9441b5399">{"x":{"data":[{"x":[0],"y":[0.99999999999999989],"type":"bar","marker":{"color":"black","line":{"color":"rgba(31,119,180,1)"}},"width":0.10000000000000001,"name":"Lag-Zero","legendgroup":"lagzero","showlegend":false,"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[4,8,12,16,20],"y":[0.14401974158217148,-0.11672952116462632,-0.067106323725105874,0.051069513460358963,-0.011047750469569278],"type":"bar","marker":{"color":"red","line":{"color":"rgba(255,127,14,1)"}},"width":[0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001],"legendgroup":"seasonal","name":"Seasonal Lag 4","error_y":{"color":"rgba(255,127,14,1)"},"error_x":{"color":"rgba(255,127,14,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[1,2,3,5,6,7,9,10,11,13,14,15,17,18,19],"y":[0.34992120347443517,0.31397022997731977,0.33385182833054594,0.078610769313965434,0.073949290928396721,-0.0077840292041916693,-0.041963137808417074,-0.043039164690182853,-0.033582304595138564,-0.0063232722578321814,-0.098234551865359343,-0.037619186155897641,-0.048104251846139319,-0.010277893886910231,-0.00080308737348067886],"type":"bar","marker":{"color":"#00526d","line":{"color":"rgba(44,160,44,1)"}},"width":[0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001],"legendgroup":"nonseasonal","name":"Non-Seasonal","error_y":{"color":"rgba(44,160,44,1)"},"error_x":{"color":"rgba(44,160,44,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0,20],"y":[0.1433267614176475,0.1433267614176475],"type":"scatter","mode":"lines","line":{"color":"green","dash":"dash"},"legendgroup":"ci","showlegend":false,"name":"CI Upper Bound","marker":{"color":"rgba(214,39,40,1)","line":{"color":"rgba(214,39,40,1)"}},"error_y":{"color":"rgba(214,39,40,1)"},"error_x":{"color":"rgba(214,39,40,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[0,20],"y":[-0.1433267614176475,-0.1433267614176475],"type":"scatter","mode":"lines","line":{"color":"green","dash":"dash"},"legendgroup":"ci","showlegend":false,"name":"CI Lower Bound","marker":{"color":"rgba(148,103,189,1)","line":{"color":"rgba(148,103,189,1)"}},"error_y":{"color":"rgba(148,103,189,1)"},"error_x":{"color":"rgba(148,103,189,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[4,8,12,16,20],"y":[-0.068805360369531596,-0.13351132771455632,-0.069851931426272273,0.087102708100357695,0.0076763084975037307],"type":"bar","marker":{"color":"red","line":{"color":"rgba(140,86,75,1)"}},"width":[0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001],"legendgroup":"seasonal","showlegend":false,"name":"Seasonal Lag 4","error_y":{"color":"rgba(140,86,75,1)"},"error_x":{"color":"rgba(140,86,75,1)"},"xaxis":"x","yaxis":"y2","frame":null},{"x":[1,2,3,5,6,7,9,10,11,13,14,15,17,18,19],"y":[0.34992120347443501,0.21824882577433685,0.20531731926320429,-0.074718539886262134,-0.010270549249851848,-0.039991007269246655,0.024977908570316246,0.042227102190761409,0.056917224285089871,0.024619789583653837,-0.10367257851227968,0.024669782319064106,-0.043150467297154146,-0.0083284229427663965,-0.015649353591767196],"type":"bar","marker":{"color":"#00526d","line":{"color":"rgba(227,119,194,1)"}},"width":[0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001,0.10000000000000001],"legendgroup":"nonseasonal","showlegend":false,"name":"Non-Seasonal","error_y":{"color":"rgba(227,119,194,1)"},"error_x":{"color":"rgba(227,119,194,1)"},"xaxis":"x","yaxis":"y2","frame":null},{"x":[1,20],"y":[0.1433267614176475,0.1433267614176475],"type":"scatter","mode":"lines","line":{"color":"green","dash":"dash"},"legendgroup":"ci","showlegend":false,"name":"CI Upper Bound","marker":{"color":"rgba(127,127,127,1)","line":{"color":"rgba(127,127,127,1)"}},"error_y":{"color":"rgba(127,127,127,1)"},"error_x":{"color":"rgba(127,127,127,1)"},"xaxis":"x","yaxis":"y2","frame":null},{"x":[1,20],"y":[-0.1433267614176475,-0.1433267614176475],"type":"scatter","mode":"lines","line":{"color":"green","dash":"dash"},"legendgroup":"ci","showlegend":false,"name":"CI Lower Bound","marker":{"color":"rgba(188,189,34,1)","line":{"color":"rgba(188,189,34,1)"}},"error_y":{"color":"rgba(188,189,34,1)"},"error_x":{"color":"rgba(188,189,34,1)"},"xaxis":"x","yaxis":"y2","frame":null}],"layout":{"xaxis":{"domain":[0,1],"automargin":true,"dtick":4,"title":"Lag","anchor":"y2"},"yaxis2":{"domain":[0,0.47999999999999998],"automargin":true,"title":"PACF","anchor":"x"},"yaxis":{"domain":[0.52000000000000002,1],"automargin":true,"title":"ACF","anchor":"x"},"annotations":[],"shapes":[],"images":[],"margin":{"b":40,"l":60,"t":25,"r":10},"hovermode":"compare","showlegend":true,"title":"uschange[, 1] ACF and PACF Plots"},"attrs":{"80ff2b5f08c6":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],"y":[0.99999999999999989,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"type":"bar","marker":{"color":"black"},"width":0.10000000000000001,"name":"Lag-Zero","legendgroup":"lagzero","showlegend":false,"inherit":true},"80ff2b5f08c6.1":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],"y":[null,null,null,null,0.14401974158217148,null,null,null,-0.11672952116462632,null,null,null,-0.067106323725105874,null,null,null,0.051069513460358963,null,null,null,-0.011047750469569278],"type":"bar","marker":{"color":"red"},"width":0.10000000000000001,"legendgroup":"seasonal","name":"Seasonal Lag 4","inherit":true},"80ff2b5f08c6.2":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],"y":[null,0.34992120347443517,0.31397022997731977,0.33385182833054594,null,0.078610769313965434,0.073949290928396721,-0.0077840292041916693,null,-0.041963137808417074,-0.043039164690182853,-0.033582304595138564,null,-0.0063232722578321814,-0.098234551865359343,-0.037619186155897641,null,-0.048104251846139319,-0.010277893886910231,-0.00080308737348067886,null],"type":"bar","marker":{"color":"#00526d"},"width":0.10000000000000001,"legendgroup":"nonseasonal","name":"Non-Seasonal","inherit":true},"80ff2b5f08c6.3":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":0,"y":0.1433267614176475,"xend":20,"yend":0.1433267614176475,"type":"scatter","mode":"lines","line":{"color":"green","dash":"dash"},"legendgroup":"ci","showlegend":false,"name":"CI Upper Bound","inherit":true},"80ff2b5f08c6.4":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":0,"y":-0.1433267614176475,"xend":20,"yend":-0.1433267614176475,"type":"scatter","mode":"lines","line":{"color":"green","dash":"dash"},"legendgroup":"ci","showlegend":false,"name":"CI Lower Bound","inherit":true},"80ff6c391568":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],"y":[null,null,null,-0.068805360369531596,null,null,null,-0.13351132771455632,null,null,null,-0.069851931426272273,null,null,null,0.087102708100357695,null,null,null,0.0076763084975037307],"type":"bar","marker":{"color":"red"},"width":0.10000000000000001,"legendgroup":"seasonal","showlegend":false,"name":"Seasonal Lag 4","inherit":true},"80ff6c391568.1":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],"y":[0.34992120347443501,0.21824882577433685,0.20531731926320429,null,-0.074718539886262134,-0.010270549249851848,-0.039991007269246655,null,0.024977908570316246,0.042227102190761409,0.056917224285089871,null,0.024619789583653837,-0.10367257851227968,0.024669782319064106,null,-0.043150467297154146,-0.0083284229427663965,-0.015649353591767196,null],"type":"bar","marker":{"color":"#00526d"},"width":0.10000000000000001,"legendgroup":"nonseasonal","showlegend":false,"name":"Non-Seasonal","inherit":true},"80ff6c391568.2":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":1,"y":0.1433267614176475,"xend":20,"yend":0.1433267614176475,"type":"scatter","mode":"lines","line":{"color":"green","dash":"dash"},"legendgroup":"ci","showlegend":false,"name":"CI Upper Bound","inherit":true},"80ff6c391568.3":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":1,"y":-0.1433267614176475,"xend":20,"yend":-0.1433267614176475,"type":"scatter","mode":"lines","line":{"color":"green","dash":"dash"},"legendgroup":"ci","showlegend":false,"name":"CI Lower Bound","inherit":true}},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"subplot":true,"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
 
 ---
 
@@ -256,7 +335,7 @@ summary(ax)
 #&gt;       0.6922  -0.5758  0.1984     0.5990  0.2028
 #&gt; s.e.  0.1159   0.1301  0.0756     0.0884  0.0461
 #&gt; 
-#&gt; sigma^2 estimated as 0.3219:  log likelihood=-156.95
+#&gt; sigma^2 = 0.3219:  log likelihood = -156.95
 #&gt; AIC=325.91   AICc=326.37   BIC=345.29
 #&gt; 
 #&gt; Training set error measures:
@@ -316,7 +395,7 @@ summary(axc)
 #&gt;             -0.0460
 #&gt; s.e.         0.0028
 #&gt; 
-#&gt; sigma^2 estimated as 0.1084:  log likelihood=-54.04
+#&gt; sigma^2 = 0.1084:  log likelihood = -54.04
 #&gt; AIC=124.08   AICc=124.88   BIC=149.92
 #&gt; 
 #&gt; Training set error measures:
@@ -382,16 +461,16 @@ coeftest(axc)
 
 --
 
-&lt;img src="Clase06_files/figure-html/unnamed-chunk-10-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="Clase06_files/figure-html/unnamed-chunk-11-1.svg" style="display: block; margin: auto;" /&gt;
 
 ```
 #&gt; 
 #&gt; 	Ljung-Box test
 #&gt; 
 #&gt; data:  Residuals from Regression with ARIMA(1,0,2) errors
-#&gt; Q* = 5.8916, df = 3, p-value = 0.117
+#&gt; Q* = 5.8916, df = 5, p-value = 0.3169
 #&gt; 
-#&gt; Model df: 5.   Total lags used: 8
+#&gt; Model df: 3.   Total lags used: 8
 ```
 
 ---
@@ -404,9 +483,9 @@ coeftest(axc)
 #&gt; 	Ljung-Box test
 #&gt; 
 #&gt; data:  Residuals from Regression with ARIMA(1,0,2) errors
-#&gt; Q* = 5.8916, df = 3, p-value = 0.117
+#&gt; Q* = 5.8916, df = 5, p-value = 0.3169
 #&gt; 
-#&gt; Model df: 5.   Total lags used: 8
+#&gt; Model df: 3.   Total lags used: 8
 ```
 
 ---
@@ -440,7 +519,7 @@ fcast
 
 --
 
-&lt;img src="Clase06_files/figure-html/unnamed-chunk-13-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="Clase06_files/figure-html/unnamed-chunk-14-1.svg" style="display: block; margin: auto;" /&gt;
 
 
 
@@ -448,86 +527,8 @@ fcast
 layout: false
 class: inverse, middle, center
 
-# Modelos de Volatilidad
+# Gracias por su atención
 
----
-layout: true
-# Modelo ARCH
-
----
-
---
-&lt;cy-blockquote&gt;
-Por sus siglas hace referencia a **Autoregressive conditional heteroskedasticity**, modelos que involucran en una *estimación* comportamientos *volátiles* y que merecen ser tenidos en cuenta. La naturaleza de este tipo de series se encuentran en las .hi[financieras] y las .hi[macroeconómicas].
-&lt;/cy-blockquote&gt;
-
---
-
-&lt;img src="Clase06_files/figure-html/unnamed-chunk-14-1.svg" style="display: block; margin: auto;" /&gt;&lt;img src="Clase06_files/figure-html/unnamed-chunk-14-2.svg" style="display: block; margin: auto;" /&gt;
-
----
-
---
-
-Los modelos ARCH van en la medida al análisis de los retornos financieros que tienen las acciones o bonos públicos y privados.
-
---
-
-### A tener en cuenta
-
---
-
-<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:blue;overflow:visible;position:relative;"><path d="M88 0C74.7 0 64 10.7 64 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C120.5 112.3 128 119.9 128 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C119.5 47.7 112 40.1 112 24c0-13.3-10.7-24-24-24zM32 192c-17.7 0-32 14.3-32 32V416c0 53 43 96 96 96H288c53 0 96-43 96-96h16c61.9 0 112-50.1 112-112s-50.1-112-112-112H352 32zm352 64h16c26.5 0 48 21.5 48 48s-21.5 48-48 48H384V256zM224 24c0-13.3-10.7-24-24-24s-24 10.7-24 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C232.5 112.3 240 119.9 240 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C231.5 47.7 224 40.1 224 24z"/></svg> .hi-purple[Heterocedasticidad] Ahora no es solo un problema de .hi[corte transversal]. Tambien hay que mirarlo acá en series de tiempo.
-
---
-
-<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:blue;overflow:visible;position:relative;"><path d="M88 0C74.7 0 64 10.7 64 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C120.5 112.3 128 119.9 128 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C119.5 47.7 112 40.1 112 24c0-13.3-10.7-24-24-24zM32 192c-17.7 0-32 14.3-32 32V416c0 53 43 96 96 96H288c53 0 96-43 96-96h16c61.9 0 112-50.1 112-112s-50.1-112-112-112H352 32zm352 64h16c26.5 0 48 21.5 48 48s-21.5 48-48 48H384V256zM224 24c0-13.3-10.7-24-24-24s-24 10.7-24 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C232.5 112.3 240 119.9 240 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C231.5 47.7 224 40.1 224 24z"/></svg> Para que mis residuos sean **homocedasticos**:
-
---
-
-`$$\sigma^{2}_{\epsilon}=\sigma^{2}_{1}=\sigma^{2}_{2}=\sigma^{2}_{3}$$`
-
---
-
-<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:blue;overflow:visible;position:relative;"><path d="M88 0C74.7 0 64 10.7 64 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C120.5 112.3 128 119.9 128 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C119.5 47.7 112 40.1 112 24c0-13.3-10.7-24-24-24zM32 192c-17.7 0-32 14.3-32 32V416c0 53 43 96 96 96H288c53 0 96-43 96-96h16c61.9 0 112-50.1 112-112s-50.1-112-112-112H352 32zm352 64h16c26.5 0 48 21.5 48 48s-21.5 48-48 48H384V256zM224 24c0-13.3-10.7-24-24-24s-24 10.7-24 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C232.5 112.3 240 119.9 240 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C231.5 47.7 224 40.1 224 24z"/></svg> En este caso puede existir **cierta** .hi[autocorrelación] en la varianza de la serie.
-
---
-
-<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:blue;overflow:visible;position:relative;"><path d="M88 0C74.7 0 64 10.7 64 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C120.5 112.3 128 119.9 128 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C119.5 47.7 112 40.1 112 24c0-13.3-10.7-24-24-24zM32 192c-17.7 0-32 14.3-32 32V416c0 53 43 96 96 96H288c53 0 96-43 96-96h16c61.9 0 112-50.1 112-112s-50.1-112-112-112H352 32zm352 64h16c26.5 0 48 21.5 48 48s-21.5 48-48 48H384V256zM224 24c0-13.3-10.7-24-24-24s-24 10.7-24 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C232.5 112.3 240 119.9 240 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C231.5 47.7 224 40.1 224 24z"/></svg> La volatilidad puede ser capturada como:
-
---
-
-`$$\begin{aligned}
-Y_{t}=&amp;\beta_{0} + \beta_{1}X_{t}+ \epsilon_{t}\\
-\sigma^{2}_{t}=&amp;Var (\epsilon_{t}|\epsilon_{t-\rho})\\ \sigma^{2}_{t}=&amp; E(Y_{t}-\beta_{0}-\beta_{1}X_{t})
-\end{aligned}$$`
----
-
---
-
-.attn[La idea:]
-
---
-
-<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg> Modelar `\(\sigma^{2}_{t}\)` ya sea como un proceso AR o MA.
-
---
-
-<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg> Recuerde que la **volatilidad** puede no ser constante. Ej: Periodos de .b[alta] volatilidad como de .hi[baja].
-
---
-
-<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg> La volatilidad no es directamente observable. (Su naturaleza es latente).
-
---
-
-<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg> Los efectos de nueva información: Una .b[alta] volatilidad es observada antes de que se hagan .hi[anuncios].
-
----
-layout: false
-class: inverse, middle, center
-
-# Continuará...
 ---
 # Bibliografía
 
@@ -609,6 +610,19 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
     deleted = true;
   });
 })();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
 (function() {
   "use strict"
   // Replace <script> tags in slides area to make them executable

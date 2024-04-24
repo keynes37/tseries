@@ -194,6 +194,91 @@ class: inverse, middle, center
 
 ---
 layout: true
+# Modelo ARCH
+
+---
+
+--
+<cy-blockquote>
+Por sus siglas hace referencia a **Autoregressive conditional heteroskedasticity**, modelos que involucran en una *estimación* comportamientos *volátiles* y que merecen ser tenidos en cuenta. La naturaleza de este tipo de series se encuentran en las .hi[financieras] y las .hi[macroeconómicas].
+</cy-blockquote>
+
+--
+
+```{r, fig.height=5, fig.width=8, echo=FALSE}
+data("byd", package="PoEdata")
+rts <- ts(byd$r)
+par(mfrow = c(1, 2))
+plot.ts(rts)
+hist(rts, main="Retorno de acciones empresa Y", breaks=20, freq=FALSE, col="red")
+```
+
+---
+
+--
+
+Los modelos ARCH van en la medida al análisis de los retornos financieros que tienen las acciones o bonos públicos y privados.
+
+--
+
+### A tener en cuenta
+
+--
+
+`r fa("mug-hot", fill="blue")` .hi-purple[Heterocedasticidad] Ahora no es solo un problema de .hi[corte transversal]. Tambien hay que mirarlo acá en series de tiempo.
+
+--
+
+`r fa("mug-hot", fill="blue")` Para que mis residuos sean **homocedasticos**:
+
+--
+
+$$\sigma^{2}_{\epsilon}=\sigma^{2}_{1}=\sigma^{2}_{2}=\sigma^{2}_{3}$$
+
+--
+
+`r fa("mug-hot", fill="blue")` En este caso puede existir **cierta** .hi[autocorrelación] en la varianza de la serie.
+
+--
+
+`r fa("mug-hot", fill="blue")` La volatilidad puede ser capturada como:
+
+--
+
+$$\begin{aligned}
+Y_{t}=&\beta_{0} + \beta_{1}X_{t}+ \epsilon_{t}\\
+\sigma^{2}_{t}=&Var (\epsilon_{t}|\epsilon_{t-\rho})\\ \sigma^{2}_{t}=& E(Y_{t}-\beta_{0}-\beta_{1}X_{t})
+\end{aligned}$$
+---
+
+--
+
+.attn[La idea:]
+
+--
+
+`r fa("info-circle", fill="red")` Modelar $\sigma^{2}_{t}$ ya sea como un proceso AR o MA.
+
+--
+
+`r fa("info-circle", fill="red")` Recuerde que la **volatilidad** puede no ser constante. Ej: Periodos de .b[alta] volatilidad como de .hi[baja].
+
+--
+
+`r fa("info-circle", fill="red")` La volatilidad no es directamente observable. (Su naturaleza es latente).
+
+--
+
+`r fa("info-circle", fill="red")` Los efectos de nueva información: Una .b[alta] volatilidad es observada antes de que se hagan .hi[anuncios].
+
+---
+layout: false
+class: inverse, middle, center
+
+# Hasta aquí.... esto de univariados
+
+---
+layout: true
 # Modelos ARMAX
 
 ---
@@ -293,6 +378,7 @@ layout: false
 --
 
 ```{r usconsump, fig.height=6.8, fig.width=8, echo=FALSE}
+par(mfrow = c(1, 1))
 autoplot(uschange, facets=TRUE) +
   xlab("Años") + ylab("") +
   ggtitle("Series trimestrales de Estados Unidos")
@@ -481,91 +567,8 @@ ggtitle("Pronostico con ARIMA(1,0,2)")
 layout: false
 class: inverse, middle, center
 
-# Modelos de Volatilidad
+# Gracias por su atención
 
----
-layout: true
-# Modelo ARCH
-
----
-
---
-<cy-blockquote>
-Por sus siglas hace referencia a **Autoregressive conditional heteroskedasticity**, modelos que involucran en una *estimación* comportamientos *volátiles* y que merecen ser tenidos en cuenta. La naturaleza de este tipo de series se encuentran en las .hi[financieras] y las .hi[macroeconómicas].
-</cy-blockquote>
-
---
-
-```{r, fig.height=4, fig.width=5, echo=FALSE}
-data("byd", package="PoEdata")
-rts <- ts(byd$r)
-plot.ts(rts)
-hist(rts, main="Retorno de acciones empresa Y", breaks=20, freq=FALSE, col="red")
-```
-
----
-
---
-
-Los modelos ARCH van en la medida al análisis de los retornos financieros que tienen las acciones o bonos públicos y privados.
-
---
-
-### A tener en cuenta
-
---
-
-`r fa("mug-hot", fill="blue")` .hi-purple[Heterocedasticidad] Ahora no es solo un problema de .hi[corte transversal]. Tambien hay que mirarlo acá en series de tiempo.
-
---
-
-`r fa("mug-hot", fill="blue")` Para que mis residuos sean **homocedasticos**:
-
---
-
-$$\sigma^{2}_{\epsilon}=\sigma^{2}_{1}=\sigma^{2}_{2}=\sigma^{2}_{3}$$
-
---
-
-`r fa("mug-hot", fill="blue")` En este caso puede existir **cierta** .hi[autocorrelación] en la varianza de la serie.
-
---
-
-`r fa("mug-hot", fill="blue")` La volatilidad puede ser capturada como:
-
---
-
-$$\begin{aligned}
-Y_{t}=&\beta_{0} + \beta_{1}X_{t}+ \epsilon_{t}\\
-\sigma^{2}_{t}=&Var (\epsilon_{t}|\epsilon_{t-\rho})\\ \sigma^{2}_{t}=& E(Y_{t}-\beta_{0}-\beta_{1}X_{t})
-\end{aligned}$$
----
-
---
-
-.attn[La idea:]
-
---
-
-`r fa("info-circle", fill="red")` Modelar $\sigma^{2}_{t}$ ya sea como un proceso AR o MA.
-
---
-
-`r fa("info-circle", fill="red")` Recuerde que la **volatilidad** puede no ser constante. Ej: Periodos de .b[alta] volatilidad como de .hi[baja].
-
---
-
-`r fa("info-circle", fill="red")` La volatilidad no es directamente observable. (Su naturaleza es latente).
-
---
-
-`r fa("info-circle", fill="red")` Los efectos de nueva información: Una .b[alta] volatilidad es observada antes de que se hagan .hi[anuncios].
-
----
-layout: false
-class: inverse, middle, center
-
-# Continuará...
 ---
 # Bibliografía
 
