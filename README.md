@@ -30,3 +30,5 @@ Aplicación Sarima [Guide06](https://raw.githack.com/keynes37/tseries/main/Guias
 ### Tercer corte
 
 Modelo Arch [Class 07](https://raw.githack.com/keynes37/tseries/main/GuiasdeR/Guia7.html)
+
+Modelo Armax [Class 08](https://raw.githack.com/keynes37/tseries/main/clases/Clase06.html)
