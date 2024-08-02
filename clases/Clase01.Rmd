@@ -3,7 +3,7 @@ title: "Econometría II"
 subtitle: "<br/> Introducción"
 author: "Carlos A. Yanes Guerra"
 institute: "Universidad del Norte"
-date: "2024-I"
+date: "2024-II"
 output:
   xaringan::moon_reader:
     css: 
@@ -217,7 +217,7 @@ name: admin
 | Parcial 1        | Hasta la semana 5 de clases          | 20%        |
 | Parcial 2        | Hasta la semana 9 de clases          | 20%        |
 | Capstone Project | Todo el semestre                     | 20%        |
-| Participación    | Poster final                        | 10%        |
+| Participación    | Dashboard final                      | 10%        |
 | Examen final     | Registro académico                   | 30%        |
 
 ---
