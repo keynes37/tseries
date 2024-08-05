@@ -3,7 +3,7 @@ title: "Econometría II"
 subtitle: "<br/> Introducción II"
 author: "Carlos A. Yanes Guerra"
 institute: "Universidad del Norte"
-date: "2024-I"
+date: "2024-II"
 output:
   xaringan::moon_reader:
     css: 
