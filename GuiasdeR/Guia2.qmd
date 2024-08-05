@@ -317,8 +317,6 @@ Cartera_t=& \; \alpha_0+\alpha_1 T_t+\alpha_2 T_t^2+u_t\\
 =& \; 34'886.480
 \end{aligned}$$ La [Cartera]{.fg style="--col: #FF0000"} de Febrero de 2024 va ser de 34 mil millones.
 
-
-
 ## Pronosticos con tendencia
 
 ::: panel-tabset

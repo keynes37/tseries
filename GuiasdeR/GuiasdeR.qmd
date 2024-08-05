@@ -17,6 +17,11 @@ date: last-modified
 bibliography: refs.bib
 ---
 
+```{r, setup, include=FALSE}
+library(pacman)
+p_load(modelsummary, tseries, atsa, readxl, rstatix, tidyverse, KableExtra, pdftools)
+```
+
 ## Entorno de trabajo {{< fa brands r-project >}}
 
 . . .
@@ -41,7 +46,7 @@ Vamos a instalar o cargar un par de [Paquetes]{.fg style="--col: #0098DB"} de {{
 Los paquetes para el análisis de [Rezagos]{.bg style="--col: #FFC7A2"} y regresión dinámica son los siguientes
 
 ``` r
-install.packages(c("pacman", "modelsummary", "tseries", "tidyverse", "KableExtra", "pdftools"))
+install.packages(c("pacman", "atsa" "modelsummary", "tseries", "tidyverse", "KableExtra", "huxtable"))
 ```
 :::
 
@@ -52,7 +57,7 @@ No olvide que debe desde luego tener presente en su documento de *R Markdown* ca
 
 ``` r
 library(pacman)
-p_load(modelsummary, tseries, readxl, rstatix, tidyverse, KableExtra)
+p_load(modelsummary, tseries, atsa, readxl, rstatix, tidyverse, KableExtra)
 ```
 :::
 
@@ -64,7 +69,8 @@ p_load(modelsummary, tseries, readxl, rstatix, tidyverse, KableExtra)
 
 ::: {.fragment .fade-up}
 -   Recuerde que un modelo de regresión estático/dinámico de series tiempo viene a ser:
--   $y_t= \delta_0+\delta_1 T_t+u_t$ o $y_t= \delta_0+\delta_1 T_t+\delta_2 y_{t-1}+u_t$
+- Tendencia simple:  $y_t= \delta_0+\delta_1 T_t+u_t$ 
+- Tendencia y rezago $y_t= \delta_0+\delta_1 T_t+\delta_2 y_{t-1}+u_t$
 -   Este modelo solo nos muestra la relación de la variable objetivo con su **Tendencia**
 -   Anteriormente se usaba mucho para intentar predecir el siguiente movimiento de la serie
 :::
@@ -182,6 +188,8 @@ bsd1 |>
 
 -   Recordemos que las [estadísticas]{.alert} son claves para ver desde el interior de las [variables]{.bg style="--col: #FFE603"}.
 -   No podemos decir nada si no conocemos las [características]{.alert} de las series
+- El rango intercuartil (IQR, por sus siglas en inglés) es una medida estadística de dispersión que describe la distancia entre el primer cuartil (Q1) y el tercer cuartil (Q3) de un conjunto de datos.
+- El IC viene a ser el intervalo de confianza de la media de la distribución.
 
 ### Kable
 
@@ -261,16 +269,14 @@ lm(HOUS~DPI+PRELHOUS, data=dt1)|>
   )
 ```
 
-# Múltiples modelos {background-color="#40666e"}
-
-## Caso 1
-
-### Estimación
+## Interpretación
 
 ::: incremental
 -   Para la lectura del modelo lo haremos de forma **tradicional**. Esto indica que leemos de tal manera las variables *explicativas*.
 -   Nuestra primera variable [DPI]{.fg style="--col: #e64173"} nos dice que si el ingreso agregado aumenta en 1 billon de dolares, entonces el gasto de los hogares en servicios de la casa se incrementa es 151 millones de dolares. *Desde luego marginalmente dice que por cada dolar que aumente el ingreso el gasto aumenta en una proporción de 50 centavos de dolar.*
 :::
+
+# Diferentes estimaciones {background-color="#40666e"}
 
 ## Caso 1
 
@@ -284,7 +290,8 @@ lm(HOUS~DPI+PRELHOUS, data=dt1)|>
 -   Nuestro modelo viene a ser: $Log(Hous)=Log\;\delta_0+ \delta_1 Log\;DPI+\delta_2 Log\;PRELHOUS+log\;\varepsilon_t$
 :::
 
-## Comparaciones
+## Caso 1 
+### Comparaciones
 
 ```{r}
 #| echo: false
@@ -292,6 +299,7 @@ lm(HOUS~DPI+PRELHOUS, data=dt1)|>
 #| output-location: slide
 library(fixest)
 library(modelsummary)
+
 options(modelsummary_factory_default = "gt")
 
 dict = c("DPI" = "Ingreso o renta a precios constantes",
@@ -305,11 +313,13 @@ mdf2<-feols(log(HOUS)~log(DPI)+log(PRELHOUS), data=dt1)
 
 ```{r}
 #| output: asis
-library(fixest)
-setFixest_etable(markdown = TRUE, drop = "Constant")
+#setFixest_etable(markdown = TRUE, drop = "Constant")
 setFixest_dict(dict)
-fixest::etable(mdf1, mdf2)
+#etable(mdf1, mdf2, tex = TRUE)
+modelsummary(list(mdf1, mdf2), coef_map = dict, output = "markdown")
 ```
+
+
 
 ## Caso 1
 
@@ -351,7 +361,7 @@ $$Y_t=L(Y_t)=Y_{t-1}$$
 ::: {.column width="50%"}
 #### Diferencias
 
-La [primera diferencia]{.fg style="--col: #FF0000"} de una **serie** lo que se conoce como [DIF]{.bg style="--col: #e64173"}, su sigla se representa mediante un triangulo o $(\Delta)$, Se escribe como:
+La [primera diferencia]{.fg style="--col: #FF0000"} de una **serie** lo que se conoce como [DIF]{.bg style="--col: #e64173"} o $(\Delta)$, Se escribe como:
 
 $$\Delta Y_t= Y_t-Y_{t-1}$$
 :::
@@ -453,7 +463,7 @@ dict2 = c("log(DPI)" = "Logaritmo del Ingreso Disponible",
          "LlogPRELHOUS2"="Rezago orden (2) de Indice de precios")
 setFixest_etable(markdown = TRUE, drop = "Constant")
 setFixest_dict(dict2)
-etable(mdf1, mdfl1, mdfl2, mdfl3, mdfl4, arraystretch = 1.5,
+etable(mdf1, mdfl1, mdfl2, mdfl3, mdfl4, tex = TRUE, arraystretch = 1.5,
        highlight = .("rowcol, yellow" = "log(DPI)@1",
                      "rowcol, yellow" = "log(PRELHOUS)@1"))
 ```
@@ -462,7 +472,7 @@ etable(mdf1, mdfl1, mdfl2, mdfl3, mdfl4, arraystretch = 1.5,
 
 ```{r}
 #| output: asis
-etable(mdf1, mdfl1, mdfl2, mdfl3, mdfl4, arraystretch = 1.5,
+etable(mdf1, mdfl1, mdfl2, mdfl3, mdfl4, tex = TRUE, arraystretch = 1.5,
        highlight = .("rowcol, yellow" = "LlogDPI@2",
                      "rowcol, yellow" = "LlogPRELHOUS@2"))
 ```
@@ -471,7 +481,7 @@ etable(mdf1, mdfl1, mdfl2, mdfl3, mdfl4, arraystretch = 1.5,
 
 ```{r}
 #| output: asis
-etable(mdf1, mdfl1, mdfl2, mdfl3, mdfl4, arraystretch = 1.5,
+etable(mdf1, mdfl1, mdfl2, mdfl3, mdfl4, tex = TRUE, arraystretch = 1.5,
        highlight = .("rowcol, yellow" = "LlogDPI2@3",
                      "rowcol, yellow" = "LlogPRELHOUS2@3"))
 ```
@@ -480,7 +490,7 @@ etable(mdf1, mdfl1, mdfl2, mdfl3, mdfl4, arraystretch = 1.5,
 
 ```{r}
 #| output: asis
-etable(mdf1, mdfl1, mdfl2, mdfl3, mdfl4, arraystretch = 1.5,
+etable(mdf1, mdfl1, mdfl2, mdfl3, mdfl4, tex = TRUE, arraystretch = 1.5,
        highlight = .("rowcol, yellow" = "log(DPI)@4",
                      "rowcol, yellow" = "log(PRELHOUS)@4",
                      "rowcol, yellow" = "LlogPRELHOUS@4",
@@ -491,7 +501,7 @@ etable(mdf1, mdfl1, mdfl2, mdfl3, mdfl4, arraystretch = 1.5,
 
 ```{r}
 #| output: asis
-etable(mdf1, mdfl1, mdfl2, mdfl3, mdfl4, arraystretch = 1.5,
+etable(mdf1, mdfl1, mdfl2, mdfl3, mdfl4, tex = TRUE, arraystretch = 1.5,
        highlight = .("rowcol, yellow" = "log(DPI)@5",
                      "rowcol, yellow" = "LlogDPI@5",
                      "rowcol, yellow" = "LlogDPI2@5",
