@@ -436,7 +436,7 @@ T_{t} &= \beta (F_t-F_{t-1})+(1-\beta)\phi T_{t-1}\\
 ::: callout-tip
 ## Cartera comercial de bancos
 
--   Enero de 2016 hasta Abril 2023
+-   Enero de 2016 hasta Abril 2024
 -   Web site de [Superintendencia Financiera](https://www.superfinanciera.gov.co/inicio/informes-y-cifras/cifras/establecimientos-de-credito/informacion-periodica/mensual/evolucion-cartera-de-creditos-60950)
 -   Frecuencia Mensual
 :::
@@ -497,6 +497,7 @@ ts_surface(cartera)
 ## Mapa de calor estacional
 
 ```{r}
+#| echo: true
 ts_heatmap(cartera, color = "Reds")
 ```
 
