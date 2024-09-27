@@ -1,0 +1,540 @@
+---
+title: "Econometría II"
+subtitle: "<br/> ARCH y GARCH"
+author: "Carlos A. Yanes Guerra"
+institute: "Universidad del Norte"
+date: "2024-II"
+output:
+  xaringan::moon_reader:
+    css: 
+       - xaringan-themer.css
+       - new-css.css
+    lib_dir: libs
+    seal: false
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+---
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+style_mono_accent(
+  base_color = "#23395b",
+  header_font_google = google_font("Josefin Sans"),
+  text_font_google   = google_font("Montserrat", "300", "300i"),
+  code_font_google   = google_font("Fira Mono")
+)
+```
+
+```{r, setup, include = F}
+# devtools::install_github("dill/emoGG")
+library(pacman)
+p_load(readr, xts, astsa, fpp2,
+  broom, tidyverse,
+  latex2exp, ggplot2, ggthemes, ggforce, viridis, extrafont, gridExtra,
+  kableExtra, snakecase, janitor, TSstudio, urca, forecast,
+  data.table, dplyr, estimatr,
+  lubridate, knitr, parallel,
+  lfe, emoGG, dynlm, 
+  here, magrittr, fontawesome, shiny, babynames
+)
+# Define pink color
+red_pink <- "#e64173"
+turquoise <- "#20B2AA"
+orange <- "#FFA500"
+red <- "#fb6107"
+blue <- "#2b59c3"
+green <- "#8bb174"
+grey_light <- "grey70"
+grey_mid <- "grey50"
+grey_dark <- "grey20"
+purple <- "#6A5ACD"
+slate <- "#314f4f"
+met_slate <- "#272822"
+# Dark slate grey: #314f4f
+# Opciones
+opts_chunk$set(
+  comment = "#>",
+  fig.align = "center",
+  fig.height = 7,
+  fig.width = 10.5,
+  warning = F,
+  message = F
+)
+opts_chunk$set(dev = "svg")
+options(device = function(file, width, height) {
+  svg(tempfile(), width = width, height = height)
+})
+options(crayon.enabled = F)
+options(knitr.table.format = "html")
+# A blank theme para ggplot
+theme_empty <- theme_bw() + theme(
+  line = element_blank(),
+  rect = element_blank(),
+  strip.text = element_blank(),
+  axis.text = element_blank(),
+  plot.title = element_blank(),
+  axis.title = element_blank(),
+  plot.margin = structure(c(0, 0, -0.5, -1), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_simple <- theme_bw() + theme(
+  line = element_blank(),
+  panel.grid = element_blank(),
+  rect = element_blank(),
+  strip.text = element_blank(),
+  axis.text.x = element_text(size = 18, family = "STIXGeneral"),
+  axis.text.y = element_blank(),
+  axis.ticks = element_blank(),
+  plot.title = element_blank(),
+  axis.title = element_blank(),
+  # plot.margin = structure(c(0, 0, -1, -1), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes_math <- theme_void() + theme(
+  text = element_text(family = "MathJax_Math"),
+  axis.title = element_text(size = 22),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, 0.15, 0, 0, unit = "lines")),
+  axis.line = element_line(
+    color = "grey70",
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.15, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes_serif <- theme_void() + theme(
+  text = element_text(family = "MathJax_Main"),
+  axis.title = element_text(size = 22),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, 0.15, 0, 0, unit = "lines")),
+  axis.line = element_line(
+    color = "grey70",
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.15, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes <- theme_void() + theme(
+  text = element_text(family = "Fira Sans Book"),
+  axis.title = element_text(size = 18),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, 0.15, 0, 0, unit = "lines")),
+  axis.line = element_line(
+    color = grey_light,
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.15, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_set(theme_gray(base_size = 20))
+# Nombres de las columnas para la regresión
+reg_columns <- c("Term", "Est.", "S.E.", "t stat.", "p-Value")
+# Formato de p valores
+format_pvi <- function(pv) {
+  return(ifelse(
+    pv < 0.0001,
+    "<0.0001",
+    round(pv, 4) %>% format(scientific = F)
+  ))
+}
+format_pv <- function(pvs) lapply(X = pvs, FUN = format_pvi) %>% unlist()
+# Tidy regression results table
+tidy_table <- function(x, terms, highlight_row = 1, highlight_color = "black", highlight_bold = T, digits = c(NA, 3, 3, 2, 5), title = NULL) {
+  x %>%
+    tidy() %>%
+    select(1:5) %>%
+    mutate(
+      term = terms,
+      p.value = p.value %>% format_pv()
+    ) %>%
+    kable(
+      col.names = reg_columns,
+      escape = F,
+      digits = digits,
+      caption = title
+    ) %>%
+    kable_styling(font_size = 20) %>%
+    row_spec(1:nrow(tidy(x)), background = "white") %>%
+    row_spec(highlight_row, bold = highlight_bold, color = highlight_color)
+}
+# A few extras
+xaringanExtra::use_xaringan_extra(c("tile_view", "fit_screen"))
+xaringanExtra::use_clipboard()
+xaringanExtra::use_share_again()
+xaringanExtra::style_share_again(
+  share_buttons = c("twitter", "linkedin", "pocket")
+)
+```
+
+name: xaringan-title
+class: inverse, left, bottom
+background-image: url(pictures/picuniform.jpg)
+background-size: cover
+
+# **`r rmarkdown::metadata$title`**
+----
+
+## **`r rmarkdown::metadata$subtitle`**
+
+### `r rmarkdown::metadata$author`
+### `r rmarkdown::metadata$date`
+
+```{r xaringanExtra-share-again, echo=FALSE}
+xaringanExtra::use_share_again()
+```
+---
+class: inverse, middle, center
+
+# Preguntas de las sesiones anteriores?
+
+---
+layout: true
+# Modelo ARCH
+
+---
+
+--
+<cy-blockquote>
+Por sus siglas hace referencia a **Autoregressive conditional heteroskedasticity**, modelos que involucran en una *estimación* comportamientos *volátiles* y que merecen ser tenidos en cuenta. La naturaleza de este tipo de series se encuentran en las .hi[financieras] y las .hi[macroeconómicas].
+</cy-blockquote>
+
+--
+
+```{r, fig.height=5, fig.width=8, echo=FALSE}
+data("byd", package="PoEdata")
+rts <- ts(byd$r)
+par(mfrow = c(1, 2))
+plot.ts(rts)
+hist(rts, main="Retorno de acciones empresa Y", breaks=20, freq=FALSE, col="red")
+```
+
+---
+
+--
+
+Los modelos ARCH van en la medida al análisis de los retornos financieros que tienen las acciones o bonos públicos y privados.
+
+--
+
+### A tener en cuenta
+
+--
+
+`r fa("mug-hot", fill="blue")` .hi-purple[Heterocedasticidad] Ahora no es solo un problema de .hi[corte transversal]. Tambien hay que mirarlo acá en series de tiempo.
+
+--
+
+`r fa("mug-hot", fill="blue")` Para que mis residuos sean **homocedasticos**:
+
+--
+
+$$\sigma^{2}_{\epsilon}=\sigma^{2}_{1}=\sigma^{2}_{2}=\sigma^{2}_{3}$$
+
+--
+
+`r fa("mug-hot", fill="blue")` En este caso puede existir **cierta** .hi[autocorrelación] en la varianza de la serie.
+
+--
+
+`r fa("mug-hot", fill="blue")` La volatilidad puede ser capturada como:
+
+--
+
+$$\begin{aligned}
+Y_{t}=&\beta_{0} + \beta_{1}X_{t}+ \epsilon_{t}\\
+\sigma^{2}_{t}=&Var (\epsilon_{t}|\epsilon_{t-\rho})\\ \sigma^{2}_{t}=& E(Y_{t}-\beta_{0}-\beta_{1}X_{t})
+\end{aligned}$$
+---
+
+--
+
+`r fa("mug-hot", fill="red")` Incorpora el efecto de los choques en distancia a la media de los periodos pasados, incondicional a su efecto a través de la volatilidad misma de los periodos pasados (Análogo  al MA en un ARIMA).
+
+--
+
+`r fa("mug-hot", fill="red")` Con esta intuición en mente, una forma clásica de definir los rezagos del ARCH(P) es con autocorrelogramas (Igual que el MA)
+
+--
+
+`r fa("mug-hot", fill="red")` Cuando t tiende a infinito, o dicho de otra manera, cuando tengo muchos periodos, la varianza debería ser algo relativamente constante (Varianza incondicional constante).
+
+
+---
+
+--
+
+.attn[La idea:]
+
+--
+
+`r fa("info-circle", fill="red")` Modelar $\sigma^{2}_{t}$ ya sea como un proceso AR o MA.
+
+--
+
+`r fa("info-circle", fill="red")` Recuerde que la **volatilidad** puede no ser constante. Ej: Periodos de .b[alta] volatilidad como de .hi[baja].
+
+--
+
+`r fa("info-circle", fill="red")` La volatilidad no es directamente observable. (Su naturaleza es latente).
+
+--
+
+`r fa("info-circle", fill="red")` Los efectos de nueva información: Una .b[alta] volatilidad es observada antes de que se hagan .hi[anuncios].
+
+---
+
+### Aplicación
+
+--
+
+1. Tenemos a $Y=f(x)\rightarrow y=\mu+\epsilon_t$
+
+```{r, echo=FALSE, warning=FALSE}
+# Instalación del paquete arch
+#install.packages("arch")
+
+# Simulación de datos para una serie de tiempo con volatilidad cambiante
+
+set.seed(123456) # Para replicar los resultados
+n <- 200  # Número de observaciones
+mu <- 0.05 # Media de la serie
+sigma_a <- 0.1  # Desviación estándar del proceso raíz blanca
+sigma_h <- 0.2 # Parámetro para controlar la volatilidad
+returns <- rnorm(n, mean = mu, sd = sigma_a)
+volatility <- sigma_h * (1 + 0.5 * returns^2)  # Modelo ARCH(1) para simular la volatilidad
+returns <- rnorm(n, mean = mu, sd = volatility)
+# Almacenar los datos en un dataframe
+my_data <- data.frame(returns = returns)
+
+#  Estimación del modelo ARCH usando dynlm 
+model <- dynlm(returns ~ 1, data = my_data)
+
+# Resumen del modelo
+summary(model)
+```
+
+
+---
+
+--
+
+Luego ese $\epsilon$ debe ser estimado con su rezago $\epsilon_t^2=c+\phi_t\epsilon_{t-1}^2$
+
+--
+
+```{r, echo=FALSE}
+errorbu <- ts(resid(model)^2)
+model.ARCH <- dynlm(errorbu~L(errorbu))
+summary(model.ARCH)
+```
+
+
+---
+
+--
+
+```{r}
+hest <- ts(2*model.ARCH$fitted.values^2)
+plot.ts(hest)
+```
+
+
+
+
+---
+
+--
+
+```{r, echo=FALSE}
+# Prueba de Ljung-Box para residuos
+checkresiduals(model.ARCH)
+```
+
+
+---
+layout: false
+class: inverse, middle, center
+
+# Modelos Garch
+
+---
+layout: true
+# Modelo Garch
+
+---
+
+--
+
+`r fa("palette", fill="red")`  Un modelo **GARCH (Generalized Autoregressive Conditional Heteroskedasticity)** es un tipo de modelo estadístico que se utiliza para modelar la *volatilidad* en series temporales, especialmente en finanzas.
+
+--
+
+**¿Qué significa esto?** En términos simples, imagina que estás estudiando el precio de una acción a lo largo del tiempo.  A veces el precio fluctúa mucho (alta volatilidad), y otras veces se mueve muy poco (baja volatilidad). Un modelo GARCH intenta capturar esta .hi[dinámica] no constante de la volatilidad.
+
+--
+
+### ¿Cómo funciona? 
+Un modelo GARCH asume que la varianza (la medida de volatilidad) del retorno de una serie temporal depende tanto del .hi-turquoise[valor pasado] de la propia varianza como de los .hi[valores pasados del retorno]. 
+
+---
+
+**Autoregresión:** La parte "autoregresiva" significa que el modelo utiliza información pasada para predecir futuros valores. En este caso, usa la varianza pasada para predecir la varianza futura.
+
+--
+
+**Heteroskedasticidad Condicional:**  La parte "heteroskedasticidad condicional" significa que la volatilidad no es constante a lo largo del tiempo. El modelo considera que la volatilidad depende de las condiciones actuales del mercado o la serie temporal.
+
+--
+
+.attn[Ejemplo:]
+
+--
+
+Si una acción ha tenido una gran fluctuación en el pasado (alta volatilidad), un modelo GARCH predeciría una mayor volatilidad para el futuro.  Al contrario, si la varianza ha sido .hi[baja] recientemente, se espera una volatilidad más baja en el futuro.
+
+---
+
+--
+
+### Aplicaciones: 
+
+--
+
+Los modelos GARCH son muy útiles en finanzas para:
+
+--
+
+`r fa("fighter-jet", fill="blue")`**Gestionar riesgo:** Los inversores utilizan los modelos GARCH para estimar el riesgo de sus carteras y tomar decisiones de inversión más informadas.
+
+--
+
+`r fa("fighter-jet", fill="blue")` **Precios de opciones:** El .hi[modelo GARCH] es esencial para calcular correctamente el precio de las opciones, ya que la volatilidad subyacente afecta su valor.
+
+--
+
+`r fa("fighter-jet", fill="blue")` **Pronóstico de precios:** Los modelos GARCH pueden ayudar a predecir movimientos futuros en los .hi[precios] de activos financieros.
+
+---
+
+--
+
+$$y_t = \mu + \epsilon_t$$
+
+
+Donde:
+- $y_t$ Es el valor observado de la serie temporal en el momento t.
+- $\mu$ Es la media de la serie temporal.
+- $\epsilon_t$ Es el término de error o residuo en el momento t.
+
+--
+
+$$\sigma_t^2 = \omega + \sum_{i=1}^{p} \alpha_i \epsilon_{t-i}^2 + \sum_{j=1}^{q} \beta_j \sigma_{t-j}^2$$
+
+--
+
+Donde:
+- $\sigma^2_t$ Es la varianza de $Y_t$ condicional.
+- $\omega$ Es un término constante positivo que representa la parte no autoregresiva de la volatilidad.
+- $\alpha_i \;y\; \beta_j$ Son los coeficientes de autoregresión de la varianza, donde i va desde 1 hasta p y j desde 1 hasta q.
+
+---
+
+### Aplicación
+
+--
+
+Usemos la misma serie, para ello entonces vinculamos:
+
+```{r, echo=FALSE}
+acf(returns)
+```
+
+---
+
+### Aplicación
+
+--
+
+Miramos su función de autocorrelación parcial
+
+```{r, echo=FALSE}
+pacf(returns)
+```
+
+---
+
+### Aplicación
+
+--
+
+Ahora corresponde al cuadrado
+
+```{r, echo=FALSE}
+acf(returns^2)
+```
+
+---
+
+### Aplicación
+
+--
+
+Lo mismo con la parcial
+
+```{r, echo=FALSE}
+pacf(returns^2)
+```
+
+
+---
+
+--
+
+Estimamos un GARCH (1,1)
+
+```{r, echo=FALSE}
+library(fGarch)
+mod1=garchFit(~1+garch(1,1),data=my_data,trace=F)
+summary(mod1)
+```
+
+
+---
+layout: false
+# Bibliografía
+
+
+`r fa('book')` Rabbi, F., Tareq, S.U., Islam, M.M., Chowdhury, M.A., & Abul Kashem, M. (2020). *A Multivariate Time Series Approach for Forecasting of Electricity Demand in Bangladesh Using ARIMAX Model*. 2020 2nd International Conference on Sustainable Technologies for Industry 4.0 (STI), 1-5.
+
+`r fa('book')` Hyndman, R.J., & Athanasopoulos, G. (2021). *Forecasting: principles and practice*, 3rd edition, OTexts: Melbourne, Australia.
+
+`r fa('book')` Shumway, R., & Stoffer, D. (2019). *Time series: a data analysis approach using R*. CRC Press.
+
+---
+name: adios
+class: middle
+
+.pull-left[
+# **¡Gracias!**
+<br/>
+## Modelos ARCH
+
+### Seguimos aprendiendo
+]
+
+.pull-right[
+.right[
+<img style="border-radius: 50%;"
+src="https://avatars.githubusercontent.com/u/39503983?v=4"
+width="150px" />
+
+`r fontawesome::fa("link")` [Syllabus/ Curso](https://pomelo.uninorte.edu.co/pls/prod/bwckctlg.p_disp_course_detail?cat_term_in=202210&subj_code_in=ECO&crse_numb_in=0010)<br/>
+`r fontawesome::fa("twitter")` [@keynes37](https://twitter.com/keynes37)<br/>
+`r fontawesome::fa("paper-plane")`[ cayanes@uninorte.edu.co](mailto:cayanes@uninorte.edu.co)
+]
+]

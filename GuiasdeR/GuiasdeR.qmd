@@ -69,8 +69,8 @@ p_load(modelsummary, tseries, atsa, readxl, rstatix, tidyverse, KableExtra)
 
 ::: {.fragment .fade-up}
 -   Recuerde que un modelo de regresión estático/dinámico de series tiempo viene a ser:
-- Tendencia simple:  $y_t= \delta_0+\delta_1 T_t+u_t$ 
-- Tendencia y rezago $y_t= \delta_0+\delta_1 T_t+\delta_2 y_{t-1}+u_t$
+-   Tendencia simple: $y_t= \delta_0+\delta_1 T_t+u_t$
+-   Tendencia y rezago $y_t= \delta_0+\delta_1 T_t+\delta_2 y_{t-1}+u_t$
 -   Este modelo solo nos muestra la relación de la variable objetivo con su **Tendencia**
 -   Anteriormente se usaba mucho para intentar predecir el siguiente movimiento de la serie
 :::
@@ -188,8 +188,8 @@ bsd1 |>
 
 -   Recordemos que las [estadísticas]{.alert} son claves para ver desde el interior de las [variables]{.bg style="--col: #FFE603"}.
 -   No podemos decir nada si no conocemos las [características]{.alert} de las series
-- El rango intercuartil (IQR, por sus siglas en inglés) es una medida estadística de dispersión que describe la distancia entre el primer cuartil (Q1) y el tercer cuartil (Q3) de un conjunto de datos.
-- El IC viene a ser el intervalo de confianza de la media de la distribución.
+-   El rango intercuartil (IQR, por sus siglas en inglés) es una medida estadística de dispersión que describe la distancia entre el primer cuartil (Q1) y el tercer cuartil (Q3) de un conjunto de datos.
+-   El IC viene a ser el intervalo de confianza de la media de la distribución.
 
 ### Kable
 
@@ -290,7 +290,8 @@ lm(HOUS~DPI+PRELHOUS, data=dt1)|>
 -   Nuestro modelo viene a ser: $Log(Hous)=Log\;\delta_0+ \delta_1 Log\;DPI+\delta_2 Log\;PRELHOUS+log\;\varepsilon_t$
 :::
 
-## Caso 1 
+## Caso 1
+
 ### Comparaciones
 
 ```{r}
@@ -318,8 +319,6 @@ setFixest_dict(dict)
 #etable(mdf1, mdf2, tex = TRUE)
 modelsummary(list(mdf1, mdf2), coef_map = dict, output = "markdown")
 ```
-
-
 
 ## Caso 1
 

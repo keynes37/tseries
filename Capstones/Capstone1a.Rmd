@@ -1,0 +1,132 @@
+---
+title: "Capstone 1a"
+subtitle: "Pronósticos ETS"
+author: "**Universidad del Norte** Eco 1731: Econometría II"
+date: "<br> **Fecha Límite**: Lunes, 2 Septiembre 2024"
+output: 
+  xaringan::moon_reader:
+    css: ['default', 'metropolis', 'metropolis-fonts', 'my-css.css']
+    # self_contained: true
+    nature:
+      ratio: '8.5:11'
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+class: clear
+
+```{R, setup, include = F}
+# Packages
+library(pacman)
+p_load(
+  ggplot2, gridExtra, ggthemes, latex2exp, kableExtra,
+  tidyverse, broom, knitr, magrittr
+)
+# Colors
+red_pink <- "#e64173"
+turquoise <- "#20B2AA"
+grey_light <- "grey70"
+grey_mid <- "grey50"
+grey_dark <- "grey20"
+# Themes
+theme_axes_y <- theme_void() + theme(
+  text = element_text(family = "sans"),
+  axis.title = element_text(size = 11),
+  plot.title = element_text(size = 11, hjust = 0.5),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, -0.2, 0, 0, unit = "lines")),
+  axis.text.y = element_text(
+    size = 10, angle = 0, hjust = 0.9, vjust = 0.5,
+    margin = margin(0, 0.4, 0, 0, unit = "lines")
+  ),
+  axis.line = element_line(
+    color = grey_light,
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.07, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes_x <- theme_void() + theme(
+  text = element_text(family = "sans"),
+  axis.title = element_text(size = 11),
+  plot.title = element_text(size = 11, hjust = 0.5),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, -0.2, 0, 0, unit = "lines")),
+  axis.text.x = element_text(
+    size = 10, angle = 0, hjust = 0.9, vjust = 0.5,
+    margin = margin(0, 0.4, 0, 0, unit = "lines")
+  ),
+  axis.line = element_line(
+    color = grey_light,
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.07, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_set(theme_gray(base_size = 11))
+# Knitr options
+opts_chunk$set(
+  comment = "#>",
+  fig.align = "center",
+  warning = F,
+  message = F
+)
+```
+
+.mono[**ENTREGABLE**]: El proyecto debe ser realizado máximo por dos (2) personas. Para las **siguientes** preguntas conteste solo lo que se le pide. **No se acepta** ningún trabajo adicional a la fecha del _lunes 2 _ de **septiembre** hasta la hora de las 23:59 en la carpeta del brightspace disponible para esto y cuya entrega solo debe hacerla un/a (1) de los integrantes del grupo.
+
+Las entregas debe hacerlas en la [Carpeta Capstone](https://cursos.uninorte.edu.co/d2l/home) respectiva. **Sus entregas pueden ser uno de dos archivos**: (.hi[1]) Uno donde va todo el análisis que puede ser un documento pdf con nombre (_p.e._, .hi[yanesramos.pdf]) u otro archivo (.hi[2]) como el html de .mono[R].
+
+.mono[**OBJETIVO**]: Esto tiene tres intenciones: (1) re-forzar lo visto en clases; (2) Usted aprenda a preparar un informe con las herramientas de .mono[R];  y  ademas (3) ver que tan hábil es para resolver problemas con series de tiempo.
+
+## Problema 1: Análisis ETS
+
+**1a.** Tome los datos de la base del World Bank desde el link: [GDP por Países](https://datos.bancomundial.org/indicador/NY.GDP.MKTP.KN) y escoja un país cualquiera con 20 datos (años) realice un análisis completo, incluyendo un reporte de estadísticas básicas para la series.
+
+**1b.** Construya un histograma de frecuencias para la serie. ¿Qué le indica?
+
+**1c.** Muestre el análisis que le da un modelo ETS
+
+**1d.** Haga ahora manual 3 modelos ETS que usted quisiera comparar con el modelo optimizado en la parte (c). Haga comparaciones y justifique su elección.
+
+**1e.** Plantee el pronostico por cinco (5) periodos de la serie
+
+## Problema 2: Media y Varianza (Hagalo a mano!!) no .mono[R]
+
+Sea los siguientes procesos:
+
+| F(x) | 0.15 | 0.31 | 0.08 | 0.25 | 0.1 | 0.01 |
+|------|------|------|------|------|------|------|
+| X    | 15   | -19  | 11   | 18   | 21   | -15 |
+
+| F(y) | 0.14 | 0.18 | 0.09 | 0.19 | 0.30 | 0.10 |
+|------|------|------|------|------|------|------|
+| Y    | 3.9  | 4.8  | -2.9 | -1.8 | 9.2  | 8.3  |
+
+
+**2a.** Establezca el valor esperado o media $E(X)$ y $E(Y)$, ademas de la varianza $var(X)$ y $var(Y)$ para cada una de las anteriores series.
+
+**2b.** Para las siguientes ecuaciones encuentre la media y la varianza:
+
+- $Y_{t}=1+0.43Y_{t-1}+\epsilon_{t}$ donde $\epsilon_{t} \sim (0, 0.7)$.  
+- $Y_{t}=1+0.91Y_{t-1}+\epsilon_{t}$ donde $\epsilon_{t} \sim (0, 5)$.
+
+---
+class: clear
+
+## Problema 3: Aprenda de Máxima verosimilitud
+
+**3a.** Plantee la función de máxima verosimilitud en términos logarítmicos y halle el parámetro (estimador) de $(\beta_{1})$ de la función:
+$$\mathcal{L} \left ( \mu \right )=  \frac{1}{\left (2\pi\sigma^{2}\right )^{n/2}}  exp \left \{ -\frac{1}{2\sigma^{2}} \sum \limits_{i=1}^{n} \left ( y_{i}-\beta_{0}-\beta_{1}x_{i} \right )^{2} \right \}$$
+**3b.** Cuál viene a ser el resultado del parámetro de $\beta_{1}$? (demuestrelo y explique cada paso de la ecuación)
+
+## Problema 4: Empalme
+
+Use la base de datos proporcionada en el archivo de excel denominado .hi[Empalme práctico.xls], Hace referencia a una serie de tiempo con base a dos versiones o fechas constantes de manera histórica. <br/>
+
+**4.a** Establezca las estadísticas descriptivas de las series.
+
+**4.b** Realice un empalme hacia adelante de estas series.
+
