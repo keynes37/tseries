@@ -4,7 +4,7 @@
     <title>Econometría II</title>
     <meta charset="utf-8" />
     <meta name="author" content="Carlos A. Yanes Guerra" />
-    <script src="libs/header-attrs-2.22/header-attrs.js"></script>
+    <script src="libs/header-attrs-2.26/header-attrs.js"></script>
     <link href="libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
     <script src="libs/tile-view-0.2.6/tile-view.js"></script>
     <script src="libs/xaringanExtra_fit-screen-0.2.6/fit-screen.js"></script>
@@ -37,7 +37,7 @@ background-size: cover
 ## **&lt;br/&gt; VAR**
 
 ### Carlos A. Yanes Guerra
-### 2023-II
+### 2024-II
 
 
 ---
@@ -65,7 +65,7 @@ layout: true
 
 --
 
-<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg> Los modelos de .hi[vectores auto-regresivos] (VAR) fueron desarrollados a partir de la critica de Sims a los modelos macroeconómicos que no identificaban la existencia de relaciones exógenas y endógenas entre las variables.
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg> Los modelos de .hi[vectores auto-regresivos] (VAR) fueron desarrollados a partir de la critica de **Sims** a los modelos macroeconómicos que no identificaban la existencia de relaciones exógenas y endógenas entre las variables.
 
 --
 
@@ -75,7 +75,7 @@ layout: true
 
 - Como el pasado afecta el presente de las variables y si una variable puede ser útil para pronosticar otra (causalidad de Granger)
 
-- Analizar las .hi-purple[relaciones dinámicas] basadas en efectos contemporáneos e impulsos respuesta 
+- Analizar las .hi-purple[relaciones dinámicas] basadas en **efectos contemporáneos** e .hi[impulsos respuesta] 
 
 - Pronósticos 
 
@@ -92,7 +92,7 @@ layout: true
 
 --
 
-<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M88 0C74.7 0 64 10.7 64 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C120.5 112.3 128 119.9 128 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C119.5 47.7 112 40.1 112 24c0-13.3-10.7-24-24-24zM32 192c-17.7 0-32 14.3-32 32V416c0 53 43 96 96 96H288c53 0 96-43 96-96h16c61.9 0 112-50.1 112-112s-50.1-112-112-112H352 32zm352 64h16c26.5 0 48 21.5 48 48s-21.5 48-48 48H384V256zM224 24c0-13.3-10.7-24-24-24s-24 10.7-24 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C232.5 112.3 240 119.9 240 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C231.5 47.7 224 40.1 224 24z"/></svg> Los .hi[modelos VAR] parten de una forma *estructural* o primitiva que requiere ser transformada a una forma reducida.
+<svg aria-hidden="true" role="img" viewBox="0 0 512 512" style="height:1em;width:1em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:red;overflow:visible;position:relative;"><path d="M88 0C74.7 0 64 10.7 64 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C120.5 112.3 128 119.9 128 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C119.5 47.7 112 40.1 112 24c0-13.3-10.7-24-24-24zM32 192c-17.7 0-32 14.3-32 32V416c0 53 43 96 96 96H288c53 0 96-43 96-96h16c61.9 0 112-50.1 112-112s-50.1-112-112-112H352 32zm352 64h16c26.5 0 48 21.5 48 48s-21.5 48-48 48H384V256zM224 24c0-13.3-10.7-24-24-24s-24 10.7-24 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C232.5 112.3 240 119.9 240 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C231.5 47.7 224 40.1 224 24z"/></svg> Los .hi[modelos VAR] parten de una forma *estructural* o primitiva que requiere ser transformada o volver una forma reducida.
 
 --
 
@@ -143,7 +143,7 @@ Si `\(\beta_{11}\)` no es cero, `\(\varepsilon_{rt}\)` tiene un efecto contempor
 
 --
 
-Las ecuaciones del sistema no se pueden estimar por .hi-purple[MCO] debido a la existencia de esos efectos contemporáneos `\(\beta_{11}\)` y `\(\beta_{21}\)` que generan .hi[endogeneidad] por doble causalidad, lo que lleva a estimar estimadores sesgados.
+Las ecuaciones del sistema no se pueden estimar por .hi-purple[MCO] debido a la existencia de esos efectos contemporáneos `\(\beta_{11}\)` y `\(\beta_{21}\)` que generan .hi[endogeneidad] por doble causalidad, lo que lleva a tener .hi-purple[estimadores] **sesgados**.
 
 ---
 
@@ -183,7 +183,7 @@ X_{t-1}
 
 --
 
-Desde luego podemos imponer un modelo .hi[estructural] de tal forma que:
+Desde luego podemos establecer un modelo .hi[estructural] de tal forma que:
 
 --
 
@@ -195,7 +195,50 @@ La forma estructural da para .hi-purple[10] parámetros, lo que es 8 coeficiente
 
 --
 
-Note que la diagonal de la matriz de covarianza es igual a (1), la razón es que se normalizó - *es un criterio que se impone*
+Note que la diagonal de la matriz de covarianza es igual a (1), la razón es que se 
+normalizó - *es un criterio que se impone*
+
+---
+
+--
+
+### Demostración de la parte de (normalización):
+
+--
+
+- Cuando se habla de .hi[identificación] del VAR se hace alusión a la imposición de .mono[restricciones] o .hi-red[condiciones] para poder estimar unos parámetros.
+
+--
+
+- Veamos esto con un ejemplo más *ilustrativo*, olvidemos por un momento que hablamos de VAR. Tenemos una ecuación cualquiera dada por:
+
+--
+
+`$$AX-BY=0$$`
+- Tenemos en esta ocasión encontrar (2) parámetros (A y B).
+
+--
+
+`$$Y=\dfrac{AX}{B}$$`
+
+--
+
+- Si reducimos la expresión tendremos: `\(C=\dfrac{A}{B}\)`, pero eso nos da:
+
+--
+
+`$$Y=CX$$`
+
+
+---
+
+--
+
+- El problema de `\(Y=CX\)`, es que apenas hemos encontrado un .mono[parámetro] y es lo mismo que ocurre con los modelos **VAR**.
+
+--
+
+- Corresponde entonces establecer restricciones para poder estimarlo correctamente
 
 ---
 
@@ -352,8 +395,7 @@ layout: true
 
 --
 
-Cuando se habla de **identificación** del VAR se hace alusión a la imposición de *restricciones* o .hi-purple[condiciones] para poder estimar unos parámetros. 
-Veamos esto con un ejemplo más ilustrativo, olvidemos por un momento que hablamos de VAR. Tenemos una ecuación cualquiera dada por:
+Cuando se habla de **identificación** del VAR se hace alusión a la imposición de *restricciones* o .hi-purple[condiciones] para poder estimar unos parámetros. Recuerque que habiamos hecho algo de:
 
 --
 
@@ -589,15 +631,15 @@ La relación anterior es clave, pues está mostrando que por medio de una combin
 
 --
 
-2. En un VAR reducido, en `\(\Sigma\)` (matriz de covarianza) incorpora efectos contemporaneos que viene a ser `\(\frac{n(n+1)}{2}\)`
+2. En un VAR reducido, en `\(\Sigma\)` (matriz de covarianza) incorpora efectos contemporaneos que viene a ser `\(-\dfrac{n(n+1)}{2}\)`
 
 --
 
-.attn[Por ejemplo:] ¿cuantas restricciones se requieren para los siguientes VAR, uno con 3 variables y otro con 4?
+.hi[.mono[Por ejemplo]:] ¿cuantas restricciones se requieren para los siguientes VAR, uno con 3 variables y otro con 4?
 
 --
 
-.ex[Restricciones]: `\(\frac{n^2-n}{2}=\frac{3^2-3}{2}=3\)` y para el otro `\(\frac{4^2-4}{2}=6\)` 
+.ex[Restricciones]: `\(\dfrac{n^2-n}{2}=\dfrac{3^2-3}{2}=3\)` y para el otro `\(\frac{4^2-4}{2}=6\)` 
 
 --
 
@@ -699,6 +741,19 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
     deleted = true;
   });
 })();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
 (function() {
   "use strict"
   // Replace <script> tags in slides area to make them executable

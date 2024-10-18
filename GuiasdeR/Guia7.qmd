@@ -42,21 +42,21 @@ p_load(readxl, TSstudio, tidyverse, stats, urca, forecast, ggfortify, ggplot2, t
 
 ## Modelo ARCH
 
-::: fragment
+:::: fragment
 ::: callout-note
 ## Definición
 
 Son modelos utilizados para modelar la media condicional de una serie y con esto su error. Son muy usados para pronostico de volatilidad o choque en el tiempo de la variable **observada**.
 :::
-:::
+::::
 
-::: fragment
+:::: fragment
 ::: incremental
 -   $$y_t=\phi+\varepsilon_{t}$$
 -   $$\varepsilon_t=\rho_{t-1}+\nu_t$$
 -   $$\nu_t \sim N(0, \sigma_t^2)$$
 :::
-:::
+::::
 
 ## Contexto de los modelos {.smaller}
 
@@ -72,13 +72,13 @@ Son modelos utilizados para modelar la media condicional de una serie y con esto
 `r fa("palette", fill="red")` Un modelo ARCH es:
 :::
 
-::: fragment
+:::: fragment
 ::: incremental
 -   La forma matemática de $$Y_{t}= \phi Y_{t-1}+\epsilon_{t}, \quad |\phi| < 1$$
 -   Si su `r fa("mug-hot", fill="red")` varianza es: $$Var_{t-1}\epsilon_{t}=h^{2}_{t}= \alpha_{0}+\alpha_{1}\epsilon^{2}_{t-1}$$
 -   Lo *anterior* puede ser reescrito como: $$h^{2}_{t}-\sigma^{2}= \alpha_{1}(\epsilon^{2}_{t-1}-\sigma^{2})$$
 :::
-:::
+::::
 
 ## Datos
 
@@ -184,6 +184,11 @@ carteraArchTest
 hhat <- ts(2*tcar.ARCH$fitted.values^2)
 plot.ts(hhat)
 ```
+
+# Vamos a estipular un GARCH para la serie
+
+
+
 
 # Gracias por su atención!! {background-color="#cc0000"}
 

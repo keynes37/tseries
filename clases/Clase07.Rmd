@@ -3,7 +3,7 @@ title: "Econometría II"
 subtitle: "<br/> VAR"
 author: "Carlos A. Yanes Guerra"
 institute: "Universidad del Norte"
-date: "2023-II"
+date: "2024-II"
 output:
   xaringan::moon_reader:
     css: 
@@ -212,7 +212,7 @@ layout: true
 
 --
 
-`r fa("info-circle", fill="red")` Los modelos de .hi[vectores auto-regresivos] (VAR) fueron desarrollados a partir de la critica de Sims a los modelos macroeconómicos que no identificaban la existencia de relaciones exógenas y endógenas entre las variables.
+`r fa("info-circle", fill="red")` Los modelos de .hi[vectores auto-regresivos] (VAR) fueron desarrollados a partir de la critica de **Sims** a los modelos macroeconómicos que no identificaban la existencia de relaciones exógenas y endógenas entre las variables.
 
 --
 
@@ -222,7 +222,7 @@ layout: true
 
 - Como el pasado afecta el presente de las variables y si una variable puede ser útil para pronosticar otra (causalidad de Granger)
 
-- Analizar las .hi-purple[relaciones dinámicas] basadas en efectos contemporáneos e impulsos respuesta 
+- Analizar las .hi-purple[relaciones dinámicas] basadas en **efectos contemporáneos** e .hi[impulsos respuesta] 
 
 - Pronósticos 
 
@@ -238,7 +238,7 @@ knitr::include_graphics("pictures/vardi.png")
 
 --
 
-`r fa("mug-hot", fill="red")` Los .hi[modelos VAR] parten de una forma *estructural* o primitiva que requiere ser transformada a una forma reducida.
+`r fa("mug-hot", fill="red")` Los .hi[modelos VAR] parten de una forma *estructural* o primitiva que requiere ser transformada o volver una forma reducida.
 
 --
 
@@ -289,7 +289,7 @@ Si $\beta_{11}$ no es cero, $\varepsilon_{rt}$ tiene un efecto contemporáneo in
 
 --
 
-Las ecuaciones del sistema no se pueden estimar por .hi-purple[MCO] debido a la existencia de esos efectos contemporáneos $\beta_{11}$ y $\beta_{21}$ que generan .hi[endogeneidad] por doble causalidad, lo que lleva a estimar estimadores sesgados.
+Las ecuaciones del sistema no se pueden estimar por .hi-purple[MCO] debido a la existencia de esos efectos contemporáneos $\beta_{11}$ y $\beta_{21}$ que generan .hi[endogeneidad] por doble causalidad, lo que lleva a tener .hi-purple[estimadores] **sesgados**.
 
 ---
 
@@ -329,7 +329,7 @@ X_{t-1}
 
 --
 
-Desde luego podemos imponer un modelo .hi[estructural] de tal forma que:
+Desde luego podemos establecer un modelo .hi[estructural] de tal forma que:
 
 --
 
@@ -341,7 +341,50 @@ La forma estructural da para .hi-purple[10] parámetros, lo que es 8 coeficiente
 
 --
 
-Note que la diagonal de la matriz de covarianza es igual a (1), la razón es que se normalizó - *es un criterio que se impone*
+Note que la diagonal de la matriz de covarianza es igual a (1), la razón es que se 
+normalizó - *es un criterio que se impone*
+
+---
+
+--
+
+### Demostración de la parte de (normalización):
+
+--
+
+- Cuando se habla de .hi[identificación] del VAR se hace alusión a la imposición de .mono[restricciones] o .hi-red[condiciones] para poder estimar unos parámetros.
+
+--
+
+- Veamos esto con un ejemplo más *ilustrativo*, olvidemos por un momento que hablamos de VAR. Tenemos una ecuación cualquiera dada por:
+
+--
+
+$$AX-BY=0$$
+- Tenemos en esta ocasión encontrar (2) parámetros (A y B).
+
+--
+
+$$Y=\dfrac{AX}{B}$$
+
+--
+
+- Si reducimos la expresión tendremos: $C=\dfrac{A}{B}$, pero eso nos da:
+
+--
+
+$$Y=CX$$
+
+
+---
+
+--
+
+- El problema de $Y=CX$, es que apenas hemos encontrado un .mono[parámetro] y es lo mismo que ocurre con los modelos **VAR**.
+
+--
+
+- Corresponde entonces establecer restricciones para poder estimarlo correctamente
 
 ---
 
@@ -498,8 +541,7 @@ layout: true
 
 --
 
-Cuando se habla de **identificación** del VAR se hace alusión a la imposición de *restricciones* o .hi-purple[condiciones] para poder estimar unos parámetros. 
-Veamos esto con un ejemplo más ilustrativo, olvidemos por un momento que hablamos de VAR. Tenemos una ecuación cualquiera dada por:
+Cuando se habla de **identificación** del VAR se hace alusión a la imposición de *restricciones* o .hi-purple[condiciones] para poder estimar unos parámetros. Recuerque que habiamos hecho algo de:
 
 --
 
@@ -735,15 +777,15 @@ La relación anterior es clave, pues está mostrando que por medio de una combin
 
 --
 
-2. En un VAR reducido, en $\Sigma$ (matriz de covarianza) incorpora efectos contemporaneos que viene a ser $\frac{n(n+1)}{2}$
+2. En un VAR reducido, en $\Sigma$ (matriz de covarianza) incorpora efectos contemporaneos que viene a ser $-\dfrac{n(n+1)}{2}$
 
 --
 
-.attn[Por ejemplo:] ¿cuantas restricciones se requieren para los siguientes VAR, uno con 3 variables y otro con 4?
+.hi[.mono[Por ejemplo]:] ¿cuantas restricciones se requieren para los siguientes VAR, uno con 3 variables y otro con 4?
 
 --
 
-.ex[Restricciones]: $\frac{n^2-n}{2}=\frac{3^2-3}{2}=3$ y para el otro $\frac{4^2-4}{2}=6$ 
+.ex[Restricciones]: $\dfrac{n^2-n}{2}=\dfrac{3^2-3}{2}=3$ y para el otro $\dfrac{4^2-4}{2}=6$ 
 
 --
 
