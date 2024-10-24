@@ -1,0 +1,122 @@
+---
+title: "Capstone Final"
+subtitle: "Modelo VAR"
+author: "**Universidad del Norte** Eco 1731: Econometría II"
+date: "<br> **Fecha Límite**: sábado, 2 de noviembre 2024"
+output: 
+  xaringan::moon_reader:
+    css: ['default', 'metropolis', 'metropolis-fonts', 'my-css.css']
+    # self_contained: true
+    nature:
+      ratio: '8.5:11'
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+class: clear
+
+```{R, setup, include = F}
+# Packages
+library(pacman)
+p_load(
+  ggplot2, gridExtra, ggthemes, latex2exp, kableExtra,
+  tidyverse, broom, knitr, magrittr
+)
+# Colors
+red_pink <- "#e64173"
+turquoise <- "#20B2AA"
+grey_light <- "grey70"
+grey_mid <- "grey50"
+grey_dark <- "grey20"
+# Themes
+theme_axes_y <- theme_void() + theme(
+  text = element_text(family = "sans"),
+  axis.title = element_text(size = 11),
+  plot.title = element_text(size = 11, hjust = 0.5),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, -0.2, 0, 0, unit = "lines")),
+  axis.text.y = element_text(
+    size = 10, angle = 0, hjust = 0.9, vjust = 0.5,
+    margin = margin(0, 0.4, 0, 0, unit = "lines")
+  ),
+  axis.line = element_line(
+    color = grey_light,
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.07, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes_x <- theme_void() + theme(
+  text = element_text(family = "sans"),
+  axis.title = element_text(size = 11),
+  plot.title = element_text(size = 11, hjust = 0.5),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, -0.2, 0, 0, unit = "lines")),
+  axis.text.x = element_text(
+    size = 10, angle = 0, hjust = 0.9, vjust = 0.5,
+    margin = margin(0, 0.4, 0, 0, unit = "lines")
+  ),
+  axis.line = element_line(
+    color = grey_light,
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.07, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_set(theme_gray(base_size = 11))
+# Knitr options
+opts_chunk$set(
+  comment = "#>",
+  fig.align = "center",
+  warning = F,
+  message = F
+)
+```
+
+.mono[**ENTREGABLE**]: El proyecto debe ser realizado máximo por cuatro (4) personas. Para las **siguientes** preguntas conteste solo lo que se le pide. **No se acepta** ningún trabajo adicional a la fecha del _sábado 2_ de noviembre del presente año hasta la hora de las 23:59 en la carpeta del brightspace disponible para esto y cuya entrega solo debe hacerla un/a (1) de los integrantes del grupo.
+
+Las entregas debe hacerlas en la [Carpeta Capstone](https://cursos.uninorte.edu.co/d2l/home) respectiva. **Sus entregas pueden ser de dos archivos**: (.hi[1]) Uno donde van los análisis que puede ser un documento pdf con nombre (_p.e._, .hi[yanesmola.pdf]) y en otro archivo (.hi[2]) el script de .mono[R]. Otra alternativa -que es mejor aún- es hacerlo mediante un (.hi[1]) solo archivo tipo **Markdown** donde incluye automáticamente el script y las respuestas del taller.
+
+.mono[**OBJETIVO**]: Los estudiantes muestren que pueden construir teoría con modelos parámetricos de vectores VAR y hagan uso de .mono[R]
+
+## Problema 1: Modelo VAR
+
+Abra el archivo proporcionado y titulado como: **Captsfinal.csv**, que muestra algunos datos macroeconómicos historicos de la economía de los EEUU en 1948 y cuyas variables principales que se describen son: GDP (PIB) y UNE(Desempleo)
+
+**1a.** Especifique con las variables de la base el siguiente modelo VAR de la economía X:
+$$Y_{i}= \theta_{0}+  \sum_{i=1}^{P}  \theta_{i} x_{t-i} + \epsilon_{t}$$
+Donde $x_{t}$ es el vector que contiene la información de las variables: PIB y UNE.
+
+**1b.** Haga un análisis gráfico de las series en niveles. Haga por favor los test de estacionariedad y estime el modelo VAR reducido. ¿Qué orden de modelo encuentra?
+
+**1c.** Diagnostique el modelo VAR (Causalidad Granger, estabilidad y normalidad). *Ojo, no haga solo los comandos. Interprete cada resultado*
+
+**1d.** Plantee las impulso respuestas de este modelo. *Interprete cada una de estas*.
+
+**1e.** Pronostique hasta 15 periodos cada una de las variables.
+
+**1f.** Implemente un SVAR con las variables de la base de datos.
+
+**1g.** Establezca los choques o impulsos y explique. Diganos en la descomposición de varianza que implica la participación de cada variable sobre la otra?.
+
+---
+class: clear
+
+## Problema 2: Modelo VEC
+
+Si de la implementación del modelo VAR reducido se puede construir un Modelo de corrección del error (VEC) de la forma:
+
+$$\Delta y_{t}=\beta_{1}\left ( y_{t-1}- \gamma x_{t-1} \right ) + \eta_{11} \Delta x_{t-1}+ \eta_{12} \Delta y_{t-1}  +\epsilon_{1t}$$
+
+$$\Delta x_{t}=\beta_{2}\left ( y_{t-1}- \gamma x_{t-1} \right ) + \eta_{21} \Delta x_{t-1}+ \eta_{22} \Delta y_{t-1} +\epsilon_{2t}$$
+
+**2a.** Establezca el test de cointegración de Johannsen para estas variables. **Interprete el Test** y establezca los niveles de relación si existen. ¿Qué encuentra? ¿Qué pude concluir?
+
+**2b.** Estime el modelo VEC con esas variables.
+ 
+**2c.** Plantee un diagnostico del modelo.
+
+**2d.** Estime si es posible un pronostico de 10 periodos para ese grupo de variables.
+
