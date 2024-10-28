@@ -35,8 +35,9 @@ Modelo Arch [Class 07](https://raw.githack.com/keynes37/tseries/main/GuiasdeR/Gu
 
 Modelo Armax [Class 08](https://raw.githack.com/keynes37/tseries/main/clases/Clase06.html)
 
-Modelo VAR[Clase 09](https://raw.githack.com/keynes37/tseries/main/GuiasdeR/Guia10.html)
+Modelo VAR [Clase 09](https://raw.githack.com/keynes37/tseries/main/GuiasdeR/Guia10.html)
 
 ### Adicional
-Modelo VEC[Clase 11](https://raw.githack.com/keynes37/tseries/main/GuiasdeR/Guia11.html)
+Modelo VEC [Clase 11](https://raw.githack.com/keynes37/tseries/main/GuiasdeR/Guia11.html)
+
 Modelo VEC in bound [Clase boue]
