@@ -1,0 +1,228 @@
+---
+title: "Vector de corrección del Error (VEC)"
+subtitle: "Maestría en Economía Uninorte"
+author: "Carlos Andrés Yanes"
+date: "2024-10-28"
+format:
+    pdf: default
+    html: 
+      self-contained: true
+      grid: 
+        margin-width: 350px
+execute: 
+  warning: false
+reference-location: margin
+citation-location: margin
+bibliography: refs.bib
+---
+
+# Preambulo
+
+
+
+### ¿Qué es la endogeneidad?
+La endogeneidad puede surgir por varias razones, como la presencia de variables omitidas, la simultaneidad, o el error de medición. Por ejemplo, al evaluar el impacto de la educación en los ingresos, es posible que factores no observados como la habilidad innata o el entorno familiar influyan tanto en la educación como en los ingresos, generando una correlación entre la educación y el término de error.
+
+### ¿Qué son las Variables Instrumentales?
+Las variables instrumentales se utilizan para resolver este problema. Una variable instrumental es una variable que está correlacionada con la variable explicativa endógena pero que no está correlacionada con el término de error. En otras palabras, el instrumento afecta el resultado solo a través de su impacto en la variable endógena.
+
+Supongamos que estamos interesados en medir el impacto de una intervención educativa en los salarios futuros. Si los individuos que eligen participar en la intervención son aquellos más motivados o con más recursos, la simple estimación de una regresión lineal podría sobreestimar el impacto de la intervención debido a la selección no aleatoria. Aquí es donde un buen instrumento es vital.
+
+Si encontramos un instrumento válido, como una política de expansión educativa que no está directamente relacionada con los salarios futuros, podemos utilizarlo para estimar el impacto causal de la educación en los ingresos, aislando el efecto de la endogeneidad.
+
+::: {.callout-tip}
+## Cuidado
+La base de datos para este modulo solo será enviada por correo electronico a los estudiantes del curso de Econometría de la Universidad del Norte
+:::
+
+## Datos
+
+* Fuente original es de Jeffrey R. Kling (2001).
+
+* El artículo se llama: "Interpreting Instrumental Variables Estimates of the Returns to Schooling". Journal of Business and Economic Statistics, 19, 358-364.
+
+* Tiene que ver con los retornos de la educación[^1]
+
+[^1]: Hemos insistido en los temas de educación ya que existe una amplia literatura en la implementación de este tipo de **instrumentos** para una correcta estimación
+
+## Limpiando el Environment de R
+
+```{r}
+rm(list = ls())
+```
+
+## Preparación del entorno para ejecución
+
+Primero que nada preparar los paquetes que se van a usar para realizar el ejercicio. Estos permitiran usar las `funciones` para los cálculos pertinentes
+
+```{r}
+library(pacman)
+p_load(lmtest, foreign, haven, tidyverse, stargazer, dplyr, estimatr, ggplot2, sandwich)
+```
+
+### Cargar la base de datos
+Del archivo proporcionado y utilizando a `haven` procedemos a importar la base
+```{r}
+base.ed <- read_dta("Returnseducational.dta")
+head(base.ed)
+```
+
+### Etiquetas
+
+La base de datos de acuerdo a las columnas de datos podemos decir de cada una de ellas lo siguiente:
+
+| Variable  | Tipo  | Etiqueta de la Variable                     |
+|-----------|-------|---------------------------------------------|
+| wage76    | float | Salario en el '76                           |
+| grade76   | float | Nivel educativo en el '76                   |
+| col4      | float | Si hay alguna universidad de 4 años cerca   |
+| age76     | float | Edad en el '76 (edad66 + 10)                |
+
+
+## Estadistica
+
+```{r}
+summary(base.ed[c("wage76", "grade76", "col4", "age76")])
+```
+
+### Correlación
+
+Por un momento miremos la correlación que existe entre este par de variables. El **objetivo** es mirar si existe <u>relación</u> entre ellas, es una especie de tener presente que no vayamos a tener Este es un texto normal y <span style="color:red">multicolinealidad </span> en el modelo.
+
+```{r}
+# Correlación
+cor(base.ed$grade76, base.ed$col4)
+```
+
+# Primer modelo de estimación
+Vamos a mirar el resultado de la estimación
+
+```{r}
+ols_model <- lm(wage76 ~ grade76 + age76, base.ed)
+coeftest(ols_model, vcov = vcovHC(ols_model, type = "HC"))
+```
+
+Denotando que el <span style="color:red">Número de años que llevaba aprobados</span>
+hasta el año 76 genera un impacto en el salario bastante significativo. A medida que esto aumenta en un año adicional el salario tambien aumenta.
+
+
+# Guardar el modelo MCO
+A continuación con el objetivo de hacer una comparación adecuada de modelos vamos a ir guardando las salidas correspondientes en objetos para darle una forma mas adecuada y con ellos tener una mejor interpretabilidad
+
+```{r}
+ols_model <- lm(wage76 ~ grade76 + age76, data = base.ed)
+```
+
+# Modelo IV usando la función ivreg del paquete AER
+Empecemos a instrumentar, la idea parte de decir que el hecho de que una universidad este cerca a un individuo incide en su escolaridad o tomar una elección de hacerlo pero no tiene nada que ver con el salario que percibe. La edad tambien se convierte en otro instrumento clave. La edad es un factor decisorio para de alguna manera tomar la decisión de escolarizarse y solo en algunas veces puede incidir algo en el salario debido a politicas que puedan tener las empresas pero no deberia darnos problemas adicionales.
+
+```{r}
+library(AER)
+iv_model <- ivreg(wage76 ~ grade76 + age76 | col4 + age76, data = base.ed)
+summary(iv_model, vcov = sandwich)
+```
+
+Los resultados son homocedasticos al aplicar la corrección tipo `sandwich` para corregir problemas de varianza no constante.
+
+# Tabla de comparaciones entre MCO y IV
+Vamos hacer la comparación entre modelos para ver que diferencias tienen los resultados. El paquete `stargazer` ayuda a darle visibilidad a los datos
+
+```{r}
+library(stargazer)
+stargazer(ols_model, iv_model, type = "text", 
+          keep = c("grade76"), digits = 4, 
+          se = list(coeftest(ols_model, vcov = vcovHC(ols_model, type = "HC"))[, 2],
+                    sqrt(diag(vcovHC(iv_model, type = "HC")))),
+          dep.var.labels = "Salario en el 76'", covariate.labels = "Años aprobados 76'")
+```
+
+Note la diferencia que existe en el estimador IV. Al parecer estábamos **sobreestimando** el efecto que tiene la educación en el salario de los individuos.
+
+## Estimación del estimador IV en dos etapas
+Miremos esto por fases o etapas[^2] que consideramos importante en la estimación del modelo
+
+[^2]: Son los comunmente conocidos Modelos 2LS (Two least Square) o Bi-etapicos.
+
+### Primera etapa: regresión OLS para obtener la predicción
+Corremos un modelo donde se intenta explicar la educación con los controles sugeridos
+```{r}
+first_stage <- lm(grade76 ~ col4 + age76, data = base.ed )
+base.ed$grade76hat <- predict(first_stage)
+```
+
+## Segunda etapa: regresión OLS con el valor predicho
+Estimamos el modelo pero con la educación estimada $(\hat{educ})$
+
+```{r}
+ols_two_stage <- lm(wage76 ~ grade76hat + age76, data = base.ed)
+coeftest(ols_two_stage, vcov = vcovHC(ols_two_stage, type = "HC"))
+```
+
+## Repetir el análisis con más controles
+Recordemos que podemos adherir un número mayor de controles[^3] sobre nuestra estimación. Para eso, primero crearemos una lista o `list`, eso con el objeto de no tener una formula muy larga en la línea de comandos. Luego usamos la función de `as.formula` y luego se corre.
+
+[^3]: El conjunto controles son muchas variables "categoricas" que contienen valores de 1 o 0, para aquellas caracteristicas de si vive en cierta region (reg), si vive el el sur (south76), si vive en área metropolitana. Con la opcion `View` estan mejor clarificadas
+ 
+```{r}
+# Crear una lista de variables independientes
+regresores <- c("south76", "smsa76", "reg2", "reg3", "reg4", "reg5", "reg6", "reg7", "reg8", "reg9", "smsa66", "momdad14", "sinmom14", "nodaded", "nomomed", "daded", "momed", "famed1", "famed2", "famed3", "famed4", "famed5", "famed6", "famed7", "famed8")
+
+## Acá los juntamos todos
+formula <- as.formula(paste("wage76 ~", paste(regresores, collapse = " + ")))
+
+# Estimamos el modelo con todos los controles
+ols_model_controls <- lm(formula, data = base.ed)
+coeftest(ols_model_controls, vcov = vcovHC(ols_model_controls, type = "HC"))
+```
+
+### Modelo IV con más controles
+De la misma forma como se hizo anteriormente vamos a instrumentar nuestro modelo, haciendo uso de los instrumentos dispuestos para ello $z=\{col4, age76\}$.
+
+```{r}
+formula_iv <- as.formula(paste("wage76 ~ grade76 +", 
+                               paste(regresores, collapse = " + "), 
+                               "| col4 +", 
+                               paste(regresores, collapse = " + ")))
+
+# Ajustar el modelo IV
+iv_model_controls  <- ivreg(formula_iv, data = base.ed)
+summary(iv_model_controls, vcov = sandwich)
+```
+
+# Tabla de comparaciones entre OLS y IV con más controles
+Una salida general a todo esto que hemos realizado nos da como resultado[^4] un modelo en un formato de estilo mas científico
+
+[^4]: Hemos omitido la salida de todas las variables porque se hace engorroso la salida del modelo. Sin embargo, controlando por todo tenemos el calculo del efecto en este caso y podemos decir que los retornos son positivos.
+
+```{r}
+stargazer(ols_model_controls, iv_model_controls, type = "text", 
+          keep = c("grade76"), digits = 4, 
+          dep.var.labels = "wage76", covariate.labels = "grade76")
+```
+
+### Diagnóstico de instrumentos débiles: correlación y regresión
+Para verificar relevancia de los instrumentos podemos estimar entonces
+```{r}
+cor(base.ed$grade76, base.ed$col4)
+first_stage_diagnostic <- lm(grade76 ~ col4 + age76, data = base.ed)
+summary(first_stage_diagnostic)
+```
+La edad en el año 76 parece no ser relevante, sin embargo en conjunto y mirando la prueba F, podemos entonces decir que si es útil
+
+## Test de instrumentos débiles (Anderson-Rubin Wald test)
+El test de Anderson-Rubin evalúa si los coeficientes de las variables instrumentales en la regresión auxiliar (donde las variables instrumentales se utilizan para predecir la variable endógena) son estadísticamente diferentes de cero. Si se rechaza la hipótesis nula, esto indica que los instrumentos son relevantes y, por lo tanto, no son débiles.
+
+```{r}
+# Del Paquete de AER
+waldtest(iv_model_controls)
+```
+
+Constatando que los instrumentos utilizados deben estar presente[^4].
+
+[^4]: La sobreidentificación se hace con una prueba F, comparando dos tipos de modelos. Uno con todos los regresores y otro sin ellos, al ver la significancia podemos entonces concluir que no tenemos sobreidentificación. 
+
+# Agradecimientos
+Mucho de este trabajo se debe a los artículos, recursos (free commons) y material del Profesor Colin Cameron, autor del libro: Microeconometrics Using Stata.
+
+**Carlos Yanes Guerra | Departamento de Economía | Universidad del Norte**
+

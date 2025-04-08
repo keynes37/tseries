@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Capstone 1</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Universidad del Norte Eco 1731: Econometría II" />
+    <script src="Caps01_files/header-attrs-2.26/header-attrs.js"></script>
+    <link href="Caps01_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="Caps01_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="Caps01_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+    <link rel="stylesheet" href="my-css.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Capstone 1
+]
+.subtitle[
+## Pronósticos Simples
+]
+.author[
+### <strong>Universidad del Norte</strong> Eco 1731: Econometría II
+]
+.date[
+### <br> <strong>Fecha Límite</strong>: viernes, 7 marzo 2025
+]
+
+---
+
+class: clear
+
+
+
+.mono[**ENTREGABLE**]: El proyecto debe ser realizado máximo por cuatro (4) personas. Para las **siguientes** preguntas conteste solo lo que se le pide. **No se acepta** ningún trabajo adicional a la fecha del _viernes 7 _ del mes de marzo hasta la hora de las 23:59 en la carpeta del brightspace disponible para esto y cuya entrega solo debe hacerla un/a (1) de los integrantes del grupo.
+
+Las entregas debe hacerlas en la [Carpeta Capstone](https://cursos.uninorte.edu.co/d2l/home/125748) respectiva. **Sus entregas pueden ser de dos archivos**: (.hi[1]) Uno donde van los análisis que puede ser un documento pdf con nomnre (_p.e._, .hi[yanesmolaramos.pdf]) y en otro archivo (.hi[2]) el script de .mono[R]. Otra alternativa -que es mejor aún- es hacerlo mediante un (.hi[1]) solo archivo tipo **Markdown** donde incluye automáticamente el script y las respuestas del taller.
+
+.mono[**OBJETIVO**]: Esto tiene tres intenciones: (1) re-forzar lo visto en clases; (2) Usted aprenda a preparar un informe con las herramientas de .mono[R];  y  ademas (3) ver que tan hábil es para resolver problemas con series de tiempo.
+
+## Problema 1: Análisis de Tendencia
+
+**1a.** Tome los datos de la base del Banrep desde el link: [Series Económicas](https://suameca.banrep.gov.co/estadisticas-economicas/#/home) y escoja un item cualquiera con 30 datos (mensuales o trimestrales) y realice un análisis completo, incluyendo un reporte de estadísticas básicas para la serie que ha elegido.
+
+**1b.** Construya un histograma de frecuencias para la serie. ¿Qué le indica?
+
+**1c.** Establezca un análisis del componente de la serie (Tendencia). ¿ Cuál es la dinámica de la serie en el periodo de estudio?
+
+**1d.** ¿Cuál de los tipos de tendencia básicos se ajusta mejor dentro del análisis de los anteriores componentes? y ¿En que se basa su apreciación?
+
+**1e.** Desestacionalice la serie y establezca un comparativo entre la original y la desestacionalizada.
+
+
+## Problema 2: Media y Varianza
+
+Sea los siguientes procesos:
+
+| F(x) | 0.20 | 0.19 | 0.18 | 0.05 | 0.02 | 0.36 |
+|------|------|------|------|------|------|------|
+| X    | 24   | -11  | 8    | 4    | -5   | -1   |
+
+| F(y) | 0.29 | 0.18 | 0.09 | 0.19 | 0.15 | 0.10 |
+|------|------|------|------|------|------|------|
+| Y    | 4.3  | 5.2  | -1.2 | 1.4  | 4.2  | 5.3  |
+
+
+**2a.** Establezca el valor esperado o media `\(E(X)\)` y `\(E(Y)\)`, ademas de la varianza `\(var(X)\)` y `\(var(Y)\)` para cada una de las anteriores series.
+
+**2b.** Para las siguientes ecuaciones encuentre la media y la varianza (hagalo de forma manual) y luego opcional en .mono[R]:
+
+- `\(Y_{t}=1+0.35Y_{t-1}+\epsilon_{t}\)` donde `\(\epsilon_{t} \sim (0, 0.4)\)`.  
+- `\(Y_{t}=1+0.93Y_{t-1}+\epsilon_{t}\)` donde `\(\epsilon_{t} \sim (0, 3)\)`.
+
+---
+class: clear
+
+## Problema 3: Aprenda de Máxima verosimilitud
+
+**3a.** Plantee la función de máxima verosimilitud en términos logarítmicos y halle el parámetro (estimador) de `\((\beta_{0})\)` de la función:
+`$$\mathcal{L} \left ( \mu \right )=  \frac{1}{\left (2\pi\sigma^{2}\right )^{n/2}}  exp \left \{ -\frac{1}{2\sigma^{2}} \sum \limits_{i=1}^{n} \left ( y_{i}-\beta_{0}-\beta_{1}x_{i} \right )^{2} \right \}$$`
+**3b.** Cuál viene a ser el resultado del parámetro de `\(\beta_{1}\)`? (demuestrelo y explique cada paso de la ecuación)
+
+## Problema 4: Empalme
+
+Tome una serie anual (puede ser del DANE) que tenga dos periodos de referencia. Por ejemplo PIB a precios constantes de 2005 y otro con PIB a precios constantes del 2018 y empalmelas de tal manera que se conviertan en una sola serie de tiempo en una misma base de año &lt;br/&gt;
+
+**4.a** Muestre las graficas de ambas series
+
+**4.b** Demuestre que logran empalmar en un perido adecuado. Diga en que periodo lo logra o consigue.
+
+## Problema 5: Su serie
+
+En conformidad con cada grupo de trabajo las series que vayan a presentar deben:
+
+**5.a** Establecer una descripción de la serie de tiempo y mencionar la motivación que lo/a llevó a elegir dicha serie.
+
+**5.b** Hacer una descomposición de la serie a partir de lo estacional. Muestre los gráficos de eso.
+
+**5.c** Si por tendencia se tratara intente de retirarle la tendencia. Qué ocurre con su serie? plantee su gráfico respectivo
+
+**5.d** Halle la predicción de los próximos 3 periodos a acontecer. Aplique las técnicas de media móvil, Box-Cox, Holt-winters y finalmente ETS. *Cuál predice mejor?* (Puede crear una tabla y hacer comparativos).
+
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "8.5:11",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

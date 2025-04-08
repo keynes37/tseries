@@ -3,7 +3,7 @@ title: "Econometría II"
 subtitle: "<br/> ARMAX"
 author: "Carlos A. Yanes Guerra"
 institute: "Universidad del Norte"
-date: "2023-II"
+date: "2025"
 output:
   xaringan::moon_reader:
     css: 
@@ -194,92 +194,50 @@ class: inverse, middle, center
 
 ---
 layout: true
-# Modelo ARCH
-
----
-
---
-<cy-blockquote>
-Por sus siglas hace referencia a **Autoregressive conditional heteroskedasticity**, modelos que involucran en una *estimación* comportamientos *volátiles* y que merecen ser tenidos en cuenta. La naturaleza de este tipo de series se encuentran en las .hi[financieras] y las .hi[macroeconómicas].
-</cy-blockquote>
-
---
-
-```{r, fig.height=5, fig.width=8, echo=FALSE}
-data("byd", package="PoEdata")
-rts <- ts(byd$r)
-par(mfrow = c(1, 2))
-plot.ts(rts)
-hist(rts, main="Retorno de acciones empresa Y", breaks=20, freq=FALSE, col="red")
-```
-
----
-
---
-
-Los modelos ARCH van en la medida al análisis de los retornos financieros que tienen las acciones o bonos públicos y privados.
-
---
-
-### A tener en cuenta
-
---
-
-`r fa("mug-hot", fill="blue")` .hi-purple[Heterocedasticidad] Ahora no es solo un problema de .hi[corte transversal]. Tambien hay que mirarlo acá en series de tiempo.
-
---
-
-`r fa("mug-hot", fill="blue")` Para que mis residuos sean **homocedasticos**:
-
---
-
-$$\sigma^{2}_{\epsilon}=\sigma^{2}_{1}=\sigma^{2}_{2}=\sigma^{2}_{3}$$
-
---
-
-`r fa("mug-hot", fill="blue")` En este caso puede existir **cierta** .hi[autocorrelación] en la varianza de la serie.
-
---
-
-`r fa("mug-hot", fill="blue")` La volatilidad puede ser capturada como:
-
---
-
-$$\begin{aligned}
-Y_{t}=&\beta_{0} + \beta_{1}X_{t}+ \epsilon_{t}\\
-\sigma^{2}_{t}=&Var (\epsilon_{t}|\epsilon_{t-\rho})\\ \sigma^{2}_{t}=& E(Y_{t}-\beta_{0}-\beta_{1}X_{t})
-\end{aligned}$$
----
-
---
-
-.attn[La idea:]
-
---
-
-`r fa("info-circle", fill="red")` Modelar $\sigma^{2}_{t}$ ya sea como un proceso AR o MA.
-
---
-
-`r fa("info-circle", fill="red")` Recuerde que la **volatilidad** puede no ser constante. Ej: Periodos de .b[alta] volatilidad como de .hi[baja].
-
---
-
-`r fa("info-circle", fill="red")` La volatilidad no es directamente observable. (Su naturaleza es latente).
-
---
-
-`r fa("info-circle", fill="red")` Los efectos de nueva información: Una .b[alta] volatilidad es observada antes de que se hagan .hi[anuncios].
-
----
-layout: false
-class: inverse, middle, center
-
-# Hasta aquí.... esto de univariados
-
----
-layout: true
 # Modelos ARMAX
+
+---
+
+--
+
+- **ARMAX** (AutoRegressive Moving Average with eXogenous inputs) es un modelo de series de tiempo que combina tres componentes:
+  - **AR**: Componente autorregresivo.
+  - **MA**: Componente de medias móviles.
+  - **X**: Entrada exógena, es decir, variables externas que influyen en el sistema.
+
+--
+
+La .hi[ecuación general] del modelo ARMAX es:
+
+$$y_t = \phi_1 y_{t-1} + \phi_2 y_{t-2} + ... + \phi_p y_{t-p} + \theta_1 e_{t-1} + \theta_2 e_{t-2} + ... + \theta_q e_{t-q} + \beta_1 x_{t-1} + \beta_2 x_{t-2} + ... + \beta_r x_{t-r} + e_t$$
+
+---
+
+--
+
+1. **Identificación**: Examinar los gráficos de autocorrelación (ACF) y autocorrelación parcial (PACF) para determinar los posibles órdenes \( p \) y \( q \) de los componentes AR y MA.
+2. **Selección de Variables Exógenas**: Identificar las variables exógenas relevantes \( x_t \).
+3. **Ajuste del Modelo**: Estimar los parámetros del modelo mediante métodos como MLE (Maximum Likelihood Estimation) o mínimos cuadrados.
+4. **Diagnóstico**: Verificar los residuos del modelo para asegurarse de que no hay patrones no modelados.
+
+---
+
+--
+
+- **Estacionariedad**: Asegúrate de que las series de tiempo sean estacionarias antes de aplicar el modelo ARMAX.
+- **Relación entre Variables Exógenas**: Las variables exógenas deben tener una relación significativa con la variable dependiente.
+- **Modelos de Residuos**: Los residuos del modelo deben ser ruido blanco (sin autocorrelación).
+
+--
+
+### Aplicaciones de ARMAX
+
+--
+
+- **Previsión Económica**: En econometría y macroeconomía, ARMAX se utiliza para predecir series de tiempo como el PIB, inflación, etc., incorporando factores externos como políticas monetarias.
+- **Control de Procesos**: En ingeniería y sistemas de control, ARMAX es útil para modelar sistemas dinámicos donde las entradas externas afectan el comportamiento del sistema.
+- **Modelos Financieros**: Análisis de activos financieros, donde las variables externas (como tasas de interés) influyen en los precios de las acciones.
+
 
 ---
 

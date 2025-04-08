@@ -1,0 +1,153 @@
+---
+title: "Capstone 2"
+subtitle: "Pronósticos Paramétricos"
+author: "**Universidad del Norte** Eco 1731: Econometría II"
+date: "<br> **Fecha Límite**: Viernes, 11 Abril 2025"
+output: 
+  xaringan::moon_reader:
+    css: ['default', 'metropolis', 'metropolis-fonts', 'my-css.css']
+    # self_contained: true
+    nature:
+      ratio: '8.5:11'
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+class: clear
+
+```{R, setup, include = F}
+# Packages
+library(pacman)
+p_load(
+  ggplot2, gridExtra, ggthemes, latex2exp, kableExtra,
+  tidyverse, broom, knitr, magrittr
+)
+# Colors
+red_pink <- "#e64173"
+turquoise <- "#20B2AA"
+grey_light <- "grey70"
+grey_mid <- "grey50"
+grey_dark <- "grey20"
+# Themes
+theme_axes_y <- theme_void() + theme(
+  text = element_text(family = "sans"),
+  axis.title = element_text(size = 11),
+  plot.title = element_text(size = 11, hjust = 0.5),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, -0.2, 0, 0, unit = "lines")),
+  axis.text.y = element_text(
+    size = 10, angle = 0, hjust = 0.9, vjust = 0.5,
+    margin = margin(0, 0.4, 0, 0, unit = "lines")
+  ),
+  axis.line = element_line(
+    color = grey_light,
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.07, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_axes_x <- theme_void() + theme(
+  text = element_text(family = "sans"),
+  axis.title = element_text(size = 11),
+  plot.title = element_text(size = 11, hjust = 0.5),
+  axis.title.x = element_text(hjust = .95, margin = margin(0.15, 0, 0, 0, unit = "lines")),
+  axis.title.y = element_text(vjust = .95, margin = margin(0, -0.2, 0, 0, unit = "lines")),
+  axis.text.x = element_text(
+    size = 10, angle = 0, hjust = 0.9, vjust = 0.5,
+    margin = margin(0, 0.4, 0, 0, unit = "lines")
+  ),
+  axis.line = element_line(
+    color = grey_light,
+    size = 0.25,
+    arrow = arrow(angle = 30, length = unit(0.07, "inches")
+  )),
+  plot.margin = structure(c(1, 0, 1, 0), unit = "lines", valid.unit = 3L, class = "unit"),
+  legend.position = "none"
+)
+theme_set(theme_gray(base_size = 11))
+# Knitr options
+opts_chunk$set(
+  comment = "#>",
+  fig.align = "center",
+  warning = F,
+  message = F
+)
+```
+
+.mono[**ENTREGABLE**]: El proyecto debe ser realizado máximo por cuatro (4) personas. Para las **siguientes** preguntas conteste solo lo que se le pide. **No se acepta** ningún trabajo adicional a la fecha del _viernes 11 _ de abril hasta la hora de las 23:59 en la carpeta del brightspace disponible para esto y cuya entrega solo debe hacerla un/a (1) de los integrantes del grupo.
+
+Las entregas debe hacerlas en la [Carpeta Capstone](https://cursos.uninorte.edu.co/d2l/home) respectiva. **Sus entregas pueden ser de dos archivos**: (.hi[1]) Uno donde van los análisis que puede ser un documento pdf con nomnre (_p.e._, .hi[yanesmolaquintana.pdf]) y en otro archivo (.hi[2]) el script de .mono[R]. Otra alternativa -que es mejor aún- es hacerlo mediante un (.hi[1]) solo archivo tipo **Markdown** donde incluye automáticamente el script y las respuestas del taller.
+
+.mono[**OBJETIVO**]: Esto tiene dos intenciones: (1) los estudiantes muestren que manejan supuestos de modelos paramétricos y (2) plantee pronósticos mas técnicos con herramientas de .mono[R]
+
+## Problema 1: Análisis de inflación
+
+**1a.** Tome los datos de la base del banco de la républica en referencia la [inflación (IPC) total base 2018](https://www.banrep.gov.co/es/estadisticas/inflacion-total-y-meta) tenga presente que debe iniciar en enero de 2000 y terminar ahorita en el mes mas reciente de 2025. Limpie el excel, importe y trabaje solo con la variable de inflación.
+
+**1b.** Grafique la inflación. Mencione las fechas donde mas ha sido alta la inflación. Asocie con un gobierno de turno y diganos si ese gobierno se rajó o por lo menos salió adelante en ese indicador.
+
+**1c.** Realice un análisis estadístico completo de la serie de inflación.  *Establezca la media, varianza y valores máximos y mínimos de esa serie.
+
+**1d.** Establezca el análisis Box-Jenkins para la serie de inflación.
+
+**1e.** Plantee 5 modelos alternativos. ¿Qué le dice cada uno de los parámetros del ARIMA(p d q) o SARIMA(p d q s) que planteo usted que se ajusta mejor?. Haga una comparación con uno que le de el `auto.arima`.
+
+**1f.** ¿Son estables las raíces polinómicas de su "mejor" modelo de pronostico? *Demuestre*
+
+**1g.** Haga el pronostico de los próximos 12 meses de la inflación.
+
+
+## Problema 2: Media y Varianza de AR y MA
+
+**2a.** Tenga presente los siguientes modelos y determine si son estacionarios. **Muestre todo el proceso a mano**.
+
+- $y_t=a+0.5y_{t-1}+0.3y_{t-2}+e_t$
+- $y_t=a+0.18y_{t-1}+0.53y_{t-2}+e_t$
+
+**2b.** Mire estos ARMA y determine si son o no estacionarios y si pueden ser invertidos:
+
+- $y_t=0.5y_{t-1}+0.2y_{t-2}+ 0.29e_{t-1}+0.5e_{t-2}+e_t$
+- $y_t=1.26-0.24y_{t-1}+0.62y_{t-2}+0.37e_{t-1}-0.59e_{t-2}+e_t$
+
+---
+class: clear
+
+## Problema 3: Aprenda a simular series
+
+**3a.** Genere un proceso $y_t=0.5+0.23y_{t-1}+0.09y_{t-2}+0.72e_{t-1}+e_t$ cuando $e_t\sim (0, 3)$ para 300 observaciones.
+
+**3b.** Gráfique la serie
+
+**3c.** Obtenga la función de autocorrelación simple y parcial de ese proceso.
+
+.attn[Tip]: Para esto debe hacer uso del paquete `tseries` con el puede hacer uso de la función `arima.sim`. *Busque en internet o este tipo de IA y le ayudaran bastante con eso*
+
+## Problema 4: Funciones de arch
+
+**4a.** Tome una serie de google finance o yahoo finance. Hagala serie de tiempo. Justifique su elección y grafique
+
+**4b.** Genere la serie en crecimiento de retorno o (rt). Grafique
+
+**4c.** Haga el test de lagrange y mire si la serie tiene o no algun proceso arch.
+
+**4d.** Si es posible muestre el gráfico de volatilidad y expliquelo
+
+## Problema 4.1: Modelo Garch
+
+**4.1a.** Establezca la ecuación de evaluación de Varianza en la dinamica del tiempo
+
+**4.1b.** ¿Qué desafíos y soluciones existen al aplicar modelos GARCH en series de tiempo de alta frecuencia?
+
+**4.1c.** ¿Qué diferencias encuentra con respecto a lo anterior?
+
+**4.1d.** Grafique la parte GARCH en este caso de su serie
+
+## Problema 5: Su serie
+
+**5a.** Intente con una (1) de las series que tiene usted o sus compañeros hacer todo el proceso *Box-jenkins* Puede que su modelo sea ARIMA o SARIMA. De todas maneras implemente eso y discuta con sus compañeros de trabajo los resultados. *Recuerde ademas que cada uno debe hacer lo mismo con su serie, soloq ue van a presentar solo una por lo pronto*.
+
+**5b.** Plantee un pronostico de 5 periodos. 
+
+
+
