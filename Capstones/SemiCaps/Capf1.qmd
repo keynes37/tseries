@@ -1,0 +1,110 @@
+---
+title: "Modelos VAR | Econometría 2 | Uninorte"
+subtitle: "Ejercicio Preparación final 1"
+author: "Carlos Andrés Yanes"
+date: "2025-04-22"
+format:
+    html: 
+      self-contained: true
+      grid: 
+        margin-width: 350px
+execute: 
+  warning: false
+---
+
+## 🎯 Objetivo
+
+Aplicar un modelo VAR para estudiar las relaciones dinámicas entre variables macroeconómicas en Colombia o en otro país, utilizando datos trimestrales reales. La [guía del curso](https://raw.githack.com/keynes37/tseries/main/GuiasdeR/Guia8.html#/title-slide) que <span style="color: deeppink; font-weight: bold;">será muy útil</span> no podrá usar paquete o código diferente al que hay en ella. Cualquier uso de la IA para esto, anulará el punto respectivamente.
+
+## 📁 Datos a utilizar
+
+Tome un grupo de series <span style="color: deeppink; font-weight: bold;">Macroeconómica</span> de un país cualquiera. La idea es que esa *selección* guarde o tenga un gran repositorio de datos (inclusive un sistema como el DANE en Colombia) apliamente reconocido y trate de estipular la construcción de este grupo de series de tiempo:
+
+- Producto Interno Bruto real (PIB, logaritmo)
+- Inflación (variación porcentual anual)
+- Tasa de interés de política monetaria
+- Tipo de cambio nominal
+
+Trate de que estos datos esten en formato **trimestral**. Recuerde que los modelos VAR requieren mas de 90 datos para ser estimados.
+
+### 1. Preprocesamiento y descripción de datos
+
+Paquetes que debe utilizar para resolver esto:
+
+```r
+install.packages(c("vars", "tsibble", "readxl", "ggplot2", "lubridate", "urca", "tseries", "forecast"))
+```
+
+Luego de instalados no olvide cargar los paquetes. Paso adelante le sugiriero armar su data frame en estilo:
+
+```r
+library(readxl)
+library(lubridate)
+library(dplyr)
+
+# Cargar archivo
+datos <- read_excel("datoscarlosyanes.xlsx")
+
+# Convierta a ts o formato requerido como
+PIB <- ts(log(datos$PIB), start = c(2005, 1), frequency = 4)
+inflacion <- ts(datos$Inflacion, start = c(2005, 1), frequency = 4)
+tasa_interes <- ts(datos$Interes, start = c(2005, 1), frequency = 4)
+tipo_cambio <- ts(datos$TC, start = c(2005, 1), frequency = 4)
+```
+
+#### 1.1 Haga una descripción de las variables
+
+- **PIB**:  
+- **Inflación**:  
+- **Tasa de interés**:  
+- **Tipo de cambio**:  
+
+#### 1.2 Fuente de datos
+
+Indique la fuente de cada variable (e.g. Banco de la República, FRED, DANE).
+
+### 2. Estacionariedad
+
+#### 2.1 ¿Las series son estacionarias?
+
+Describa aquí los <span style="color: deeppink; font-weight: bold;">resultados</span> obtenidos de los tests de raíz unitaria (ADF o similares). Indique si fue necesario transformar alguna serie.
+
+Un código fuente puede ser:
+
+```r
+library(urca)
+summary(ur.df(PIB, type = "drift", selectlags = "AIC"))
+summary(ur.df(inflacion, type = "drift", selectlags = "AIC"))
+summary(ur.df(tasa_interes, type = "drift", selectlags = "AIC"))
+summary(ur.df(tipo_cambio, type = "drift", selectlags = "AIC"))
+```
+### 3. Estimación del modelo VAR
+
+#### 3.1 ¿Cuántos rezagos seleccionó y por qué?
+
+Explique el criterio de información utilizado (AIC, BIC) y el número de rezagos elegido.
+
+### 4. Impulsos y respuestas
+
+#### 4.1 Análisis de funciones de impulso-respuesta (IRF)
+
+- ¿Cómo reacciona el PIB ante un shock en la tasa de interés?
+- ¿Y ante un shock en la inflación?
+
+Agregue los gráficos generados e interprete sus resultados.
+
+
+### 5. Descomposición de varianza
+
+#### 5.1 ¿Qué variable explica más la variabilidad del PIB en el mediano plazo?
+
+Agregue gráficos e interpretación.
+
+### 6. Resultados
+
+Resuma los principales hallazgos del análisis VAR:
+
+- ¿Qué variables están más relacionadas?
+- ¿Qué implicaciones podrían tener estos hallazgos para la política económica?
+
+
