@@ -41,3 +41,7 @@ Modelo VAR [Clase 09](https://raw.githack.com/keynes37/tseries/main/GuiasdeR/Gui
 Modelo VEC [Clase 11](https://raw.githack.com/keynes37/tseries/main/GuiasdeR/Guia11.html)
 
 Modelo VEC in bound [Clase boue]
+
+### Contenido para clase
+
+Modelo en clase [Actividad 1](https://raw.githack.com/keynes37/tseries/main/Capstones/SemiCaps/Capf1.html)
