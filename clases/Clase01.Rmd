@@ -3,7 +3,7 @@ title: "Econometría II"
 subtitle: "<br/> Introducción"
 author: "Carlos A. Yanes Guerra"
 institute: "Universidad del Norte"
-date: "2024-II"
+date: "2025-II"
 output:
   xaringan::moon_reader:
     css: 
@@ -214,10 +214,11 @@ name: admin
 
 | Requerimientos   | Fecha                                | Ponderador |
 | ---------------- | ------------------------------------ | ---------- |
-| Parcial 1        | Hasta la semana 5 de clases          | 20%        |
-| Parcial 2        | Hasta la semana 9 de clases          | 20%        |
-| Capstone Project | Todo el semestre                     | 20%        |
-| Participación    | Dashboard final                      | 10%        |
+| Parcial 1        | Hasta la semana 5 de clases          | 15%        |
+| Parcial 2        | Hasta la semana 9 de clases          | 15%        |
+| Capstone Project | Todo el semestre                     | 10%        |
+| Clase práctica   | Todo el semestre                     | 10%        |
+| Interactivo      | Dashboard final                      | 10%        |
 | Examen final     | Registro académico                   | 30%        |
 
 ---
@@ -239,19 +240,20 @@ name: admin
 + No puede solo quedarse con lo que se da en .hi[clases], debe interesarse por fuera.
 + Recuerde usar el **discord** de la clase para todo. Link en: https://discord.gg/FBtHTW4f
 + Las clases son o deben ser totalmente .hi[participativas]. Si en la semana no ha hecho alguna pregunta al profesor entonces se catalogará como posición insuficiente.
++ No puede ausentarse el día que le corresponde dar una clase práctica
 
 ---
 
 --
 
-### Informes (participación):
-+ Tiene que hacerle seguimiento a una serie macroeconómica y con ella "casarse" y tratar de predecirla antes que salga el informe del DANE o del Banrep de acuerdo a las semanas que en esta se presentan, llámese .hi[informes de junta], .hi[Informe IPC], .hi[Informe de pobreza multidimensional], .hi[Tasa de interés FED], etc. 
+### Dashboard:
++  Es el apartado mas .hi[importante] del curso. Con él debe demostrar lo que ha aprendido a lo largo del curso. Debe ser muy interactivo 
 
-+ Algunos estudiantes pueden tomar la **misma** serie. Pero la idea es que sean varios y con esto obtener distintos escenarios. 
++ Algunos estudiantes pueden tomar la misma **serie** o tema principal. Pero la idea es que sean varios y con esto obtener distintos escenarios. En la 4 semana de clases ya debe tener una propuesta. 
 
-+ Los trabajos a entregar son compensatorios por lo visto en clases. Pueden ser 3 o 4 en todo el .hi[semestre]
++ Los trabajos a entregar **Capstones** son compensatorios por lo visto en clases. Pueden ser 2 o 3 en todo el .hi[semestre]
 
-+ Lo del .hi[poster] es totalmente obligatorio. Se entrega al final del semestre.
++ La funcionalidad del .hi[Dashboard] es totalmente obligatorio. Se entrega al final del semestre (y no requiere ser sustentado).
 
 
 
@@ -340,7 +342,7 @@ class: inverse
 
 --
 
-## Algunas frases
+## Algunas frases (pronosticos)
 
 --
 
@@ -441,7 +443,7 @@ Por tanto se mira la extrapolación de **tendencias** y patrones estacionales y 
 2. Recopilar información
 3. Análisis gráfico
 4. Elección del modelo
-   - Regresión (?)
+   - Regresión (?) 
    - Suavizado exponencial
    - Modelos ARIMA
    - Regresión Dinámica
