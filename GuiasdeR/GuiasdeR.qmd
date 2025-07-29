@@ -7,7 +7,7 @@ format:
     logo: micrologouni.png
     self-contained: true
 author:
-  - name: Carlos Andrés Yanes
+  - name: Carlos Andrés Yanes G
     orcid: 0000-0003-0683-3727
     email: cayanes@uninorte.edu.co
     affiliations: Universidad del Norte
@@ -19,7 +19,7 @@ bibliography: refs.bib
 
 ```{r, setup, include=FALSE}
 library(pacman)
-p_load(modelsummary, tseries, atsa, readxl, rstatix, tidyverse, KableExtra, pdftools)
+p_load(modelsummary, tseries, astsa, readxl, rstatix, tidyverse, KableExtra, pdftools)
 ```
 
 ## Entorno de trabajo {{< fa brands r-project >}}
@@ -46,7 +46,7 @@ Vamos a instalar o cargar un par de [Paquetes]{.fg style="--col: #0098DB"} de {{
 Los paquetes para el análisis de [Rezagos]{.bg style="--col: #FFC7A2"} y regresión dinámica son los siguientes
 
 ``` r
-install.packages(c("pacman", "atsa" "modelsummary", "tseries", "tidyverse", "KableExtra", "huxtable"))
+install.packages(c("pacman", "astsa" "modelsummary", "rstatix", "tidyverse", "KableExtra", "huxtable"))
 ```
 :::
 
@@ -57,11 +57,21 @@ No olvide que debe desde luego tener presente en su documento de *R Markdown* ca
 
 ``` r
 library(pacman)
-p_load(modelsummary, tseries, atsa, readxl, rstatix, tidyverse, KableExtra)
+p_load(modelsummary, tseries, astsa, readxl, rstatix, tidyverse, KableExtra)
 ```
 :::
 
 # Caso de estudio {background-color="#40666e"}
+
+## Preliminar
+
+- Una **secuencia de variables aleatorias** que se indexan con el tiempo (t), se le denomina [Proceso estocástico]{.bg style="--col: #e1e8e3"}. Por ello, cuando se conforma una base de datos de series de tiempo, se obtiene un resultado posible, o realización, del proceso estocástico.
+
+- Unicamente se puede tener una sola realización. *No se puede regresar en el tiempo (retroceder)*
+
+- Modelo estático 
+
+$$y_t=\beta_0 +\beta_1z_t+u_t, \, t=1,2,3,\dots, T$$
 
 ## Caso 1
 
@@ -348,7 +358,7 @@ modelsummary(list(mdf1, mdf2), coef_map = dict, output = "markdown")
 
 ### Miremos la parte de rezagos
 
-::: columns
+::::: columns
 ::: {.column width="50%"}
 #### Rezagos en t
 
@@ -364,7 +374,7 @@ La [primera diferencia]{.fg style="--col: #FF0000"} de una **serie** lo que se c
 
 $$\Delta Y_t= Y_t-Y_{t-1}$$
 :::
-:::
+:::::
 
 ## Operadores
 
