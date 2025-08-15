@@ -96,3 +96,24 @@ autoplot(niv1)
 
 niv2 <- snaive(serie, lambda = lambda_opt)
 autoplot(niv2)
+
+# --- Box-Cox y pronóstico ---
+
+# Aplicar la transformación Box-Cox con lambda = 1/3
+serie_boxcox <- BoxCox(serie, lambda = 1/3)
+
+# Realizar el pronóstico con la serie transformada usando un pronóstico naïve estacional
+pronostico_boxcox <- snaive(serie_boxcox, h = 12)
+
+# Revertir la transformación Box-Cox a los valores originales
+pronostico_original <- InvBoxCox(pronostico_boxcox$mean, lambda = 1/3)
+
+# Graficar los resultados
+autoplot(serie) +
+  autolayer(pronostico_original, series = "Pronóstico Box-Cox") +
+  ggtitle("Pronóstico de la Cartera Comercial (Box-Cox Transformación)") +
+  xlab("Fecha") + ylab("$ Miles de Millones") +
+  guides(colour = guide_legend(title = "Pronóstico"))
+
+# También puedes ver el pronóstico en la consola
+print(pronostico_original)
