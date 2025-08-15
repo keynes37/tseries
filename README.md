@@ -1,5 +1,5 @@
 # tseries
-Comp of times series in Uninorte v0.19/agost
+Comp of times series in Uninorte v0.21/agost
 
 ### Primer corte
 
