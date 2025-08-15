@@ -85,7 +85,7 @@ $$\left\{\begin{matrix}
 
 ## La formula detras de los K Moviles
 
-::: fragment
+:::: fragment
 ::: callout-tip
 ## K movil 4
 
@@ -93,15 +93,15 @@ Si tiene un k=4 periodos $\Rightarrow$
 
 $$y_{T|t+h}=\frac{y_{t-1}+y_{t}+y_{t+1}+y_{t+2}}{4}$$
 :::
-:::
+::::
 
-::: fragment
+:::: fragment
 ::: callout-tip
 ## K movil 6
 
 Si tiene un k=6 periodos $\Rightarrow$ $$y_{T|t+h}=\frac{y_{t-3}+y_{t-2}+y_{t-1}+y_{t}+y_{t+1}+y_{t+2}}{6}$$
 :::
-:::
+::::
 
 # Media Movil en R {background-color="#40666e"}
 
@@ -234,7 +234,7 @@ mutate(prma01 = ma(prueba, order=1, centre=FALSE),
 Su formula se consolida como
 :::
 
-::: fragment
+:::: fragment
 ::: {.callout-note icon="false"}
 ## Media Movil Doble
 
@@ -248,24 +248,24 @@ a_{t} =2M_{t} -M'_{t}\\
 b_{t} =\frac{2}{k-1}( M_{t} -M'_{t})\\
 p=Periodos\ a\ pronosticar
 \end{gather*}$$
-:::
+::::
 
 ## Media Movil Doble implicita
 
-::: panel-tabset
+:::::: panel-tabset
 ## Consideración
 
 ::: fragment
 Esta media viene a consolidarse como
 :::
 
-::: fragment
+:::: fragment
 ::: {.callout-note icon="false"}
 ## Media movil doble implicita
 
 El promedio del promedio de la media movil. **P.e:** $$y_t=\frac{1}{2}\left[\frac{y_{t-1}+y_{t}+y_{t+1}}{3}\right]+\frac{1}{2}\left[\frac{y_{t}+y_{t-1}+y_{t-2}}{3}\right]$$
 :::
-:::
+::::
 
 ## Código
 
@@ -278,7 +278,7 @@ mutate(pr2ma01 = ma(prueba, order=1, centre=TRUE),
        pr2ma04 = ma(prueba, order=4, centre=TRUE))|>
   head()
 ```
-:::
+::::::
 
 ## Media Movil Ponderada
 
@@ -361,13 +361,13 @@ F_{t+1} &= \alpha Y_{t}+ \left ( 1- \alpha \right)F_{t} \\
 
 ## Holt Winters
 
-::: fragment
+:::: fragment
 ::: {.callout-note icon="false"}
 ## Holt Winters (no estacional)
 
 Para esta parte se tiene que el [método]{.alert} anterior se le puede incorporar una parte lineal que adjuntan dos [componentes]{.blut}. El primero hace referencia al $\alpha$ tradicional de cada observación. Y aparece uno [nuevo]{.fg style="--col: #FF8000"} que será conocido como $\beta$, le da el mismo tratamiento pero a los efectos proporcionados por la [Tendencia]{.bg style="--col: #FFFF00"}.
 :::
-:::
+::::
 
 ::: fragment
 $$\begin{align*}
@@ -379,13 +379,13 @@ $$\begin{align*}
 
 ## Holt Winters
 
-::: fragment
+:::: fragment
 ::: {.callout-warning icon="false"}
 ## Holt Winters (estacional)
 
 Muy similar al anterior, solo que se tiene en cuenta el [efecto]{.alert} estacional y es configurado de la forma de los estimadores $(\beta) \; \text{y} \; (\alpha)$. Se le [denomina]{.blut} **gamma** ($\gamma$) y se encuentra en el intervalo $\left [ 0 \leq \gamma \leq 1 \right]$.
 :::
-:::
+::::
 
 ::: fragment
 $$\begin{aligned}
@@ -397,13 +397,13 @@ S_{t} &= \gamma \frac{Y_{t}}{F_{t}}+(1-\gamma)S_{t-L}\\
 
 ## Holt Winters
 
-::: fragment
+:::: fragment
 ::: {.callout-warning icon="false"}
 ## Holt Winters (estacional multiplicativo)
 
 En esencia es el mismo [método]{.alert}, solo que ahora los [componentes]{.blut} se toman todos por uno mismo y no separados como el anterior.
 :::
-:::
+::::
 
 ::: fragment
 $$\begin{aligned}
@@ -413,13 +413,13 @@ $$\begin{aligned}
 
 ## Holt Winters Tendencia ajustada
 
-::: fragment
+:::: fragment
 ::: {.callout-warning icon="false"}
 ## Holt Winters Damped
 
 Es una versión ampliada de HW y trata de darle un mejor tratamiento a la [Tendencia]{.bg style="--col: #FFFF00"}. Aparece un [parámetro]{.blut} llamado **phi** $(\phi)$ quien se encuentra entre $\left [ 0 \leq \phi \leq 1 \right]$ y es quien ayuda a que los pronósticos de largo plazo sean mas confiables. Amortigua los efectos tendenciales.
 :::
-:::
+::::
 
 ::: fragment
 $$\begin{aligned}
