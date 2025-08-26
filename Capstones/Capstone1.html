@@ -4,7 +4,7 @@
     <title>Capstone 1</title>
     <meta charset="utf-8" />
     <meta name="author" content="Universidad del Norte Eco 1731: Econometría II" />
-    <script src="Capstone1_files/header-attrs-2.22/header-attrs.js"></script>
+    <script src="Capstone1_files/header-attrs-2.26/header-attrs.js"></script>
     <link href="Capstone1_files/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="Capstone1_files/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
     <link href="Capstone1_files/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
@@ -14,10 +14,18 @@
     <textarea id="source">
 class: center, middle, inverse, title-slide
 
+.title[
 # Capstone 1
-## Pronósticos Simples
+]
+.subtitle[
+## <span class="hi pink">Pronósticos Simples</span>
+]
+.author[
 ### <strong>Universidad del Norte</strong> Eco 1731: Econometría II
-### <br> <strong>Fecha Límite</strong>: martes, 22 Agosto 2023
+]
+.date[
+### <br> <strong>Fecha Límite</strong>: viernes, 29 Agosto 2025
+]
 
 ---
 
@@ -25,28 +33,45 @@ class: clear
 
 
 
-.mono[**ENTREGABLE**]: El proyecto debe ser realizado máximo por cuatro (4) personas. Para las **siguientes** preguntas conteste solo lo que se le pide. **No se acepta** ningún trabajo adicional a la fecha del _martes 22 _ del presente mes hasta la hora de las 23:59 en la carpeta del brightspace disponible para esto y cuya entrega solo debe hacerla un/a (1) de los integrantes del grupo.
+.mono[**ENTREGABLE**]: El proyecto debe ser realizado máximo por dos (2) personas. Para las **siguientes** preguntas conteste solo lo que se le pide. **No se acepta** ningún trabajo adicional a la fecha del _viernes 29 _ del presente mes hasta la hora de las 23:59 en la carpeta del brightspace disponible para esto y cuya entrega solo debe hacerla un/a (1) de los integrantes del grupo.
 
-Las entregas debe hacerlas en la [Carpeta Capstone](https://cursos.uninorte.edu.co/d2l/home) respectiva. **Sus entregas pueden ser de dos archivos**: (.hi[1]) Uno donde van los análisis que puede ser un documento pdf con nomnre (_p.e._, .hi[yanesvenceguatacique.pdf]) y en otro archivo (.hi[2]) el script de .mono[R]. Otra alternativa -que es mejor aún- es hacerlo mediante un (.hi[1]) solo archivo tipo **Markdown** donde incluye automáticamente el script y las respuestas del taller.
+Las entregas debe hacerlas en la [Carpeta Capstone](https://cursos.uninorte.edu.co/d2l/home) respectiva. **Sus entregas debe ser uno de dos archivos**: (.hi[1]) Uno donde van todos los análisis que se piden y puede ser un documento *word* con nombre (_p.e._, .hi[yanesmola.docx]) u otro archivo (.hi[2]) Todo el trabajo en .mono[R] en documento pdf (el mas deseable) tambien nombrando a sus integrantes.
 
 .mono[**OBJETIVO**]: Esto tiene tres intenciones: (1) re-forzar lo visto en clases; (2) Usted aprenda a preparar un informe con las herramientas de .mono[R];  y  ademas (3) ver que tan hábil es para resolver problemas con series de tiempo.
 
 ## Problema 1: Análisis de Tendencia
 
-**1a.** Tome los datos de la base del World Bank desde el link: [GDP por Países](https://datos.bancomundial.org/indicador/NY.GDP.MKTP.KN) y escoja un país cualquiera con 15 datos (años) realice un análisis completo, incluyendo un reporte de estadísticas básicas para la series.
+**1a.** Descargue los datos de la base del **World Bank** desde el siguiente link: [GDP por Países](https://datos.bancomundial.org/indicador/NY.GDP.MKTP.KN).  
+Seleccione un país y tome una muestra de **15 observaciones anuales consecutivas** de su PIB real.  
+Presente un **reporte de estadísticas descriptivas** de la serie (media, mediana, varianza, desviación estándar, mínimo, máximo, coeficiente de variación).
 
-**1b.** Construya un histograma de frecuencias para la serie. ¿Qué le indica?
+**1b.** Construya un **histograma de frecuencias** de la serie.  
+- ¿La distribución parece simétrica o asimétrica?  
+- ¿Existen valores atípicos?  
+- ¿Qué información adicional le aporta este gráfico respecto a las estadísticas básicas?
 
-**1c.** Establezca un análisis del componente de la serie (Tendencia). ¿ Cuál es la dinámica del PIB de ese país en los distintos años?
+**1c.** Analice el **componente de tendencia** de la serie.  
+- ¿El PIB presenta crecimiento, decrecimiento o estabilidad?  
+- ¿En qué periodos se observan cambios importantes en la dinámica?  
 
-**1d.** ¿ Cuál de los tipos de tendencia básicos se ajusta mejor dentro del análisis de los anteriores componentes? y ¿En que se basa su apreciación?
+**1d.** Identifique el **tipo de tendencia básica** que mejor se ajusta a la serie (lineal, exponencial, cuadrática u otra).  
+- Justifique su respuesta en función de la forma observada en los datos y gráficos.  
 
-**1e.** Estime un modelo de dicha serie con tendencia no lineal. P.e: `\(\widehat{Y}=e^{\alpha_{0}+\alpha_{1}T_{t}+\epsilon_{t}}\)`
+**1e.** Estime un **modelo de tendencia no lineal** para la serie.  
+Ejemplo:  
 
+`$$Y_t^{\theta} = {\alpha_{0} + \alpha_{1} T_{t}^{\lambda} + \epsilon_t}$$`
+
+- Interprete los parámetros estimados.  
+- ¿El ajuste del modelo es adecuado según las medidas de bondad de ajuste (R²)?  
+
+---
+class: clear
 
 ## Problema 2: Media y Varianza
 
-Sea los siguientes procesos:
+Considere las siguientes distribuciones discretas.  
+**Nota:** todos los cálculos deben realizarse **a mano**, mostrando cada paso sin usar R u otro software estadístico.
 
 | F(x) | 0.22 | 0.17 | 0.18 | 0.05 | 0.02 | 0.36 |
 |------|------|------|------|------|------|------|
@@ -57,15 +82,58 @@ Sea los siguientes procesos:
 | Y    | 2.2  | 3.7  | -2.2 | -1.8 | 4.2  | 5.3  |
 
 
-**2a.** Establezca el valor esperado o media `\(E(X)\)` y `\(E(Y)\)`, ademas de la varianza `\(var(X)\)` y `\(var(Y)\)` para cada una de las anteriores series.
+**2a.** Verifique primero que cada tabla define una distribución válida (todas las probabilidades son no negativas y suman 1).  
 
-**2b.** Para las siguientes ecuaciones encuentre la media y la varianza:
+Calcule:  
 
-- `\(Y_{t}=1+0.35Y_{t-1}+\epsilon_{t}\)` donde `\(\epsilon_{t} \sim (0, 0.4)\)`.  
-- `\(Y_{t}=1+0.93Y_{t-1}+\epsilon_{t}\)` donde `\(\epsilon_{t} \sim (0, 3)\)`.
+- **Media (valor esperado):**  
+
+$$
+E(X)=\sum_i x_i p_i, 
+\qquad 
+E(Y)=\sum_j y_j q_j
+$$
+
+- **Varianza:**  
+
+$$
+\mathrm{Var}(X)=\sum_i (x_i - E(X))^2 p_i,
+\qquad 
+\mathrm{Var}(Y)=\sum_j (y_j - E(Y))^2 q_j
+$$  
+
+&gt; También puede usarse la forma alternativa:  
+&gt; `$$\mathrm{Var}(X)=E(X^2)-[E(X)]^2$$` y análogo para `\(Y\)`.  
+
+**Instrucción:** muestre paso a paso las sumas intermedias `\(E(X^2)\)`, `\(E(Y^2)\)` y redondee al menos a 4 decimales.
+
+**2b.** Para los siguientes procesos autorregresivos de orden 1 (AR(1)), halle la **media incondicional** `\(E(Y_t)\)` y la **varianza incondicional** `\(\mathrm{Var}(Y_t)\)`.  
+
+Recuerde que se deben hacer **a mano** usando fórmulas.
+
+1. `\(Y_t = 1 + 0.35 Y_{t-1} + \varepsilon_t,\quad \varepsilon_t \sim (0,\;0.4)\)`
+
+2. `\(Y_t = 1 + 0.93 Y_{t-1} + \varepsilon_t,\quad \varepsilon_t \sim (0,\;4)\)`
 
 ---
 class: clear
+
+**Guía teórica:**  
+Para un AR(1) de la forma
+
+`$$Y_t = c + \phi Y_{t-1} + \varepsilon_t, \quad |\phi|&lt;1$$`
+
+se cumple:  
+
+`$$E(Y_t) = \mu = \frac{c}{1-\phi},
+\qquad 
+\mathrm{Var}(Y_t) = \frac{\sigma_\varepsilon^2}{1-\phi^2}.$$`
+
+**Instrucción:**  
+- Sustituya `\(c\)`, `\(\phi\)` y `\(\sigma_\varepsilon^2\)` en cada caso.  
+- Verifique la condición de estacionariedad `\(|\phi|&lt;1\)`.  
+- Reporte `\(E(Y_t)\)` y `\(\mathrm{Var}(Y_t)\)` en cada modelo.  
+- Compare los resultados y explique cómo influyen el valor de `\(\phi\)` y la varianza del ruido `\(\sigma_\varepsilon^2\)`.
 
 ## Problema 3: Aprenda de Máxima verosimilitud
 
@@ -81,17 +149,49 @@ Use la base de datos proporcionada en el archivo de excel denominado .hi[Empalme
 
 **4.b** Realice un empalme hacia adelante de estas series.
 
-## Problema 5: Su serie
+## Problema 5: Medias Moviles
 
-En conformidad con cada grupo de trabajo las series que vayan a presentar deben:
+Extraiga la serie `DriversKilled` y verifique su estructura (`class`, `frequency`, rango de fechas). Luego grafique la serie y describa la **tendencia** y **estacionalidad** observadas.
 
-**5.a** Establecer una descripción de la serie de tiempo y mencionar la motivación que lo/a llevó a elegir dicha serie.
+```r
+# Cargue el paquete 
+library(datasets)
+# Cargar el dataset Seatbelts
+data("Seatbelts")
 
-**5.b** Hacer una descomposición de la serie a partir de lo estacional. Muestre los gráficos de eso.
+# Extraer la serie que vamos a usar
+y &lt;- Seatbelts[, "DriversKilled"]
 
-**5.c** Si por tendencia se tratara intente de retirarle la tendencia. Qué ocurre con su serie? plantee su gráfico respectivo
+# Verificar estructura
+start(y); end(y); frequency(y); class(y)
+```
+---
+class: clear
 
-**5.d** Halle la predicción de los próximos 3 periodos a acontecer. Aplique las técnicas de media móvil, Box-Cox y Holt-winters. *Cuál predice mejor?* (Puede crear una tabla y hacer comparativos).
+**5a. Preparación de datos** ¿Se aprecia una tendencia clara (creciente o decreciente) en la serie?. ¿Existe estacionalidad? ¿La amplitud parece constante o proporcional al nivel?  
+
+
+**5b. Medias móviles (MA)**  ¿Cuál media móvil captura mejor la **tendencia de fondo**?  ¿Qué trade-off observa entre **suavización** y **rezago**?  
+
+**5c. Descomposición estacional** ¿La estacionalidad es aproximadamente **constante (aditiva)** o **proporcional al nivel (multiplicativa)**?. ¿Qué le dicen los residuos de la descomposición sobre variaciones no explicadas?  
+**5d. Holt (sin estacionalidad)**. Interprete los parámetros de nivel y tendencia en dicho modelo. ¿Se observa patrón estacional en los residuos? ¿Qué implicaría esto?  
+
+**5e. Holt-Winters estacional aditivo**  Realice un modelo HWA ¿Mejora el ajuste respecto a Holt? ¿Qué muestran los residuos sobre estacionalidad remanente y autocorrelación?  
+
+**4f. Holt-Winters estacional multiplicativo** Haga ahora la estimación de un modelo HWM. ¿Tiene sentido un esquema multiplicativo en esta serie? *Compare métricas (MAE, RMSE, MAPE) con el modelo aditivo*.  
+
+**4g. Tendencia amortiguada (damped Holt)** Finalmente estime un modelo HWd. ¿Cómo cambia la proyección de largo plazo frente a Holt no amortiguado? Interprete el valor estimado de `\(\phi\)` en términos de **amortiguación de tendencia**.  
+
+**4h. Comparación de desempeño**  
+- ¿Qué modelo ofrece menor error de pronóstico (MAE, RMSE, MAPE)?  
+- ¿Cuál elegiría para predecir y por qué?  
+
+**4i. Discusión final**  
+- ¿Qué modelo equilibra mejor **ajuste, interpretabilidad y estabilidad**?
+- ¿Qué diferencia práctica observa entre usar un modelo **aditivo vs. multiplicativo**?  
+- ¿Por qué puede ser prudente preferir la **amortiguación de tendencia** en proyecciones de largo plazo?  
+- Comente por qué un **cambio institucional o estructural** (como una nueva política) puede limitar la capacidad predictiva de estos métodos.  
+
 
 
 
@@ -99,10 +199,10 @@ En conformidad con cada grupo de trabajo las series que vayan a presentar deben:
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({
-"ratio": "8.5:11",
-"highlightStyle": "github",
-"highlightLines": true,
-"countIncrementalSlides": false
+  "ratio": "8.5:11",
+  "highlightStyle": "github",
+  "highlightLines": true,
+  "countIncrementalSlides": false
 });
 if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   window.dispatchEvent(new Event('resize'));
@@ -143,6 +243,19 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
     deleted = true;
   });
 })();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
 (function() {
   "use strict"
   // Replace <script> tags in slides area to make them executable

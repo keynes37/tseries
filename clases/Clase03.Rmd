@@ -3,7 +3,7 @@ title: "Econometría II"
 subtitle: "<br/> Performance"
 author: "Carlos A. Yanes Guerra"
 institute: "Universidad del Norte"
-date: "2024-I"
+date: "2025-I"
 output:
   xaringan::moon_reader:
     css: 
@@ -497,6 +497,40 @@ $Y_{t}= \epsilon_{t}, t=1,2,3 \dots T$, es ruido blanco si y solo si:
 --
 
 Cuando hace lanzamientos con un dado. La media es de 3.5 (21/6), La probabilidad de que salga un valor es de 1/6 y el evento (i) que ocurre al lanzarlo es independiente de (j), es decir, el nuevo lanzamiento no depende del anterior ni tampoco de su futuro.
+
+---
+
+--
+
+```{r, echo=FALSE}
+library(ggplot2)
+# Simulemos un ejemplo sencillo de serie con tendencia
+set.seed(42)
+t <- 1:100
+serie <- 0.2*t + rnorm(100, 0, 5)  # tendencia + ruido
+
+qplot(t, serie, geom="line") +
+  labs(title="Serie con tendencia",
+       x="Tiempo", y="Valor")
+```
+
+---
+
+--
+
+```{r, echo=FALSE}
+acf(serie, main="ACF de la serie original")
+```
+
+---
+
+--
+
+```{r, echo=FALSE}
+pacf(serie, main="PACF de la serie original")
+```
+
+
 
 ---
 layout: false
