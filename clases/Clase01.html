@@ -4,7 +4,8 @@
     <title>Econometría II</title>
     <meta charset="utf-8" />
     <meta name="author" content="Carlos A. Yanes Guerra" />
-    <script src="libs/header-attrs-2.26/header-attrs.js"></script>
+    <meta name="date" content="2026-01-01" />
+    <script src="libs/header-attrs-2.29/header-attrs.js"></script>
     <link href="libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
     <script src="libs/tile-view-0.2.6/tile-view.js"></script>
     <script src="libs/xaringanExtra_fit-screen-0.2.6/fit-screen.js"></script>
@@ -37,7 +38,7 @@ background-size: cover
 ## **&lt;br/&gt; Introducción**
 
 ### Carlos A. Yanes Guerra
-### 2025-II
+### 2026
 
 
 
@@ -55,8 +56,7 @@ name: admin
 - .note[Hoy:] Introducción a series de tiempo
 - Lecturas:
   - [Lect. 1: Cap 10 Wooldridge](https://www.amazon.com/Introductory-Econometrics-Modern-Approach-Economics/dp/1111531048)
-- .note[Tareas:] De acuerdo al capstone por desarrollar
-- .note[Ayudas:] [La biblia del programador](https://stackoverflow.com/)
+- .note[Tareas:] De acuerdo al desarrollo del curso
 
 ---
 # Recursos
@@ -67,10 +67,9 @@ name: admin
 
 | Requerimientos   | Fecha                                | Ponderador |
 | ---------------- | ------------------------------------ | ---------- |
-| Parcial 1        | Hasta la semana 5 de clases          | 15%        |
-| Parcial 2        | Hasta la semana 9 de clases          | 15%        |
-| Capstone Project | Todo el semestre                     | 10%        |
-| Clase práctica   | Todo el semestre                     | 10%        |
+| Parcial 1        | Hasta la semana 5 de clases          | 20%        |
+| Parcial 2        | Hasta la semana 9 de clases          | 20%        |
+| Talleres en clases | Todo el semestre                     | 20%        |
 | Interactivo      | Dashboard final                      | 10%        |
 | Examen final     | Registro académico                   | 30%        |
 
@@ -91,24 +90,21 @@ name: admin
 
 + Interactuar con el *syllabus*, leer temas aparte de lo que se da en clases.
 + No puede solo quedarse con lo que se da en .hi[clases], debe interesarse por fuera.
-+ Recuerde usar el **discord** de la clase para todo. Link en: https://discord.gg/FBtHTW4f
-+ Las clases son o deben ser totalmente .hi[participativas]. Si en la semana no ha hecho alguna pregunta al profesor entonces se catalogará como posición insuficiente.
-+ No puede ausentarse el día que le corresponde dar una clase práctica
++ Recuerde usar el **discord** de la clase para todo. *Vamos a usar el mismo de Econometría I*.
++ Las clases son o deben ser totalmente .hi[participativas]. Si en la semana no ha hecho alguna pregunta al profesor entonces se catalogará como posición insuficiente y se procedera a quiz dinámico.
 
 ---
 
 --
 
 ### Dashboard:
-+  Es el apartado mas .hi[importante] del curso. Con él debe demostrar lo que ha aprendido a lo largo del curso. Debe ser muy interactivo 
++  Es un apartado .hi[importante] del curso. Con él debe demostrar lo que ha aprendido a lo largo del curso. Debe ser muy interactivo 
 
 + Algunos estudiantes pueden tomar la misma **serie** o tema principal. Pero la idea es que sean varios y con esto obtener distintos escenarios. En la 4 semana de clases ya debe tener una propuesta. 
 
-+ Los trabajos a entregar **Capstones** son compensatorios por lo visto en clases. Pueden ser 2 o 3 en todo el .hi[semestre]
++ Los trabajos o **talleres** son compensatorios por lo visto en clases. Pueden ser hasta 4, 5 o mas en todo el .hi[semestre]. Deben ser en parejas, máximo
 
 + La funcionalidad del .hi[Dashboard] es totalmente obligatorio. Se entrega al final del semestre (y no requiere ser sustentado).
-
-
 
 ---
 class: inverse, middle
@@ -380,6 +376,94 @@ X &amp; = \text{Variables explicativas} \\
 <svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:blue;overflow:visible;position:relative;"><path d="M368 128c0 44.4-25.4 83.5-64 106.4V256c0 17.7-14.3 32-32 32H176c-17.7 0-32-14.3-32-32V234.4c-38.6-23-64-62.1-64-106.4C80 57.3 144.5 0 224 0s144 57.3 144 128zM168 176a32 32 0 1 0 0-64 32 32 0 1 0 0 64zm144-32a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM3.4 273.7c7.9-15.8 27.1-22.2 42.9-14.3L224 348.2l177.7-88.8c15.8-7.9 35-1.5 42.9 14.3s1.5 35-14.3 42.9L295.6 384l134.8 67.4c15.8 7.9 22.2 27.1 14.3 42.9s-27.1 22.2-42.9 14.3L224 419.8 46.3 508.6c-15.8 7.9-35 1.5-42.9-14.3s-1.5-35 14.3-42.9L152.4 384 17.7 316.6C1.9 308.7-4.5 289.5 3.4 273.7z"/></svg> No multicolinealidad entre las `\(X's\)`.
 <svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:blue;overflow:visible;position:relative;"><path d="M368 128c0 44.4-25.4 83.5-64 106.4V256c0 17.7-14.3 32-32 32H176c-17.7 0-32-14.3-32-32V234.4c-38.6-23-64-62.1-64-106.4C80 57.3 144.5 0 224 0s144 57.3 144 128zM168 176a32 32 0 1 0 0-64 32 32 0 1 0 0 64zm144-32a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM3.4 273.7c7.9-15.8 27.1-22.2 42.9-14.3L224 348.2l177.7-88.8c15.8-7.9 35-1.5 42.9 14.3s1.5 35-14.3 42.9L295.6 384l134.8 67.4c15.8 7.9 22.2 27.1 14.3 42.9s-27.1 22.2-42.9 14.3L224 419.8 46.3 508.6c-15.8 7.9-35 1.5-42.9-14.3s-1.5-35 14.3-42.9L152.4 384 17.7 316.6C1.9 308.7-4.5 289.5 3.4 273.7z"/></svg> No heterocedasticidad `\(\sigma^{2}_{i}=\sigma^{2}_{j}=\cdots = \sigma^{2}_{l}\)`
 <svg aria-hidden="true" role="img" viewBox="0 0 448 512" style="height:1em;width:0.88em;vertical-align:-0.125em;margin-left:auto;margin-right:auto;font-size:inherit;fill:blue;overflow:visible;position:relative;"><path d="M368 128c0 44.4-25.4 83.5-64 106.4V256c0 17.7-14.3 32-32 32H176c-17.7 0-32-14.3-32-32V234.4c-38.6-23-64-62.1-64-106.4C80 57.3 144.5 0 224 0s144 57.3 144 128zM168 176a32 32 0 1 0 0-64 32 32 0 1 0 0 64zm144-32a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM3.4 273.7c7.9-15.8 27.1-22.2 42.9-14.3L224 348.2l177.7-88.8c15.8-7.9 35-1.5 42.9 14.3s1.5 35-14.3 42.9L295.6 384l134.8 67.4c15.8 7.9 22.2 27.1 14.3 42.9s-27.1 22.2-42.9 14.3L224 419.8 46.3 508.6c-15.8 7.9-35 1.5-42.9-14.3s-1.5-35 14.3-42.9L152.4 384 17.7 316.6C1.9 308.7-4.5 289.5 3.4 273.7z"/></svg> No Autocorrelación `\(Cov(\epsilon_{t}, \epsilon_{t-j}) = 0\)`
+
+---
+# Recordeis
+
+--
+
+De las especificaciones de los modelos de regresión lineal múltiple (RLM). Se parte el desarrollo de lo que se viene a continuación
+
+--
+
+`$$Y=XB+u$$`
+
+--
+
++ Modelo que debe ser `\(E(u)=0\)`. 
++ Exogeneidad `\(E(X'u)=0\)`
++ Perturbaciones esféricas, lo que es `\(E(uu')=\sigma^2I\)`
+
+---
+# Recordeis
+
+--
+
+Se busca tener la .hi[suma de los residuos al cuadrado] (SRC) y se deriva con respecto a beta `\((\beta)\)`
+
+--
+
+Si el modelo es `\(Y=XB+\hat{u}\)`, esto matricialmente es:
+
+$$
+\mathbf{u} =
+`\begin{bmatrix}
+\hat{u}_1 \\
+\hat{u}_2 \\
+\hat{u}_3 \\
+\vdots \\
+\hat{u}_n \\
+\end{bmatrix}`
+$$
+
+--
+
+Esta SCR no es mas que `\(\sum \hat{u}^{2}_{i}=\hat{u}^{2}_{1}+\hat{u}^{2}_{2}+ \cdots+ \hat{u}^{2}_{n}= \hat{u}'\hat{u} \\\)`
+
+--
+
+Esto tomandose como vector se tiene lo siguiente:
+
+$$
+`\begin{aligned}
+\hat{u}'\hat{u}&amp;= (Y-XB)'(Y-XB) \\
+&amp;= (Y-XB)'(Y-XB) \\
+&amp;=Y'Y-Y'XB-B'X'Y+B'X'XB
+\end{aligned}`
+$$
+
+---
+# Recordeis
+
+--
+
+Derivando respecto a `\(\hat{\textbf{B}}\)` e igualando a cero
+
+$$
+`\begin{aligned}
+\frac{\partial \hat{\textbf{u}}'\hat{\textbf{u}}}{\partial \hat{\textbf{B}}} &amp; \Longrightarrow \frac{\partial \textbf{Y}'\textbf{Y}}{\partial \hat{\textbf{B}}}=\textbf{0}\\
+                       &amp; \Longrightarrow \frac{\partial 2\hat{\textbf{B}}'\textbf{X}'\textbf{Y}}{\partial \hat{\textbf{B}}}=2\textbf{X}'\textbf{Y}\\
+                       &amp; \Longrightarrow \frac{\partial \hat{\textbf{B}}'\textbf{X}'\textbf{X}\hat{\textbf{B}}}{\partial \hat{\textbf{B}}}=2(\textbf{X}'\textbf{X})\hat{\textbf{B}}
+\end{aligned}`
+$$
+--
+
+Para luego si tener
+
+`$$\frac{\partial \hat{\textbf{u}}'\hat{\textbf{u}}}{\partial \hat{\textbf{B}}} = -2\textbf{X}'\textbf{Y} + 2(\textbf{X}'\textbf{X})\hat{\textbf{B}}=\textbf{0}$$`
+
+---
+# Recordeis
+
+--
+
+Con ello
+
+`$$(\textbf{X}'\textbf{X})\hat{\textbf{B}}=\textbf{X}'\textbf{Y}: \text{Ecuaciones normales}$$`
+
+&lt;font color = "red"&gt;$$\hat{\textbf{B}}_{MCO}=(\textbf{X}'\textbf{X})^{-1}\textbf{X}'\textbf{Y}$$
+
+
 
 ---
 class: inverse, middle

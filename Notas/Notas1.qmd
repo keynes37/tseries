@@ -1,0 +1,86 @@
+---
+title: "Econometría II"
+subtitle: "Notas Parcial 1"
+format:
+  pdf:
+    pdf-engine: xelatex
+    toc: true
+    toc-depth: 3
+    # (tu template y preámbulo si los usas)
+    template: tex/mytemplate.tex
+    include-in-header: tex/preamble.tex
+---
+
+```{r}
+#| label: setup
+#| include: false
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(moments)   # para asimetría y curtosis
+})
+```
+
+# Notas del Parcial
+
+Los resultados de la primera evaluación del curso, son los siguientes:
+
+```{r}
+#| label: tablas-lado-a-lado
+#| echo: false
+#| message: false
+#| warning: false
+#| results: asis
+
+library(readxl)
+library(dplyr)
+library(stringr)
+library(knitr)
+
+options(knitr.kable.NA = "")
+
+# 1) Leer todo como texto y quedarnos con Codigo / Nota
+df_raw <- read_excel("notaseco25.xlsx", col_types = "text", .name_repair = "minimal")
+nms <- names(df_raw)
+norm <- function(x) tolower(gsub("\\s+", "", x))
+code_col <- nms[norm(nms) == "codigo"]
+nota_col <- nms[norm(nms) == "nota"]
+if (length(code_col) != 1 || length(nota_col) != 1) {
+  stop("No se encontraron exactamente las columnas 'Codigo' y 'Nota' en el archivo.")
+}
+
+codigo_chr <- df_raw[[code_col]] |> trimws() |> sub("\\.0$", "", x = _)
+nota_num <- df_raw[[nota_col]] |> trimws() |> str_replace(",", ".") |> as.numeric()
+
+df2 <- tibble(`Código` = codigo_chr, `Nota` = nota_num)
+
+# 2) Tabla de estadísticas
+q <- quantile(nota_num, probs = c(0, .25, .5, .75, 1), na.rm = TRUE)
+stats <- tibble(
+  Estadística = c("N", "N (no NA)", "Promedio", "Desv. estándar",
+                  "Mínimo", "Q1 (25%)", "Mediana", "Q3 (75%)", "Máximo"),
+  Valor = c(
+    length(nota_num),
+    sum(!is.na(nota_num)),
+    mean(nota_num, na.rm = TRUE),
+    sd(nota_num, na.rm = TRUE),
+    q[[1]], q[[2]], q[[3]], q[[4]], q[[5]]
+  )
+)
+
+# Redondeo solo para los numéricos continuos (deja enteros tal cual)
+stats$Valor <- ifelse(
+  stats$Estadística %in% c("N","N (no NA)"),
+  stats$Valor,
+  round(stats$Valor, 2)
+)
+
+# 3) Imprimir lado a lado con LaTeX (minipages)
+cat("\\begin{minipage}[t]{0.58\\textwidth}\n")
+cat(kable(df2, format = "latex", booktabs = TRUE, col.names = c("Código","Nota"), digits = c(NA, 2), align = c("l","r")))
+cat("\n\\end{minipage}\\hfill\n")
+
+cat("\\begin{minipage}[t]{0.38\\textwidth}\n")
+cat(kable(stats, format = "latex", booktabs = TRUE, col.names = c("Estadística","Valor"), align = c("l","r")))
+cat("\n\\end{minipage}\n")
+```
+
