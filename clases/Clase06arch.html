@@ -4,7 +4,8 @@
     <title>Econometría II</title>
     <meta charset="utf-8" />
     <meta name="author" content="Carlos A. Yanes Guerra" />
-    <script src="libs/header-attrs-2.26/header-attrs.js"></script>
+    <meta name="date" content="2026-01-01" />
+    <script src="libs/header-attrs-2.29/header-attrs.js"></script>
     <link href="libs/tile-view-0.2.6/tile-view.css" rel="stylesheet" />
     <script src="libs/tile-view-0.2.6/tile-view.js"></script>
     <script src="libs/xaringanExtra_fit-screen-0.2.6/fit-screen.js"></script>
@@ -37,7 +38,7 @@ background-size: cover
 ## **&lt;br/&gt; ARCH y GARCH**
 
 ### Carlos A. Yanes Guerra
-### 2024-II
+### 2026
 
 
 ---
@@ -59,6 +60,114 @@ Por sus siglas hace referencia a **Autoregressive conditional heteroskedasticity
 --
 
 &lt;img src="Clase06arch_files/figure-html/unnamed-chunk-1-1.svg" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+--
+
+
+```
+#&gt; [1] "GSPC"
+```
+
+&lt;img src="Clase06arch_files/figure-html/unnamed-chunk-2-1.svg" style="display: block; margin: auto;" /&gt;
+---
+
+--
+
+---
+#### ¿Por qué ARCH/GARCH?
+
+--
+
+El .hi[problema fundamental]: En finanzas observamos tres .hi[hechos estilizados]:
+
+--
+
+1. **Volatility Clustering** (Agrupamiento de volatilidad)
+   - Períodos tranquilos → baja volatilidad
+   - Períodos turbulentos → alta volatilidad
+   - "La volatilidad viene en rachas"
+
+--
+
+2. **Leptocurtosis** (Colas pesadas)
+   - Más eventos extremos de lo que predice la normal
+   - Crisis financieras son más frecuentes de lo esperado
+
+--
+
+3. **Leverage Effect** (Efecto apalancamiento)
+   - Malas noticias ↑ volatilidad más que buenas noticias
+   - Caídas generan más incertidumbre que subidas
+
+---
+
+--
+
+.pull-left[
+### Modelos tradicionales (MCO, ARIMA)
+- Asumen varianza .hi-slate[constante]
+- ❌ No capturan estos patrones
+- ❌ Subestiman el riesgo
+]
+
+.pull-right[
+### Modelos ARCH/GARCH
+- Varianza .hi[cambiante en el tiempo]
+- ✅ Modelan volatilidad dinámica
+- ✅ Mejores pronósticos de riesgo
+]
+
+--
+
+#### Intuición ARCH: La memoria de la volatilidad
+
+#### Pregunta clave: .hi[¿Cómo se comporta el riesgo hoy?]
+
+---
+
+--
+
+#### Respuesta ARCH:
+&gt; "El riesgo de hoy depende de qué tan grandes fueron las sorpresas de ayer"
+
+--
+
+`$$\sigma^2_t = \underbrace{\omega}_{\text{Volatilidad base}} + \underbrace{\alpha_1 \epsilon^2_{t-1}}_{\text{Efecto del shock pasado}}$$`
+
+--
+
+#### Interpretación económica:
+
+- `\(\omega &gt; 0\)`: Siempre hay un nivel mínimo de riesgo
+- `\(\alpha_1\)`: ¿Qué tan sensible es la volatilidad a noticias pasadas?
+  - `\(\alpha_1\)` alto → Mercado muy reactivo (más nervioso)
+  - `\(\alpha_1\)` bajo → Mercado poco reactivo (más estable)
+
+---
+
+--
+
+### Ejemplo numérico:
+
+--
+
+Si `\(\omega = 0.1\)` y `\(\alpha_1 = 0.6\)`:
+
+- Ayer hubo shock grande: `\(\epsilon_{t-1}^2 = 4\)`
+- Hoy: `\(\sigma^2_t = 0.1 + 0.6(4) = 2.5\)` → .hi[Alta volatilidad]
+
+- Ayer fue tranquilo: `\(\epsilon_{t-1}^2 = 0.1\)`  
+- Hoy: `\(\sigma^2_t = 0.1 + 0.6(0.1) = 0.16\)` → .b[Baja volatilidad]
+
+---
+
+--
+
+&lt;img src="Clase06arch_files/figure-html/arch-anatomia-1.svg" style="display: block; margin: auto;" /&gt;
+
 
 ---
 
@@ -203,12 +312,12 @@ Luego ese `\(\epsilon\)` debe ser estimado con su rezago `\(\epsilon_t^2=c+\phi_
 --
 
 
-```r
+``` r
 hest &lt;- ts(2*model.ARCH$fitted.values^2)
 plot.ts(hest)
 ```
 
-&lt;img src="Clase06arch_files/figure-html/unnamed-chunk-4-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="Clase06arch_files/figure-html/unnamed-chunk-5-1.svg" style="display: block; margin: auto;" /&gt;
 
 
 
@@ -217,7 +326,7 @@ plot.ts(hest)
 
 --
 
-&lt;img src="Clase06arch_files/figure-html/unnamed-chunk-5-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="Clase06arch_files/figure-html/unnamed-chunk-6-1.svg" style="display: block; margin: auto;" /&gt;
 
 ```
 #&gt; 
@@ -237,6 +346,36 @@ class: inverse, middle, center
 ---
 layout: true
 # Modelo Garch
+
+---
+
+--
+
+### ARCH vs GARCH: ¿Cuál es la diferencia real?
+
+### La clave: .hi[Persistencia de la volatilidad]
+
+--
+
+.pull-left[
+### ARCH(1)
+`$$\sigma^2_t = \omega + \alpha_1 \epsilon^2_{t-1}$$`
+
+- Solo memoria de .hi-slate[1 período]
+- Persistencia = `\(\alpha_1\)` (típicamente &lt; 0.7)
+- .b[Olvida rápido] los shocks
+]
+
+--
+
+.pull-right[
+### GARCH(1,1)
+`$$\sigma^2_t = \omega + \alpha_1 \epsilon^2_{t-1} + \beta_1 \sigma^2_{t-1}$$`
+
+- Memoria de .hi[múltiples períodos]
+- Persistencia = `\(\alpha_1 + \beta_1\)` (típicamente ≈ 0.95)
+- .hi-turquoise[Recuerda por mucho tiempo]
+]
 
 ---
 
@@ -268,6 +407,12 @@ Un modelo GARCH asume que la varianza (la medida de volatilidad) del retorno de 
 --
 
 Si una acción ha tenido una gran fluctuación en el pasado (alta volatilidad), un modelo GARCH predeciría una mayor volatilidad para el futuro.  Al contrario, si la varianza ha sido .hi[baja] recientemente, se espera una volatilidad más baja en el futuro.
+
+---
+
+--
+
+&lt;img src="Clase06arch_files/figure-html/arch-vs-garch-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -322,7 +467,7 @@ Donde:
 
 Usemos la misma serie, para ello entonces vinculamos:
 
-&lt;img src="Clase06arch_files/figure-html/unnamed-chunk-6-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="Clase06arch_files/figure-html/unnamed-chunk-7-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -332,7 +477,7 @@ Usemos la misma serie, para ello entonces vinculamos:
 
 Miramos su función de autocorrelación parcial
 
-&lt;img src="Clase06arch_files/figure-html/unnamed-chunk-7-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="Clase06arch_files/figure-html/unnamed-chunk-8-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -342,7 +487,7 @@ Miramos su función de autocorrelación parcial
 
 Ahora corresponde al cuadrado
 
-&lt;img src="Clase06arch_files/figure-html/unnamed-chunk-8-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="Clase06arch_files/figure-html/unnamed-chunk-9-1.svg" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -352,7 +497,7 @@ Ahora corresponde al cuadrado
 
 Lo mismo con la parcial
 
-&lt;img src="Clase06arch_files/figure-html/unnamed-chunk-9-1.svg" style="display: block; margin: auto;" /&gt;
+&lt;img src="Clase06arch_files/figure-html/unnamed-chunk-10-1.svg" style="display: block; margin: auto;" /&gt;
 
 
 ---
@@ -372,7 +517,7 @@ Estimamos un GARCH (1,1)
 #&gt; 
 #&gt; Mean and Variance Equation:
 #&gt;  data ~ 1 + garch(1, 1)
-#&gt; &lt;environment: 0x14d4ef660&gt;
+#&gt; &lt;environment: 0x14169d438&gt;
 #&gt;  [data = my_data]
 #&gt; 
 #&gt; Conditional Distribution:
@@ -398,7 +543,8 @@ Estimamos un GARCH (1,1)
 #&gt;  26.89395    normalized:  0.1344697 
 #&gt; 
 #&gt; Description:
-#&gt;  Thu Sep 26 21:53:15 2024 by user:  
+#&gt;  Tue Mar 17 22:02:50 2026 by user:  
+#&gt; 
 #&gt; 
 #&gt; 
 #&gt; Standardised Residuals Tests:
@@ -409,9 +555,9 @@ Estimamos un GARCH (1,1)
 #&gt;  Ljung-Box Test     R    Q(15)  5.8370269 0.98235711
 #&gt;  Ljung-Box Test     R    Q(20)  9.0984656 0.98173848
 #&gt;  Ljung-Box Test     R^2  Q(10)  1.6244320 0.99849270
-#&gt;  Ljung-Box Test     R^2  Q(15)  5.3490618 0.98873566
+#&gt;  Ljung-Box Test     R^2  Q(15)  5.3490618 0.98873567
 #&gt;  Ljung-Box Test     R^2  Q(20)  7.2160475 0.99591400
-#&gt;  LM Arch Test       R    TR^2   4.4033390 0.97501072
+#&gt;  LM Arch Test       R    TR^2   4.4033389 0.97501072
 #&gt; 
 #&gt; Information Criterion Statistics:
 #&gt;        AIC        BIC        SIC       HQIC 
@@ -457,10 +603,10 @@ width="150px" /&gt;
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
 <script>var slideshow = remark.create({
-"highlightStyle": "github",
-"highlightLines": true,
-"countIncrementalSlides": false,
-"ratio": "16:9"
+  "highlightStyle": "github",
+  "highlightLines": true,
+  "countIncrementalSlides": false,
+  "ratio": "16:9"
 });
 if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   window.dispatchEvent(new Event('resize'));

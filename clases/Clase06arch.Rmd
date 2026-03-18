@@ -3,7 +3,7 @@ title: "Econometría II"
 subtitle: "<br/> ARCH y GARCH"
 author: "Carlos A. Yanes Guerra"
 institute: "Universidad del Norte"
-date: "2024-II"
+date: "2026"
 output:
   xaringan::moon_reader:
     css: 
@@ -213,6 +213,202 @@ plot.ts(rts)
 hist(rts, main="Retorno de acciones empresa Y", breaks=20, freq=FALSE, col="red")
 ```
 
+
+---
+
+--
+
+```{r, fig.height=7, fig.width=12, echo=FALSE, warning=FALSE, message=FALSE}
+library(quantmod)
+
+# Descargar datos
+getSymbols("^GSPC", from = "2015-01-01", to = "2023-12-31", auto.assign = TRUE)
+returns <- na.omit(diff(log(Cl(GSPC))) * 100)
+returns_vec <- as.numeric(returns)
+
+# Panel de 4 gráficos
+par(mfrow = c(2, 2), mar = c(4, 4, 3, 2), bg = "white")
+
+# 1. Serie temporal
+plot(returns_vec, type = "l", col = "#2b59c3", lwd = 1.5,
+     main = "Retornos S&P 500", 
+     ylab = "Retorno (%)", xlab = "Observación",
+     cex.main = 1.4, font.main = 2, cex.lab = 1.2)
+abline(h = 0, col = "gray50", lty = 2)
+grid(col = "gray90")
+
+# 2. Histograma
+hist(returns_vec, breaks = 50, freq = FALSE, 
+     col = "#20B2AA80", border = "white",
+     main = "Distribución de Retornos",
+     xlab = "Retorno (%)", ylab = "Densidad",
+     cex.main = 1.4, font.main = 2, cex.lab = 1.2)
+lines(density(returns_vec), col = "#e64173", lwd = 3)
+curve(dnorm(x, mean(returns_vec), sd(returns_vec)), 
+      add = TRUE, col = "black", lwd = 2, lty = 2)
+legend("topright", legend = c("Observado", "Normal teórica"), 
+       col = c("#e64173", "black"), lwd = 2, lty = c(1, 2), bty = "n")
+
+# 3. ACF retornos
+acf(returns_vec, lag.max = 24, main = "ACF de Retornos",
+    col = "#2b59c3", lwd = 5, ci.col = "#e6417380",
+    cex.main = 1.4, font.main = 2, cex.lab = 1.2)
+
+# 4. ACF retornos²
+acf(returns_vec^2, lag.max = 24, 
+    main = expression(paste("ACF de Retornos"^2)),
+    col = "#fb6107", lwd = 5, ci.col = "#e6417380",
+    cex.main = 1.4, font.main = 2, cex.lab = 1.2)
+mtext("(Evidencia de volatilidad agrupada)", side = 3, line = 0.3, cex = 0.9)
+
+par(mfrow = c(1, 1))
+```
+---
+
+--
+
+---
+#### ¿Por qué ARCH/GARCH?
+
+--
+
+El .hi[problema fundamental]: En finanzas observamos tres .hi[hechos estilizados]:
+
+--
+
+1. **Volatility Clustering** (Agrupamiento de volatilidad)
+   - Períodos tranquilos → baja volatilidad
+   - Períodos turbulentos → alta volatilidad
+   - "La volatilidad viene en rachas"
+
+--
+
+2. **Leptocurtosis** (Colas pesadas)
+   - Más eventos extremos de lo que predice la normal
+   - Crisis financieras son más frecuentes de lo esperado
+
+--
+
+3. **Leverage Effect** (Efecto apalancamiento)
+   - Malas noticias ↑ volatilidad más que buenas noticias
+   - Caídas generan más incertidumbre que subidas
+
+---
+
+--
+
+.pull-left[
+### Modelos tradicionales (MCO, ARIMA)
+- Asumen varianza .hi-slate[constante]
+- ❌ No capturan estos patrones
+- ❌ Subestiman el riesgo
+]
+
+.pull-right[
+### Modelos ARCH/GARCH
+- Varianza .hi[cambiante en el tiempo]
+- ✅ Modelan volatilidad dinámica
+- ✅ Mejores pronósticos de riesgo
+]
+
+--
+
+#### Intuición ARCH: La memoria de la volatilidad
+
+#### Pregunta clave: .hi[¿Cómo se comporta el riesgo hoy?]
+
+---
+
+--
+
+#### Respuesta ARCH:
+> "El riesgo de hoy depende de qué tan grandes fueron las sorpresas de ayer"
+
+--
+
+$$\sigma^2_t = \underbrace{\omega}_{\text{Volatilidad base}} + \underbrace{\alpha_1 \epsilon^2_{t-1}}_{\text{Efecto del shock pasado}}$$
+
+--
+
+#### Interpretación económica:
+
+- $\omega > 0$: Siempre hay un nivel mínimo de riesgo
+- $\alpha_1$: ¿Qué tan sensible es la volatilidad a noticias pasadas?
+  - $\alpha_1$ alto → Mercado muy reactivo (más nervioso)
+  - $\alpha_1$ bajo → Mercado poco reactivo (más estable)
+
+---
+
+--
+
+### Ejemplo numérico:
+
+--
+
+Si $\omega = 0.1$ y $\alpha_1 = 0.6$:
+
+- Ayer hubo shock grande: $\epsilon_{t-1}^2 = 4$
+- Hoy: $\sigma^2_t = 0.1 + 0.6(4) = 2.5$ → .hi[Alta volatilidad]
+
+- Ayer fue tranquilo: $\epsilon_{t-1}^2 = 0.1$  
+- Hoy: $\sigma^2_t = 0.1 + 0.6(0.1) = 0.16$ → .b[Baja volatilidad]
+
+---
+
+--
+
+```{r arch-anatomia, fig.height=7, fig.width=12, echo=FALSE}
+set.seed(123)
+n <- 300
+omega <- 0.1
+alpha <- 0.7
+
+epsilon <- numeric(n)
+sigma2 <- numeric(n)
+sigma2[1] <- omega / (1 - alpha)
+
+for(t in 2:n) {
+  sigma2[t] <- omega + alpha * epsilon[t-1]^2
+  epsilon[t] <- rnorm(1, 0, sqrt(sigma2[t]))
+}
+
+# Panel de 3 gráficos
+par(mfrow = c(3, 1), mar = c(3, 4, 2, 2))
+
+# 1. Retornos (lo que observamos)
+plot(epsilon, type = "h", col = blue, lwd = 2,
+     main = "A. Retornos observados (ε_t)", 
+     ylab = expression(epsilon[t]), xlab = "",
+     cex.main = 1.3, font.main = 2)
+abline(h = 0, col = grey_mid, lwd = 1)
+# Resaltar períodos
+rect(50, -4, 100, 4, col = paste0(red_pink, "20"), border = NA)
+text(75, 3, "Alta volatilidad", col = red_pink, font = 2, cex = 1.1)
+rect(150, -4, 250, 4, col = paste0(green, "20"), border = NA)
+text(200, 3, "Baja volatilidad", col = green, font = 2, cex = 1.1)
+
+# 2. Volatilidad condicional (lo que modelamos)
+plot(sqrt(sigma2), type = "l", col = red_pink, lwd = 3,
+     main = "B. Volatilidad condicional estimada (σ_t)", 
+     ylab = expression(sigma[t]), xlab = "",
+     cex.main = 1.3, font.main = 2)
+abline(h = sqrt(omega/(1-alpha)), col = grey_dark, lty = 2, lwd = 2)
+text(250, 0.5, expression(paste("Varianza incondicional = ", omega/(1-alpha))), 
+     pos = 3, col = grey_dark, font = 2)
+
+# 3. Retornos estandarizados (deberían ser ruido blanco)
+std_resid <- epsilon / sqrt(sigma2)
+plot(std_resid, type = "h", col = turquoise, lwd = 2,
+     main = "C. Retornos estandarizados (ε_t / σ_t) - Ruido blanco", 
+     ylab = "z_t", xlab = "Tiempo",
+     cex.main = 1.3, font.main = 2)
+abline(h = c(-2, 0, 2), col = c(red_pink, grey_mid, red_pink), 
+       lty = c(2, 1, 2), lwd = c(2, 1, 2))
+
+par(mfrow = c(1, 1))
+```
+
+
 ---
 
 --
@@ -370,6 +566,36 @@ layout: true
 
 --
 
+### ARCH vs GARCH: ¿Cuál es la diferencia real?
+
+### La clave: .hi[Persistencia de la volatilidad]
+
+--
+
+.pull-left[
+### ARCH(1)
+$$\sigma^2_t = \omega + \alpha_1 \epsilon^2_{t-1}$$
+
+- Solo memoria de .hi-slate[1 período]
+- Persistencia = $\alpha_1$ (típicamente < 0.7)
+- .b[Olvida rápido] los shocks
+]
+
+--
+
+.pull-right[
+### GARCH(1,1)
+$$\sigma^2_t = \omega + \alpha_1 \epsilon^2_{t-1} + \beta_1 \sigma^2_{t-1}$$
+
+- Memoria de .hi[múltiples períodos]
+- Persistencia = $\alpha_1 + \beta_1$ (típicamente ≈ 0.95)
+- .hi-turquoise[Recuerda por mucho tiempo]
+]
+
+---
+
+--
+
 `r fa("palette", fill="red")`  Un modelo **GARCH (Generalized Autoregressive Conditional Heteroskedasticity)** es un tipo de modelo estadístico que se utiliza para modelar la *volatilidad* en series temporales, especialmente en finanzas.
 
 --
@@ -396,6 +622,108 @@ Un modelo GARCH asume que la varianza (la medida de volatilidad) del retorno de 
 --
 
 Si una acción ha tenido una gran fluctuación en el pasado (alta volatilidad), un modelo GARCH predeciría una mayor volatilidad para el futuro.  Al contrario, si la varianza ha sido .hi[baja] recientemente, se espera una volatilidad más baja en el futuro.
+
+---
+
+--
+
+```{r arch-vs-garch, fig.height=7, fig.width=11, echo=FALSE, warning=FALSE}
+set.seed(456)
+n <- 400
+
+# ============= ARCH(1): Poca memoria =============
+omega_a <- 0.1
+alpha_a <- 0.6
+eps_arch <- numeric(n)
+sig2_arch <- numeric(n)
+sig2_arch[1] <- omega_a / (1 - alpha_a)
+
+for(t in 2:n) {
+  sig2_arch[t] <- omega_a + alpha_a * eps_arch[t-1]^2
+  eps_arch[t] <- rnorm(1, 0, sqrt(sig2_arch[t]))
+}
+
+# ============= GARCH(1,1): Mucha memoria =============
+omega_g <- 0.05
+alpha_g <- 0.15
+beta_g <- 0.80
+eps_garch <- numeric(n)
+sig2_garch <- numeric(n)
+sig2_garch[1] <- omega_g / (1 - alpha_g - beta_g)
+
+for(t in 2:n) {
+  sig2_garch[t] <- omega_g + alpha_g * eps_garch[t-1]^2 + beta_g * sig2_garch[t-1]
+  eps_garch[t] <- rnorm(1, 0, sqrt(sig2_garch[t]))
+}
+
+# ============= Introducir SHOCK en t=200 =============
+eps_arch[200] <- 4
+eps_garch[200] <- 4
+
+# Recalcular volatilidad POST-SHOCK
+for(t in 201:n) {
+  sig2_arch[t] <- omega_a + alpha_a * eps_arch[t-1]^2
+  eps_arch[t] <- rnorm(1, 0, sqrt(sig2_arch[t]))
+  
+  sig2_garch[t] <- omega_g + alpha_g * eps_garch[t-1]^2 + beta_g * sig2_garch[t-1]
+  eps_garch[t] <- rnorm(1, 0, sqrt(sig2_garch[t]))
+}
+
+# ============= GRÁFICO =============
+par(mar = c(4, 4.5, 3, 2), bg = "white")
+
+plot(sqrt(sig2_arch), type = "l", col = blue, lwd = 3, 
+     ylim = c(0, max(sqrt(sig2_arch), sqrt(sig2_garch)) * 1.1),
+     main = "Respuesta a un Shock Grande en t=200", 
+     ylab = expression(paste("Volatilidad Condicional (", sigma[t], ")")), 
+     xlab = "Tiempo",
+     cex.main = 1.5, font.main = 2, cex.lab = 1.3, cex.axis = 1.1)
+
+lines(sqrt(sig2_garch), col = red_pink, lwd = 3)
+
+# Línea del shock
+abline(v = 200, col = orange, lwd = 4, lty = 2)
+
+# Flecha del shock
+arrows(200, max(sqrt(sig2_arch))*0.7, 
+       200, max(sqrt(sig2_arch))*0.95, 
+       col = orange, lwd = 4, length = 0.2, code = 2)
+text(200, max(sqrt(sig2_arch))*0.65, 
+     "SHOCK GRANDE\n(Crisis)", 
+     col = orange, font = 2, cex = 1.3, pos = 4)
+
+# Anotación ARCH - Regreso rápido
+segments(210, sqrt(sig2_arch[250]), 250, sqrt(sig2_arch[250]), 
+         col = blue, lwd = 4, lty = 1)
+text(230, sqrt(sig2_arch[250]) + 0.15, 
+     "ARCH: Regresa RÁPIDO\na nivel normal", 
+     col = blue, font = 2, cex = 1.15)
+
+# Anotación GARCH - Memoria larga
+segments(250, sqrt(sig2_garch[320]), 350, sqrt(sig2_garch[320]), 
+         col = red_pink, lwd = 4, lty = 1)
+text(300, sqrt(sig2_garch[320]) + 0.15, 
+     "GARCH: MEMORIA LARGA\nPersiste elevada", 
+     col = red_pink, font = 2, cex = 1.15)
+
+# Leyenda con info técnica
+legend("topright", 
+       legend = c(
+         paste0("ARCH(1): α = ", alpha_a, 
+                " → Persistencia = ", alpha_a),
+         paste0("GARCH(1,1): α = ", alpha_g, ", β = ", beta_g, 
+                " → Persistencia = ", round(alpha_g + beta_g, 2))
+       ),
+       col = c(blue, red_pink), 
+       lwd = 3, 
+       bty = "n", 
+       cex = 1.2,
+       bg = "white")
+
+# Agregar grid para mejor lectura
+grid(col = grey_light, lty = "dotted")
+
+```
 
 ---
 
