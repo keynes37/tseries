@@ -2,7 +2,7 @@
 title: "Modelos VAR | Econometría 2 | Uninorte"
 subtitle: "Ejercicio Preparación final 1"
 author: "Carlos Andrés Yanes"
-date: "2025-04-22"
+date: "2026-05-12"
 format:
     html: 
       self-contained: true
@@ -13,19 +13,18 @@ execute:
 ---
 
 ## 🎯 Objetivo
-
-Aplicar un modelo VAR para estudiar las relaciones dinámicas entre variables macroeconómicas en Colombia o en otro país, utilizando datos trimestrales reales. La [guía del curso](https://raw.githack.com/keynes37/tseries/main/GuiasdeR/Guia8.html#/title-slide) que <span style="color: deeppink; font-weight: bold;">será muy útil</span> no podrá usar paquete o código diferente al que hay en ella. Cualquier uso de la IA para esto, anulará el punto respectivamente.
+Aplicar un modelo VAR para estudiar las relaciones dinámicas entre variables macroeconómicas de un país seleccionado, utilizando datos trimestrales reales. La [guía del curso](https://raw.githack.com/keynes37/tseries/main/GuiasdeR/Guia8.html#/title-slide) que <span style="color: deeppink; font-weight: bold;">será muy útil</span> no podrá usar paquete o código diferente al que hay en ella. Cualquier uso de la IA para esto, anulará el punto respectivamente.
 
 ## 📁 Datos a utilizar
 
-Tome un grupo de series <span style="color: deeppink; font-weight: bold;">Macroeconómica</span> de un país cualquiera. La idea es que esa *selección* guarde o tenga un gran repositorio de datos (inclusive un sistema como el DANE en Colombia) apliamente reconocido y trate de estipular la construcción de este grupo de series de tiempo:
+Tome un grupo de series <span style="color: deeppink; font-weight: bold;">Macroeconómicas</span> de un país cualquiera. Se recomienda usar fuentes ampliamente reconocidas como el **Banco Mundial**, **FRED (Federal Reserve Bank of St. Louis)**, **DANE**, **Banco de la República**, o el **banco central del país elegido**. La idea es que esa *selección* guarde coherencia macroeconómica y permita construir el siguiente grupo de series de tiempo:
 
-- Producto Interno Bruto real (PIB, logaritmo)
-- Inflación (variación porcentual anual)
+- Producto Interno Bruto real (PIB, en logaritmo)
+- Inflación (variación porcentual anual del IPC)
 - Tasa de interés de política monetaria
-- Tipo de cambio nominal
+- Tipo de cambio nominal (moneda local frente al USD)
 
-Trate de que estos datos esten en formato **trimestral**. Recuerde que los modelos VAR requieren mas de 90 datos para ser estimados.
+Trate de que estos datos estén en formato **trimestral**. Recuerde que los modelos VAR requieren más de 90 observaciones para ser estimados de manera confiable. Si alguna variable no está disponible en frecuencia trimestral, justifique el proceso de conversión o interpolación utilizado.
 
 ### 1. Preprocesamiento y descripción de datos
 
@@ -35,7 +34,7 @@ Paquetes que debe utilizar para resolver esto:
 install.packages(c("vars", "tsibble", "readxl", "ggplot2", "lubridate", "urca", "tseries", "forecast"))
 ```
 
-Luego de instalados no olvide cargar los paquetes. Paso adelante le sugiriero armar su data frame en estilo:
+Luego de instalados no olvide cargar los paquetes. A continuación le sugiero armar su data frame de la siguiente manera:
 
 ```r
 library(readxl)
@@ -45,14 +44,18 @@ library(dplyr)
 # Cargar archivo
 datos <- read_excel("datoscarlosyanes.xlsx")
 
-# Convierta a ts o formato requerido como
-PIB <- ts(log(datos$PIB), start = c(2005, 1), frequency = 4)
-inflacion <- ts(datos$Inflacion, start = c(2005, 1), frequency = 4)
-tasa_interes <- ts(datos$Interes, start = c(2005, 1), frequency = 4)
-tipo_cambio <- ts(datos$TC, start = c(2005, 1), frequency = 4)
+# Convierta a ts o formato requerido
+PIB          <- ts(log(datos$PIB),       start = c(2005, 1), frequency = 4)
+inflacion    <- ts(datos$Inflacion,      start = c(2005, 1), frequency = 4)
+tasa_interes <- ts(datos$Interes,        start = c(2005, 1), frequency = 4)
+tipo_cambio  <- ts(datos$TC,             start = c(2005, 1), frequency = 4)
 ```
 
+> 💡 Verifique que no existan valores faltantes (`NA`) en ninguna serie antes de continuar. Puede usar `sum(is.na(datos))` para detectarlos.
+
 #### 1.1 Haga una descripción de las variables
+
+Para cada variable reporte: rango temporal, número de observaciones, media, desviación estándar, valor mínimo y máximo. Adicionalmente, grafique cada serie individualmente e identifique visualmente posibles tendencias, estacionalidad o quiebres estructurales.
 
 - **PIB**:  
 - **Inflación**:  
@@ -61,50 +64,141 @@ tipo_cambio <- ts(datos$TC, start = c(2005, 1), frequency = 4)
 
 #### 1.2 Fuente de datos
 
-Indique la fuente de cada variable (e.g. Banco de la República, FRED, DANE).
+Indique la fuente de cada variable, el código o identificador utilizado para descargarla, y la fecha de consulta. Ejemplo:
+
+| Variable | Fuente | Código/Serie | Fecha de consulta |
+|---|---|---|---|
+| PIB | DANE / Banco Mundial | NY.GDP.MKTP.KN | dd/mm/aaaa |
+| Inflación | Banco de la República | IPC anual | dd/mm/aaaa |
+| Tasa de interés | Banco Central | Tasa repo | dd/mm/aaaa |
+| Tipo de cambio | FRED / Banco Central | DEXCOUS | dd/mm/aaaa |
+
+---
 
 ### 2. Estacionariedad
 
-#### 2.1 ¿Las series son estacionarias?
+#### 2.1 ¿Las series son estacionarias en niveles?
 
-Describa aquí los <span style="color: deeppink; font-weight: bold;">resultados</span> obtenidos de los tests de raíz unitaria (ADF o similares). Indique si fue necesario transformar alguna serie.
-
-Un código fuente puede ser:
+Aplique el test ADF (Augmented Dickey-Fuller) a cada serie en niveles. Describa los <span style="color: deeppink; font-weight: bold;">resultados</span> obtenidos e indique si se rechaza o no la hipótesis nula de raíz unitaria para cada caso.
 
 ```r
 library(urca)
-summary(ur.df(PIB, type = "drift", selectlags = "AIC"))
-summary(ur.df(inflacion, type = "drift", selectlags = "AIC"))
+summary(ur.df(PIB,          type = "drift", selectlags = "AIC"))
+summary(ur.df(inflacion,    type = "drift", selectlags = "AIC"))
 summary(ur.df(tasa_interes, type = "drift", selectlags = "AIC"))
-summary(ur.df(tipo_cambio, type = "drift", selectlags = "AIC"))
+summary(ur.df(tipo_cambio,  type = "drift", selectlags = "AIC"))
 ```
+
+#### 2.2 ¿Las series son estacionarias en primeras diferencias?
+
+Para aquellas series que **no** sean estacionarias en niveles, aplique el test ADF sobre sus primeras diferencias y determine el orden de integración (I(1) o I(2)).
+
+```r
+summary(ur.df(diff(PIB),          type = "drift", selectlags = "AIC"))
+summary(ur.df(diff(inflacion),    type = "drift", selectlags = "AIC"))
+summary(ur.df(diff(tasa_interes), type = "drift", selectlags = "AIC"))
+summary(ur.df(diff(tipo_cambio),  type = "drift", selectlags = "AIC"))
+```
+
+#### 2.3 Resumen de resultados
+
+Complete la siguiente tabla con los resultados obtenidos:
+
+| Variable | Estacionaria en niveles | Estacionaria en diferencias | Orden de integración |
+|---|---|---|---|
+| PIB | | | |
+| Inflación | | | |
+| Tasa de interés | | | |
+| Tipo de cambio | | | |
+
+> ⚠️ Si todas las series son I(1), proceda con el VAR en diferencias. Si sospecha cointegración entre ellas, coméntelo brevemente (no es necesario estimarlo en este taller).
+
+---
+
 ### 3. Estimación del modelo VAR
 
-#### 3.1 ¿Cuántos rezagos seleccionó y por qué?
+#### 3.1 Selección del número de rezagos
 
-Explique el criterio de información utilizado (AIC, BIC) y el número de rezagos elegido.
+Utilice el criterio de información para seleccionar el número óptimo de rezagos. Reporte los valores de AIC, HQ, SC y FPE para cada número de rezago evaluado y justifique su elección.
+
+```r
+library(vars)
+datos_var <- cbind(PIB, inflacion, tasa_interes, tipo_cambio)
+VARselect(datos_var, lag.max = 10, type = "const")
+```
+
+#### 3.2 Estimación del VAR
+
+Estime el modelo con el número de rezagos seleccionado:
+
+```r
+modelo_var <- VAR(datos_var, p = X, type = "const") # reemplace X por el rezago elegido
+summary(modelo_var)
+```
+
+#### 3.3 Diagnóstico de residuos
+
+Verifique que los residuos del modelo sean ruido blanco. Reporte e interprete los resultados de las siguientes pruebas:
+
+```r
+# Autocorrelación serial
+serial.test(modelo_var, lags.pt = 12, type = "PT.asymptotic")
+
+# Normalidad
+normality.test(modelo_var)
+
+# Heterocedasticidad
+arch.test(modelo_var, lags.multi = 5)
+```
+
+> 💡 Si los residuos presentan autocorrelación, considere aumentar el número de rezagos y vuelva a diagnosticar.
+
+---
 
 ### 4. Impulsos y respuestas
 
 #### 4.1 Análisis de funciones de impulso-respuesta (IRF)
 
-- ¿Cómo reacciona el PIB ante un shock en la tasa de interés?
-- ¿Y ante un shock en la inflación?
+Estime e interprete las funciones de impulso-respuesta para un horizonte de 10 trimestres:
 
-Agregue los gráficos generados e interprete sus resultados.
+```r
+irf_pib_interes  <- irf(modelo_var, impulse = "tasa_interes", response = "PIB",        n.ahead = 10, boot = TRUE)
+irf_pib_inflacion <- irf(modelo_var, impulse = "inflacion",   response = "PIB",        n.ahead = 10, boot = TRUE)
 
+plot(irf_pib_interes)
+plot(irf_pib_inflacion)
+```
+
+Responda con base en los gráficos generados:
+
+- ¿Cómo reacciona el PIB ante un shock en la tasa de interés? ¿En qué trimestre se observa el mayor efecto? ¿El efecto es estadísticamente significativo (las bandas de confianza no cruzan el cero)?
+- ¿Cómo reacciona el PIB ante un shock en la inflación?
+- ¿Los signos obtenidos son consistentes con la teoría económica? Justifique.
+
+---
 
 ### 5. Descomposición de varianza
 
 #### 5.1 ¿Qué variable explica más la variabilidad del PIB en el mediano plazo?
 
-Agregue gráficos e interpretación.
+```r
+fevd_resultado <- fevd(modelo_var, n.ahead = 10)
+plot(fevd_resultado)
+```
 
-### 6. Resultados
+Reporte la tabla de descomposición de varianza del PIB a 1, 4 y 10 trimestres e interprete: ¿qué proporción de la varianza del PIB se explica por shocks propios versus shocks en las demás variables? ¿Cambia esta proporción en el mediano plazo?
 
-Resuma los principales hallazgos del análisis VAR:
+---
 
-- ¿Qué variables están más relacionadas?
-- ¿Qué implicaciones podrían tener estos hallazgos para la política económica?
+### 6. Resultados y conclusiones
+
+#### 6.1 Resumen de hallazgos
+
+Resuma los principales hallazgos del análisis VAR respondiendo concretamente:
+
+- ¿Qué variables presentaron mayor grado de interdependencia según los IRF?
+- ¿Qué variable resultó ser el principal determinante de la variabilidad del PIB según la descomposición de varianza?
+- ¿Los resultados obtenidos son consistentes con lo que esperaría la teoría macroeconómica estándar? ¿Hay algún resultado inesperado?
+
 
 
