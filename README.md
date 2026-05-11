@@ -1,5 +1,5 @@
 # Tseries
-Comp of times series in Uninorte v0.27/March
+Comp of times series in Uninorte v0.26/May
 
 ### Primer corte
 
@@ -42,6 +42,6 @@ Modelo VEC [Clase 11](https://raw.githack.com/keynes37/tseries/main/GuiasdeR/Gui
 
 Modelo VEC in bound [Clase boue]
 
-### Contenido para clase
+### Contenido para clase (este es el pendiente)
 
 Modelo en clase [Actividad 1](https://raw.githack.com/keynes37/tseries/main/Capstones/SemiCaps/Capf1.html)
